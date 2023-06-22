@@ -1,0 +1,18 @@
+image: archlinux
+packages:
+  - rustup
+  - postgresql-libs
+sources:
+  - https://git.sr.ht/~hidrile/heiwa-authors
+tasks:
+  - setup: |
+      rustup default stable
+      rustup component add clippy
+  - build: |
+      cd heiwa-authors
+      cargo build --release
+  - tests: |
+      cd heiwa-authors
+      cargo fmt -- --check
+      cargo clippy -- -D warnings
+      cargo test
