@@ -1,4 +1,4 @@
-use axum::{routing::get, routing::post, Router};
+use axum::{routing::get, routing::post, routing::delete, Router};
 use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
 
@@ -29,6 +29,8 @@ async fn main() {
 
 fn routes() -> Router {
     Router::new()
+        .route("/authors", get(handlers::authors))
         .route("/authors/create", post(handlers::create))
-        .route("/authors/:id", get(handlers::author))
+        .route("/authors/:name", get(handlers::author))
+        .route("/authors/delete/:id", delete(handlers::delete))
 }
