@@ -2,7 +2,10 @@ use axum::{routing::get, routing::post, Router};
 use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
 
-mod handler;
+mod entities;
+mod handlers;
+mod schema;
+mod services;
 
 #[tokio::main]
 async fn main() {
@@ -26,6 +29,6 @@ async fn main() {
 
 fn routes() -> Router {
     Router::new()
-        .route("/authors/create", post(handler::create))
-        .route("/authors/:id", get(handler::author))
+        .route("/authors/create", post(handlers::create))
+        .route("/authors/:id", get(handlers::author))
 }
