@@ -1,22 +1,22 @@
-use crate::configuration::{get_toml_content, Config};
 use axum::{routing::get, routing::post, Router};
+use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
 
-mod configuration;
 mod handler;
 
 #[tokio::main]
 async fn main() {
-    let config: Config = Config::new(get_toml_content(
-        "/etc/heiwa/heiwa-authors.toml".to_string(),
-    ));
-    env::set_var("RUST_LOG", config.log_level);
-
+    dotenv().ok();
     tracing_subscriber::fmt::init();
 
     let app = Router::new().merge(routes());
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    let server_port: u16 = env::var("SERVER_PORT")
+        .expect("SERVER_PORT environment variable should exist")
+        .parse::<i16>()
+        .expect("SERVER_PORT environment variable should be parsed correctly")
+        as u16;
+    let addr = SocketAddr::from(([127, 0, 0, 1], server_port));
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
