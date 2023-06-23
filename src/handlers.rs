@@ -1,5 +1,7 @@
 use crate::entities::{Author, NewAuthor};
-use crate::services::{create_author, delete_author, establish_connection, get_authors, get_authors_by_name};
+use crate::services::{
+    create_author, delete_author, establish_connection, get_authors, get_authors_by_name,
+};
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
@@ -35,7 +37,7 @@ pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
                 StatusCode::OK.into_response()
             }
         }
-        Err(_e) => StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        Err(_e) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }
 
