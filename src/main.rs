@@ -6,6 +6,7 @@ mod entities;
 mod handlers;
 mod schema;
 mod services;
+mod utils;
 
 #[tokio::main]
 async fn main() {
@@ -29,8 +30,8 @@ async fn main() {
 
 fn routes() -> Router {
     Router::new()
-        .route("/authors", get(handlers::authors))
-        .route("/authors/create", post(handlers::create))
-        .route("/authors/:name", get(handlers::author))
-        .route("/authors/delete/:id", delete(handlers::delete))
+        .route("/authors", get(handlers::authors::authors))
+        .route("/authors/create", post(handlers::authors::create))
+        .route("/authors/:name", get(handlers::authors::author))
+        .route("/authors/delete/:id", delete(handlers::authors::delete))
 }
