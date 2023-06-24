@@ -6,8 +6,8 @@ use diesel::{
     SelectableHelper,
 };
 
-use validator::ValidationError;
 use crate::utils::establish_connection;
+use validator::ValidationError;
 
 pub fn get_authors(connection: &mut PgConnection) -> Vec<Author> {
     dsl_authors
