@@ -1,10 +1,8 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
 use crate::schema::links;
-use diesel::{
-    insert_into, pg::PgConnection, BelongingToDsl, QueryDsl, QueryResult, RunQueryDsl,
-    SelectableHelper,
-};
+use diesel::{insert_into, pg::PgConnection, BelongingToDsl, QueryDsl, QueryResult, RunQueryDsl, SelectableHelper, delete};
+use diesel::associations::HasTable;
 
 pub fn get_links_by_author(connection: &mut PgConnection, author: &Author) -> Vec<Link> {
     Link::belonging_to(&author)
@@ -18,4 +16,10 @@ pub fn create_link(connection: &mut PgConnection, new_link: NewLink) -> QueryRes
         .values(&new_link)
         .returning(Link::as_returning())
         .get_result(connection)
+}
+
+pub fn delete_link(connection: &mut PgConnection, id: i32) -> usize {
+    delete(Link::table().find(id))
+        .execute(connection)
+        .expect("Should delete link")
 }
