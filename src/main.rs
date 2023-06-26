@@ -30,8 +30,8 @@ async fn main() {
 
 fn routes() -> Router {
     Router::new()
-        .route("/authors", get(handlers::authors::authors))
         .route("/authors/create", post(handlers::authors::create))
-        .route("/authors/:name", get(handlers::authors::author))
         .route("/authors/delete/:id", delete(handlers::authors::delete))
+        .route("/authors/get/:name", get(handlers::authors::get))
+        .route("/authors/login", post(handlers::authors::login))
 }

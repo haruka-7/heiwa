@@ -1,7 +1,7 @@
-use argon2::{Argon2, PasswordHasher};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
-use crate::entities::authors::{Author, NewAuthor};
+use crate::entities::authors::{Author, LoginAuthorPassword, NewAuthor};
 use crate::schema::authors;
 use crate::schema::authors::dsl::authors as dsl_authors;
 use diesel::{
@@ -12,18 +12,20 @@ use diesel::{
 use crate::utils::establish_connection;
 use validator::ValidationError;
 
-pub fn get_authors(connection: &mut PgConnection) -> Vec<Author> {
-    dsl_authors
-        .select(Author::as_select())
-        .load(connection)
-        .expect("Should load handlers")
-}
-
 pub fn get_authors_by_name(connection: &mut PgConnection, name_param: String) -> Vec<Author> {
     dsl_authors
         .filter(authors::name.eq(name_param))
         .limit(1)
         .select(Author::as_select())
+        .load(connection)
+        .expect("Should load handlers")
+}
+
+pub fn get_authors_by_name_for_login(connection: &mut PgConnection, name_param: String) -> Vec<LoginAuthorPassword> {
+    dsl_authors
+        .filter(authors::name.eq(name_param))
+        .limit(1)
+        .select(LoginAuthorPassword::as_select())
         .load(connection)
         .expect("Should load handlers")
 }
@@ -50,4 +52,9 @@ pub fn validate_unique_name(name: &str) -> Result<(), ValidationError> {
         None => Ok(()),
         Some(_) => Err(ValidationError::new("name already taken")),
     }
+}
+
+pub fn verify_password(password: String, password_hash: &String) -> bool {
+    let parsed_hash = PasswordHash::new(&password_hash).unwrap();
+    Argon2::default().verify_password(password.as_ref(), &parsed_hash).is_ok()
 }

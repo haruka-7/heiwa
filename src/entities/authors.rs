@@ -8,11 +8,9 @@ use validator::Validate;
 #[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Author {
-    pub id: i32,
     pub name: String,
     pub email: String,
     pub display_name: String,
-    pub password: String,
     pub biography: Option<String>,
     pub role: Option<String>,
 }
@@ -25,5 +23,18 @@ pub struct NewAuthor {
     #[validate(email)]
     pub email: String,
     pub display_name: String,
+    pub password: String,
+}
+
+#[derive(Debug, Queryable, Selectable, Deserialize)]
+#[diesel(table_name = authors)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct LoginAuthorPassword {
+    pub password: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LoginAuthor {
+    pub name: String,
     pub password: String,
 }
