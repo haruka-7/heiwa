@@ -1,2 +1,2 @@
 pub mod authors;
-mod links;
+pub mod links;

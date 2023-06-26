@@ -15,6 +15,8 @@ async fn main() {
 
     let app = Router::new().merge(routes());
 
+    //TODO add midleware layer to log errors
+
     let server_port: u16 = env::var("SERVER_PORT")
         .expect("SERVER_PORT environment variable should exist")
         .parse::<i16>()
@@ -34,4 +36,7 @@ fn routes() -> Router {
         .route("/authors/delete/:id", delete(handlers::authors::delete))
         .route("/authors/get/:name", get(handlers::authors::get))
         .route("/authors/login", post(handlers::authors::login))
+        .route("/links/create", post(handlers::links::create))
+        .route("/links/delete/:id", delete(handlers::links::delete))
+        .route("/links/get/:author_name", get(handlers::links::get))
 }

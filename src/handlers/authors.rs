@@ -1,11 +1,16 @@
+use std::error::Error;
 use crate::entities::authors::{Author, LoginAuthor, LoginAuthorPassword, NewAuthor};
-use crate::services::authors::{create_author, delete_author, get_authors_by_name, get_authors_by_name_for_login, verify_password};
+use crate::services::authors::{
+    create_author, delete_author, get_authors_by_name, get_authors_by_name_for_login,
+    verify_password,
+};
 use crate::utils::establish_connection;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use diesel::QueryResult;
 use serde_json::json;
-use validator::Validate;
+use validator::{Validate, ValidationError, ValidationErrors};
 
 pub async fn get(Path(name): Path<String>) -> Response {
     let author: Vec<Author> = get_authors_by_name(&mut establish_connection(), name);
@@ -19,19 +24,24 @@ pub async fn get(Path(name): Path<String>) -> Response {
 pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
     match payload.validate() {
         Ok(_) => {
-            let author: Author = create_author(&mut establish_connection(), payload);
-            if author.name.is_empty() {
-                StatusCode::INTERNAL_SERVER_ERROR.into_response()
-            } else {
-                StatusCode::OK.into_response()
+            let author: QueryResult<Author> = create_author(&mut establish_connection(), payload);
+            match author {
+                Ok(_) => { StatusCode::CREATED.into_response() }
+                Err(e) => {
+                    tracing::error!("{}", e);
+                    StatusCode::INTERNAL_SERVER_ERROR.into_response()
+                }
             }
         }
-        Err(_e) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(e) => {
+            Json(json!(e)).into_response()
+        },
     }
 }
 
 pub async fn login(Json(payload): Json<LoginAuthor>) -> Response {
-    let author: Vec<LoginAuthorPassword> = get_authors_by_name_for_login(&mut establish_connection(), payload.name);
+    let author: Vec<LoginAuthorPassword> =
+        get_authors_by_name_for_login(&mut establish_connection(), payload.name);
     if author.is_empty() {
         StatusCode::NOT_FOUND.into_response()
     } else {

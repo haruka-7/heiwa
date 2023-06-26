@@ -4,10 +4,11 @@ use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Debug, Queryable, Selectable, Serialize)]
+#[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
 #[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Author {
+    pub id: i32,
     pub name: String,
     pub email: String,
     pub display_name: String,
