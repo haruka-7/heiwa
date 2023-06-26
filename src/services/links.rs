@@ -1,8 +1,11 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
 use crate::schema::links;
-use diesel::{insert_into, pg::PgConnection, BelongingToDsl, QueryDsl, QueryResult, RunQueryDsl, SelectableHelper, delete};
 use diesel::associations::HasTable;
+use diesel::{
+    delete, insert_into, pg::PgConnection, BelongingToDsl, QueryDsl, QueryResult, RunQueryDsl,
+    SelectableHelper,
+};
 
 pub fn get_links_by_author(connection: &mut PgConnection, author: &Author) -> Vec<Link> {
     Link::belonging_to(&author)
