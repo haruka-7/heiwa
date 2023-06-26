@@ -28,7 +28,6 @@ pub async fn author(Path(name): Path<String>) -> Response {
 pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
     match payload.validate() {
         Ok(_) => {
-            //TODO crypt password with bcrypt
             let author: Author = create_author(&mut establish_connection(), payload);
             if author.name.is_empty() {
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()

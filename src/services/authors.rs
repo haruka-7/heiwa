@@ -1,3 +1,6 @@
+use argon2::{Argon2, PasswordHasher};
+use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::SaltString;
 use crate::entities::authors::{Author, NewAuthor};
 use crate::schema::authors;
 use crate::schema::authors::dsl::authors as dsl_authors;
@@ -25,7 +28,10 @@ pub fn get_authors_by_name(connection: &mut PgConnection, name_param: String) ->
         .expect("Should load handlers")
 }
 
-pub fn create_author(connection: &mut PgConnection, new_author: NewAuthor) -> Author {
+pub fn create_author(connection: &mut PgConnection, mut new_author: NewAuthor) -> Author {
+    let salt: SaltString = SaltString::generate(&mut OsRng);
+    let argon2: Argon2 = Argon2::default();
+    new_author.password = argon2.hash_password(new_author.password.as_ref(), &salt).unwrap().to_string();
     insert_into(authors::table)
         .values(&new_author)
         .returning(Author::as_returning())
