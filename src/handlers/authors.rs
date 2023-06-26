@@ -3,11 +3,11 @@ use crate::services::authors::{
     create_author, delete_author, get_authors_by_name, get_authors_by_name_for_login,
     verify_password,
 };
-use crate::utils::establish_connection;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
+use heiwa_common::utils::establish_connection;
 use serde_json::json;
 use validator::Validate;
 

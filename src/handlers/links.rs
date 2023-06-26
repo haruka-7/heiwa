@@ -2,11 +2,11 @@ use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
 use crate::services::authors::get_authors_by_name;
 use crate::services::links::{create_link, delete_link, get_links_by_author};
-use crate::utils::establish_connection;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
+use heiwa_common::utils::establish_connection;
 use serde_json::json;
 
 pub async fn get(Path(author_name): Path<String>) -> Response {

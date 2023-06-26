@@ -8,8 +8,8 @@ use diesel::{
     delete, insert_into, pg::PgConnection, ExpressionMethods, QueryDsl, QueryResult, RunQueryDsl,
     SelectableHelper,
 };
+use heiwa_common::utils::establish_connection;
 
-use crate::utils::establish_connection;
 use validator::ValidationError;
 
 pub fn get_authors_by_name(connection: &mut PgConnection, name_param: String) -> Vec<Author> {
