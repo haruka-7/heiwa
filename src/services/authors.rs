@@ -62,8 +62,8 @@ pub fn validate_unique_name(name: &str) -> Result<(), ValidationError> {
     }
 }
 
-pub fn verify_password(password: String, password_hash: &String) -> bool {
-    let parsed_hash = PasswordHash::new(&password_hash).unwrap();
+pub fn verify_password(password: String, password_hash: &str) -> bool {
+    let parsed_hash = PasswordHash::new(password_hash).unwrap();
     Argon2::default()
         .verify_password(password.as_ref(), &parsed_hash)
         .is_ok()

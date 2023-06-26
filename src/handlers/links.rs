@@ -21,12 +21,13 @@ pub async fn get(Path(author_name): Path<String>) -> Response {
 }
 
 pub async fn create(Json(payload): Json<NewLink>) -> Response {
-    let link: QueryResult<Link>  = create_link(&mut establish_connection(), payload);
+    let link: QueryResult<Link> = create_link(&mut establish_connection(), payload);
     match link {
-        Ok(_) => { StatusCode::CREATED.into_response() }
+        Ok(_) => StatusCode::CREATED.into_response(),
         Err(e) => {
             tracing::error!("{}", e);
-            StatusCode::INTERNAL_SERVER_ERROR.into_response() }
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
     }
 }
 
