@@ -1,6 +1,7 @@
 [package]
 name = "heiwa-authors"
 license = "GPL-3.0-or-later"
+repository = "https://git.sr.ht/~hidrile/heiwa-authors"
 version = "0.1.0"
 edition = "2021"
 
