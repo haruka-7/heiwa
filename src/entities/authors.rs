@@ -1,5 +1,5 @@
 use crate::schema::*;
-use crate::services;
+use crate::services::authors::validate_unique_name;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -19,7 +19,7 @@ pub struct Author {
 #[derive(Debug, Validate, Insertable, Deserialize)]
 #[diesel(table_name = authors)]
 pub struct NewAuthor {
-    #[validate(custom = "services::authors::validate_unique_name")]
+    #[validate(custom = "validate_unique_name")]
     pub name: String,
     #[validate(email)]
     pub email: String,
