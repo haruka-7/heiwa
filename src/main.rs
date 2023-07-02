@@ -10,6 +10,7 @@ mod services;
 async fn main() {
     let routes: Router = Router::new()
         .route("/authors/create", post(handlers::authors::create))
+        // TODO add update author route
         .route("/authors/delete/:id", delete(handlers::authors::delete))
         .route("/authors/get/:name", get(handlers::authors::get))
         .route("/authors/login", post(handlers::authors::login))
