@@ -1,6 +1,5 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
-use crate::services::authors::get_authors_by_name;
 use crate::services::links::{create_link, delete_link, get_links_by_author};
 use axum::extract::Path;
 use axum::http::status::StatusCode;
@@ -10,7 +9,7 @@ use heiwa_common::utils::establish_connection;
 use serde_json::json;
 
 pub async fn get(Path(author_name): Path<String>) -> Response {
-    let author: Vec<Author> = get_authors_by_name(&mut establish_connection(), author_name);
+    let author: Vec<Author> = Author::find_by_name(author_name);
     if author.is_empty() {
         StatusCode::NOT_FOUND.into_response()
     } else {

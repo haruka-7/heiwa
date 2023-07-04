@@ -1,8 +1,13 @@
 use crate::schema::*;
-use crate::services::authors::validate_unique_name;
+use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::SaltString;
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use diesel::associations::HasTable;
+use diesel::{delete, insert_into};
 use diesel::prelude::*;
+use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
 #[diesel(table_name = authors)]
@@ -38,4 +43,75 @@ pub struct LoginAuthorPassword {
 pub struct LoginAuthor {
     pub name: String,
     pub password: String,
+}
+
+impl Author {
+    pub fn find_by_name(name_param: String) -> Vec<Author> {
+        Author::table()
+            .filter(authors::name.eq(name_param))
+            .limit(1)
+            .select(Author::as_select())
+            .load(&mut establish_connection())
+            .expect("Should load handlers")
+    }
+
+    pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
+        new_author.password = hash_password(&new_author.password);
+        insert_into(authors::table)
+            .values(&new_author)
+            .returning(Author::as_returning())
+            .get_result(&mut establish_connection())
+    }
+
+    pub fn delete(author_id: i32) -> usize {
+        delete(Author::table().find(author_id))
+            .execute(&mut establish_connection())
+            .expect("Should delete author")
+    }
+}
+
+impl LoginAuthorPassword {
+    pub fn find_by_name_for_login(name_param: String) -> Vec<LoginAuthorPassword> {
+        Author::table()
+            .filter(authors::name.eq(name_param))
+            .limit(1)
+            .select(LoginAuthorPassword::as_select())
+            .load(&mut establish_connection())
+            .expect("Should load handlers")
+    }
+}
+
+pub fn validate_unique_name(name: &str) -> Result<(), ValidationError> {
+    match Author::find_by_name(name.to_string()).first() {
+        None => Ok(()),
+        Some(_) => Err(ValidationError::new("NAME_EXIST")),
+    }
+}
+
+pub fn hash_password(password: &String) -> String {
+    let salt: SaltString = SaltString::generate(&mut OsRng);
+    let argon2: Argon2 = Argon2::default();
+    argon2
+        .hash_password(password.as_ref(), &salt)
+        .unwrap()
+        .to_string()
+}
+
+pub fn verify_password(password: String, password_hash: &str) -> bool {
+    let parsed_hash = PasswordHash::new(password_hash).unwrap();
+    Argon2::default()
+        .verify_password(password.as_ref(), &parsed_hash)
+        .is_ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hash_and_verify_password() {
+        let password: String = "thee michel gun elephant".to_string();
+        let password_hash: String = hash_password(&password);
+        assert!(verify_password(password, password_hash.as_ref()))
+    }
 }
