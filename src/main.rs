@@ -43,7 +43,7 @@ mod tests {
 
     #[tokio::test]
     async fn integration_tests() {
-        env::set_var("RUST_LOG", "error");
+        env::set_var("RUST_LOG", "none");
         let new_author: NewAuthor = NewAuthor {
             name: "tomoko".to_string(),
             email: "tomokoaran@heiwa.jp".to_string(),
@@ -53,6 +53,10 @@ mod tests {
         let login_author: LoginAuthor = LoginAuthor {
             name: "tomoko".to_string(),
             password: "midnight".to_string(),
+        };
+        let login_author_failed: LoginAuthor = LoginAuthor {
+            name: "tomoko".to_string(),
+            password: "pretenders".to_string(),
         };
         let new_link: NewLink = NewLink {
             url: "april.org".to_string(),
@@ -80,6 +84,21 @@ mod tests {
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         let body: Value = serde_json::from_slice(&body).unwrap();
         let author: Author = serde_json::from_str(&body.to_string()).unwrap();
+
+        // Create author error name exist
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::POST)
+                    .uri("/authors/create")
+                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .body(Body::from(serde_json::to_vec(&json!(new_author)).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
         // Get author
         let response = app
@@ -110,6 +129,23 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
+
+        // Login author failed
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::POST)
+                    .uri("/authors/login")
+                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .body(Body::from(
+                        serde_json::to_vec(&json!(login_author_failed)).unwrap(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
 
         // Delete author
         let response = app
