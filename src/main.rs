@@ -31,15 +31,15 @@ fn routes() -> Router {
 
 #[cfg(test)]
 mod tests {
-    use std::env;
     use super::*;
     use crate::entities::authors::{Author, LoginAuthor, NewAuthor};
+    use crate::entities::links::{Link, NewLink};
     use axum::body::Body;
     use axum::http;
     use axum::http::{Request, StatusCode};
     use serde_json::{json, Value};
+    use std::env;
     use tower::ServiceExt;
-    use crate::entities::links::{Link, NewLink};
 
     #[tokio::test]
     async fn integration_tests() {
@@ -63,7 +63,8 @@ mod tests {
         let app = init_server(routes()).0;
 
         // Create author
-        let response = app.clone()
+        let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
@@ -81,7 +82,8 @@ mod tests {
         let author: Author = serde_json::from_str(&body.to_string()).unwrap();
 
         // Get author
-        let response = app.clone()
+        let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .uri(format!("/authors/get/{}", author.name))
@@ -93,7 +95,8 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         // Login author
-        let response = app.clone()
+        let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
@@ -109,7 +112,8 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         // Delete author
-        let response = app.clone()
+        let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .method(http::Method::DELETE)
@@ -122,7 +126,8 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         // Create link
-        let response = app.clone()
+        let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
@@ -140,7 +145,8 @@ mod tests {
         let link: Link = serde_json::from_str(&body.to_string()).unwrap();
 
         // Get admin user links
-        let response = app.clone()
+        let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .uri(format!("/links/get/{}", "admin"))
