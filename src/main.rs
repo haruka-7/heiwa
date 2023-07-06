@@ -4,7 +4,6 @@ use heiwa_common::init_server;
 mod entities;
 mod handlers;
 mod schema;
-mod services;
 
 #[tokio::main]
 async fn main() {
@@ -15,6 +14,7 @@ async fn main() {
         .route("/authors/get/:name", get(handlers::authors::get))
         .route("/authors/login", post(handlers::authors::login))
         .route("/links/create", post(handlers::links::create))
+        // TODO add update link route
         .route("/links/delete/:id", delete(handlers::links::delete))
         .route("/links/get/:author_name", get(handlers::links::get));
 

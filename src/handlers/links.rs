@@ -1,11 +1,9 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
-use crate::services::links::{create_link, delete_link, get_links_by_author};
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
-use heiwa_common::utils::establish_connection;
 use serde_json::json;
 
 pub async fn get(Path(author_name): Path<String>) -> Response {
@@ -14,13 +12,13 @@ pub async fn get(Path(author_name): Path<String>) -> Response {
         StatusCode::NOT_FOUND.into_response()
     } else {
         let links: Vec<Link> =
-            get_links_by_author(&mut establish_connection(), author.first().unwrap());
+            Link::find_by_author(author.first().unwrap());
         Json(json!(links)).into_response()
     }
 }
 
 pub async fn create(Json(payload): Json<NewLink>) -> Response {
-    let link: QueryResult<Link> = create_link(&mut establish_connection(), payload);
+    let link: QueryResult<Link> = Link::create(payload);
     match link {
         Ok(_) => StatusCode::CREATED.into_response(),
         Err(e) => {
@@ -31,7 +29,7 @@ pub async fn create(Json(payload): Json<NewLink>) -> Response {
 }
 
 pub async fn delete(Path(id): Path<i32>) -> Response {
-    let nb_deleted: usize = delete_link(&mut establish_connection(), id);
+    let nb_deleted: usize = Link::delete(id);
     if nb_deleted == 0 {
         tracing::error!("Can not delete link with id {}", id);
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
