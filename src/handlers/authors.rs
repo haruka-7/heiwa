@@ -1,4 +1,6 @@
-use crate::entities::authors::{Author, LoginAuthor, LoginAuthorPassword, NewAuthor, verify_password};
+use crate::entities::authors::{
+    verify_password, Author, LoginAuthor, LoginAuthorPassword, NewAuthor,
+};
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};

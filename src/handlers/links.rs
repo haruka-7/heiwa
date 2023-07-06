@@ -11,8 +11,7 @@ pub async fn get(Path(author_name): Path<String>) -> Response {
     if author.is_empty() {
         StatusCode::NOT_FOUND.into_response()
     } else {
-        let links: Vec<Link> =
-            Link::find_by_author(author.first().unwrap());
+        let links: Vec<Link> = Link::find_by_author(author.first().unwrap());
         Json(json!(links)).into_response()
     }
 }
