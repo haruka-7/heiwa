@@ -20,16 +20,16 @@ pub async fn get(Path(name): Path<String>) -> Response {
 pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
     match payload.validate() {
         Ok(_) => {
-            let author: QueryResult<Author> = Author::create(payload);
-            match author {
-                Ok(_) => StatusCode::CREATED.into_response(),
+            let author_result: QueryResult<Author> = Author::create(payload);
+            match author_result {
+                Ok(author) => (StatusCode::CREATED, Json(json!(author))).into_response(),
                 Err(e) => {
                     tracing::error!("{}", e);
                     StatusCode::INTERNAL_SERVER_ERROR.into_response()
                 }
             }
         }
-        Err(e) => Json(json!(e)).into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!(e))).into_response(),
     }
 }
 

@@ -17,9 +17,9 @@ pub async fn get(Path(author_name): Path<String>) -> Response {
 }
 
 pub async fn create(Json(payload): Json<NewLink>) -> Response {
-    let link: QueryResult<Link> = Link::create(payload);
-    match link {
-        Ok(_) => StatusCode::CREATED.into_response(),
+    let link_result: QueryResult<Link> = Link::create(payload);
+    match link_result {
+        Ok(link) => (StatusCode::CREATED, Json(json!(link))).into_response(),
         Err(e) => {
             tracing::error!("{}", e);
             StatusCode::INTERNAL_SERVER_ERROR.into_response()

@@ -452,6 +452,8 @@ dependencies = [
  "diesel",
  "dotenvy",
  "heiwa-common",
+ "hyper",
+ "mime",
  "pretty_assertions",
  "serde",
  "serde_json",

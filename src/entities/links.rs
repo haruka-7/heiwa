@@ -6,7 +6,7 @@ use diesel::{delete, insert_into};
 use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Queryable, Selectable, Identifiable, Associations, PartialEq, Serialize)]
+#[derive(Debug, Queryable, Selectable, Identifiable, Associations, PartialEq, Serialize, Deserialize)]
 #[diesel(belongs_to(Author))]
 #[diesel(table_name = links)]
 pub struct Link {
@@ -16,7 +16,7 @@ pub struct Link {
     pub author_id: i32,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Debug, Insertable, Serialize, Deserialize)]
 #[diesel(table_name = links)]
 pub struct NewLink {
     pub url: String,

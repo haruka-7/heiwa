@@ -9,7 +9,7 @@ use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
-#[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
+#[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Author {
@@ -21,7 +21,7 @@ pub struct Author {
     pub role: Option<String>,
 }
 
-#[derive(Debug, Validate, Insertable, Deserialize)]
+#[derive(Debug, Validate, Insertable, Serialize, Deserialize)]
 #[diesel(table_name = authors)]
 pub struct NewAuthor {
     #[validate(custom = "validate_unique_name")]
@@ -39,7 +39,7 @@ pub struct LoginAuthorPassword {
     pub password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LoginAuthor {
     pub name: String,
     pub password: String,
