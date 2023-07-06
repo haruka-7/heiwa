@@ -5,8 +5,6 @@ services:
     image: postgres
     ports:
       - "5001:5432"
-    environment:
-      POSTGRES_PASSWORD: superpassword
   adminer:
     image: adminer
     ports:

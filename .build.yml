@@ -1,6 +1,7 @@
 image: archlinux
 packages:
   - rustup
+  - postgresql
   - postgresql-libs
 sources:
   - https://git.sr.ht/~hidrile/heiwa-authors
