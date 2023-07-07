@@ -14,9 +14,24 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
+    - name: Install Diesel
+      run: cargo install diesel_cli --no-default-features --features postgres
+    - name: Setup DB
+      run: diesel setup
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test
