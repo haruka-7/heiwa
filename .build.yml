@@ -1,14 +1,12 @@
-image: postgres
+image: archlinux
 packages:
   - rustup
-  - libpq-dev
 sources:
   - https://git.sr.ht/~hidrile/heiwa-authors
 tasks:
   - setup: |
       rustup default stable
       rustup component add clippy
-      cargo install diesel_cli --no-default-features --features postgres
   - build: |
       cd heiwa-authors
       cargo build --release
@@ -16,5 +14,4 @@ tasks:
       cd heiwa-authors
       cargo fmt -- --check
       cargo clippy -- -D warnings
-      diesel setup
       cargo test
