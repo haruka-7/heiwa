@@ -3,12 +3,15 @@ packages:
   - rustup
   - postgresql
   - postgresql-libs
+  - libpq-dev
 sources:
   - https://git.sr.ht/~hidrile/heiwa-authors
 tasks:
   - setup: |
       rustup default stable
       rustup component add clippy
+      cargo install diesel_cli --no-default-features --features postgres
+      postgres -D /usr/local/pgsql/data >logfile 2>&1 &
   - build: |
       cd heiwa-authors
       cargo build --release
@@ -16,5 +19,5 @@ tasks:
       cd heiwa-authors
       cargo fmt -- --check
       cargo clippy -- -D warnings
-      postgres -D /usr/local/pgsql/data >logfile 2>&1 &
+      diesel setup
       cargo test
