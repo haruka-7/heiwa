@@ -3,7 +3,7 @@ By Pedro CADETE aka Hidrile
 
 https://getheiwa.org
 
-[![builds.sr.ht status](https://builds.sr.ht/~hidrile/heiwa-authors.svg)](https://builds.sr.ht/~hidrile/heiwa-authors?)
+[![Rust](https://github.com/hidrile/heiwa-authors/actions/workflows/rust.yml/badge.svg)](https://github.com/hidrile/heiwa-authors/actions/workflows/rust.yml)
 
 ## Description
 
