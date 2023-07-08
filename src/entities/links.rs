@@ -2,15 +2,22 @@ use crate::entities::authors::Author;
 use crate::schema::*;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
-use diesel::{delete, insert_into};
+use diesel::{delete, insert_into, update};
 use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Debug, Queryable, Selectable, Identifiable, Associations, PartialEq, Serialize, Deserialize,
+    Debug,
+    Queryable,
+    Selectable,
+    Identifiable,
+    AsChangeset,
+    Associations,
+    PartialEq,
+    Serialize,
+    Deserialize,
 )]
 #[diesel(belongs_to(Author))]
-#[diesel(table_name = links)]
 pub struct Link {
     pub id: i32,
     pub url: String,
@@ -27,11 +34,10 @@ pub struct NewLink {
 }
 
 impl Link {
-    pub fn find_by_author(author: &Author) -> Vec<Link> {
+    pub fn find_by_author(author: &Author) -> QueryResult<Vec<Link>> {
         Link::belonging_to(&author)
             .select(Link::as_select())
             .load(&mut establish_connection())
-            .expect("Should load handlers")
     }
 
     pub fn create(new_link: NewLink) -> QueryResult<Link> {
@@ -41,9 +47,13 @@ impl Link {
             .get_result(&mut establish_connection())
     }
 
-    pub fn delete(id: i32) -> usize {
-        delete(Link::table().find(id))
+    pub fn update(update_link: Link) -> QueryResult<usize> {
+        update(links::table)
+            .set(&update_link)
             .execute(&mut establish_connection())
-            .expect("Should delete link")
+    }
+
+    pub fn delete(id: i32) -> QueryResult<usize> {
+        delete(Link::table().find(id)).execute(&mut establish_connection())
     }
 }

@@ -4,13 +4,12 @@ use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
-use diesel::{delete, insert_into};
+use diesel::{delete, insert_into, update};
 use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
-#[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Author {
     pub id: i32,
@@ -32,6 +31,18 @@ pub struct NewAuthor {
     pub password: String,
 }
 
+#[derive(Debug, Queryable, Identifiable, Validate, AsChangeset, Serialize, Deserialize)]
+#[diesel(table_name = authors)]
+pub struct UpdateAuthor {
+    pub id: i32,
+    #[validate(custom = "validate_unique_name")]
+    pub name: String,
+    #[validate(email)]
+    pub email: String,
+    pub display_name: String,
+    pub password: Option<String>,
+}
+
 #[derive(Debug, Queryable, Selectable, Deserialize)]
 #[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -46,13 +57,12 @@ pub struct LoginAuthor {
 }
 
 impl Author {
-    pub fn find_by_name(name_param: String) -> Vec<Author> {
+    pub fn find_by_name(name_param: String) -> QueryResult<Vec<Author>> {
         Author::table()
             .filter(authors::name.eq(name_param))
             .limit(1)
             .select(Author::as_select())
             .load(&mut establish_connection())
-            .expect("Should load handlers")
     }
 
     pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
@@ -63,28 +73,44 @@ impl Author {
             .get_result(&mut establish_connection())
     }
 
-    pub fn delete(author_id: i32) -> usize {
-        delete(Author::table().find(author_id))
+    pub fn update(mut update_author: UpdateAuthor) -> QueryResult<usize> {
+        if update_author.password.is_some() {
+            update_author.password = Option::from(hash_password(&update_author.password.unwrap()));
+        }
+        update(authors::table)
+            .set(&update_author)
             .execute(&mut establish_connection())
-            .expect("Should delete author")
+    }
+
+    pub fn delete(author_id: i32) -> QueryResult<usize> {
+        delete(Author::table().find(author_id)).execute(&mut establish_connection())
     }
 }
 
 impl LoginAuthorPassword {
-    pub fn find_by_name_for_login(name_param: String) -> Vec<LoginAuthorPassword> {
+    pub fn find_by_name_for_login(name_param: String) -> QueryResult<Vec<LoginAuthorPassword>> {
         Author::table()
             .filter(authors::name.eq(name_param))
             .limit(1)
             .select(LoginAuthorPassword::as_select())
             .load(&mut establish_connection())
-            .expect("Should load handlers")
     }
 }
 
 pub fn validate_unique_name(name: &str) -> Result<(), ValidationError> {
-    match Author::find_by_name(name.to_string()).first() {
-        None => Ok(()),
-        Some(_) => Err(ValidationError::new("NAME_EXIST")),
+    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(name.to_string());
+    match author_result {
+        Ok(authors) => {
+            if authors.is_empty() {
+                Ok(())
+            } else {
+                Err(ValidationError::new("NAME_EXIST"))
+            }
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            Err(ValidationError::new("ERROR"))
+        }
     }
 }
 

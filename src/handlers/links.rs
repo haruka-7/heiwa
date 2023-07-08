@@ -7,12 +7,27 @@ use diesel::QueryResult;
 use serde_json::json;
 
 pub async fn get(Path(author_name): Path<String>) -> Response {
-    let author: Vec<Author> = Author::find_by_name(author_name);
-    if author.is_empty() {
-        StatusCode::NOT_FOUND.into_response()
-    } else {
-        let links: Vec<Link> = Link::find_by_author(author.first().unwrap());
-        Json(json!(links)).into_response()
+    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(author_name);
+    match author_result {
+        Ok(author) => {
+            if author.is_empty() {
+                StatusCode::NOT_FOUND.into_response()
+            } else {
+                let links_result: QueryResult<Vec<Link>> =
+                    Link::find_by_author(author.first().unwrap());
+                match links_result {
+                    Ok(links) => Json(json!(links)).into_response(),
+                    Err(e) => {
+                        tracing::error!("{}", e);
+                        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
     }
 }
 
@@ -27,12 +42,24 @@ pub async fn create(Json(payload): Json<NewLink>) -> Response {
     }
 }
 
+pub async fn update(Json(payload): Json<Link>) -> Response {
+    let update_result: QueryResult<usize> = Link::update(payload);
+    match update_result {
+        Ok(_) => StatusCode::OK.into_response(),
+        Err(e) => {
+            tracing::error!("{}", e);
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
+    }
+}
+
 pub async fn delete(Path(id): Path<i32>) -> Response {
-    let nb_deleted: usize = Link::delete(id);
-    if nb_deleted == 0 {
-        tracing::error!("Can not delete link with id {}", id);
-        StatusCode::INTERNAL_SERVER_ERROR.into_response()
-    } else {
-        StatusCode::OK.into_response()
+    let delete_result: QueryResult<usize> = Link::delete(id);
+    match delete_result {
+        Ok(_) => StatusCode::OK.into_response(),
+        Err(e) => {
+            tracing::error!("{}", e);
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
     }
 }
