@@ -48,12 +48,15 @@ pub async fn update(Json(payload): Json<UpdateAuthor>) -> Response {
             match update_result {
                 Ok(_) => StatusCode::OK.into_response(),
                 Err(e) => {
-                    tracing::error!("{}", e);
+                    //tracing::error!("{}", e);
+                    //println!("{}", e);
                     StatusCode::INTERNAL_SERVER_ERROR.into_response()
                 }
             }
         }
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!(e))).into_response(),
+        Err(e) => {
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(json!(e))).into_response()
+        },
     }
 }
 
