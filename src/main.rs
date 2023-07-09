@@ -20,12 +20,12 @@ async fn main() {
 fn routes() -> Router {
     Router::new()
         .route("/authors/create", post(handlers::authors::create))
-        .route("/authors/update/:id", patch(handlers::authors::update))
+        .route("/authors/update", patch(handlers::authors::update))
         .route("/authors/delete/:id", delete(handlers::authors::delete))
         .route("/authors/get/:name", get(handlers::authors::get))
         .route("/authors/login", post(handlers::authors::login))
         .route("/links/create", post(handlers::links::create))
-        .route("/links/update/:id", patch(handlers::links::update))
+        .route("/links/update", patch(handlers::links::update))
         .route("/links/delete/:id", delete(handlers::links::delete))
         .route("/links/get/:author_name", get(handlers::links::get))
 }
@@ -33,7 +33,7 @@ fn routes() -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entities::authors::{Author, LoginAuthor, NewAuthor};
+    use crate::entities::authors::{Author, LoginAuthor, NewAuthor, UpdateAuthor};
     use crate::entities::links::{Link, NewLink};
     use axum::body::Body;
     use axum::http;
@@ -51,13 +51,13 @@ mod tests {
             display_name: "Tomoko Aran".to_string(),
             password: "midnight".to_string(),
         };
-        let login_author: LoginAuthor = LoginAuthor {
+        let login_author_failed: LoginAuthor = LoginAuthor {
             name: "tomoko".to_string(),
             password: "midnight".to_string(),
         };
-        let login_author_failed: LoginAuthor = LoginAuthor {
+        let login_author: LoginAuthor = LoginAuthor {
             name: "tomoko".to_string(),
-            password: "pretenders".to_string(),
+            password: "pretendes".to_string(),
         };
         let new_link: NewLink = NewLink {
             url: "april.org".to_string(),
@@ -101,12 +101,34 @@ mod tests {
             .unwrap();
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
+        // Update author name and password
+        let update_author: UpdateAuthor = UpdateAuthor {
+            id: author.id,
+            name: "minako".to_string(),
+            email: author.email,
+            display_name: author.display_name,
+            password: Option::from("pretenders".to_string()),
+        };
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::PATCH)
+                    .uri("/authors/update")
+                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .body(Body::from(serde_json::to_vec(&json!(update_author)).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
         // Get author
         let response = app
             .clone()
             .oneshot(
                 Request::builder()
-                    .uri(format!("/authors/get/{}", author.name))
+                    .uri(format!("/authors/get/{}", update_author.name))
                     .body(Body::empty())
                     .unwrap(),
             )
