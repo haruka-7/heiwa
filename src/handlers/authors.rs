@@ -5,6 +5,7 @@ use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
+use heiwa_common::{handle_error, handler_validation_error};
 use serde_json::json;
 use validator::Validate;
 
@@ -18,10 +19,7 @@ pub async fn get(Path(name): Path<String>) -> Response {
                 Json(json!((author.first().unwrap()))).into_response()
             }
         }
-        Err(e) => {
-            tracing::error!("{}", e);
-            StatusCode::INTERNAL_SERVER_ERROR.into_response()
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -31,13 +29,10 @@ pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
             let author_result: QueryResult<Author> = Author::create(payload);
             match author_result {
                 Ok(author) => (StatusCode::CREATED, Json(json!(author))).into_response(),
-                Err(e) => {
-                    tracing::error!("{}", e);
-                    StatusCode::INTERNAL_SERVER_ERROR.into_response()
-                }
+                Err(e) => handle_error(e),
             }
         }
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!(e))).into_response(),
+        Err(e) => handler_validation_error(e),
     }
 }
 
@@ -47,13 +42,10 @@ pub async fn update(Json(payload): Json<UpdateAuthor>) -> Response {
             let update_result: QueryResult<usize> = Author::update(payload);
             match update_result {
                 Ok(_) => StatusCode::OK.into_response(),
-                Err(e) => {
-                    tracing::error!("{}", e);
-                    StatusCode::INTERNAL_SERVER_ERROR.into_response()
-                }
+                Err(e) => handle_error(e),
             }
         }
-        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!(e))).into_response(),
+        Err(e) => handler_validation_error(e),
     }
 }
 
@@ -73,10 +65,7 @@ pub async fn login(Json(payload): Json<LoginAuthor>) -> Response {
                 }
             }
         }
-        Err(e) => {
-            tracing::error!("{}", e);
-            StatusCode::INTERNAL_SERVER_ERROR.into_response()
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -84,9 +73,6 @@ pub async fn delete(Path(id): Path<i32>) -> Response {
     let delete_result: QueryResult<usize> = Author::delete(id);
     match delete_result {
         Ok(_) => StatusCode::OK.into_response(),
-        Err(e) => {
-            tracing::error!("{}", e);
-            StatusCode::INTERNAL_SERVER_ERROR.into_response()
-        }
+        Err(e) => handle_error(e),
     }
 }
