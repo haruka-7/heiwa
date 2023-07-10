@@ -52,16 +52,16 @@ mod tests {
             password: "midnight".to_string(),
         };
         let login_author_failed: LoginAuthor = LoginAuthor {
-            name: "tomoko".to_string(),
+            name: "minako".to_string(),
             password: "midnight".to_string(),
         };
         let login_author: LoginAuthor = LoginAuthor {
-            name: "tomoko".to_string(),
-            password: "pretendes".to_string(),
+            name: "minako".to_string(),
+            password: "pretenders".to_string(),
         };
         let new_link: NewLink = NewLink {
-            url: "april.org".to_string(),
-            title: "April".to_string(),
+            url: "https://pedro.tokyo".to_string(),
+            title: "Ayuni D;".to_string(),
             author_id: 1,
         };
 
@@ -104,9 +104,9 @@ mod tests {
         // Update author name and password
         let update_author: UpdateAuthor = UpdateAuthor {
             id: author.id,
-            name: "minako".to_string(),
-            email: author.email,
-            display_name: author.display_name,
+            name: Option::from("minako".to_string()),
+            email: None,
+            display_name: None,
             password: Option::from("pretenders".to_string()),
         };
         let response = app
@@ -116,7 +116,9 @@ mod tests {
                     .method(http::Method::PATCH)
                     .uri("/authors/update")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::from(serde_json::to_vec(&json!(update_author)).unwrap()))
+                    .body(Body::from(
+                        serde_json::to_vec(&json!(update_author)).unwrap(),
+                    ))
                     .unwrap(),
             )
             .await
@@ -128,7 +130,7 @@ mod tests {
             .clone()
             .oneshot(
                 Request::builder()
-                    .uri(format!("/authors/get/{}", update_author.name))
+                    .uri(format!("/authors/get/{}", update_author.name.unwrap()))
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -216,8 +218,30 @@ mod tests {
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
+        // Update link
+        let update_link: Link = Link {
+            id: link.id,
+            url: "htps://numbergirl.com".to_string(),
+            title: "Number Girl".to_string(),
+            author_id: link.author_id,
+        };
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method(http::Method::PATCH)
+                    .uri("/links/update")
+                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .body(Body::from(serde_json::to_vec(&json!(update_link)).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
         // Delete link
         let response = app
+            .clone()
             .oneshot(
                 Request::builder()
                     .method(http::Method::DELETE)

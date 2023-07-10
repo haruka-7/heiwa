@@ -20,26 +20,26 @@ pub struct Author {
     pub role: Option<String>,
 }
 
-#[derive(Debug, Validate, Insertable, Serialize, Deserialize)]
+#[derive(Debug, Insertable, Serialize, Deserialize, Validate)]
 #[diesel(table_name = authors)]
 pub struct NewAuthor {
     #[validate(custom = "validate_unique_name")]
     pub name: String,
-    #[validate(email)]
+    #[validate(email, custom = "validate_unique_email")]
     pub email: String,
     pub display_name: String,
     pub password: String,
 }
 
-#[derive(Debug, Queryable, Identifiable, Validate, AsChangeset, Serialize, Deserialize)]
+#[derive(Debug, Queryable, Identifiable, AsChangeset, Serialize, Deserialize, Validate)]
 #[diesel(table_name = authors)]
 pub struct UpdateAuthor {
     pub id: i32,
     #[validate(custom = "validate_unique_name")]
-    pub name: String,
-    #[validate(email)]
-    pub email: String,
-    pub display_name: String,
+    pub name: Option<String>,
+    #[validate(email, custom = "validate_unique_email")]
+    pub email: Option<String>,
+    pub display_name: Option<String>,
     pub password: Option<String>,
 }
 
@@ -65,6 +65,14 @@ impl Author {
             .load(&mut establish_connection())
     }
 
+    pub fn find_by_email(email_param: String) -> QueryResult<Vec<Author>> {
+        Author::table()
+            .filter(authors::email.eq(email_param))
+            .limit(1)
+            .select(Author::as_select())
+            .load(&mut establish_connection())
+    }
+
     pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
         new_author.password = hash_password(&new_author.password);
         insert_into(authors::table)
@@ -77,7 +85,7 @@ impl Author {
         if update_author.password.is_some() {
             update_author.password = Option::from(hash_password(&update_author.password.unwrap()));
         }
-        update(authors::table)
+        update(&update_author)
             .set(&update_author)
             .execute(&mut establish_connection())
     }
@@ -109,7 +117,24 @@ pub fn validate_unique_name(name: &str) -> Result<(), ValidationError> {
         }
         Err(e) => {
             tracing::error!("{}", e);
-            Err(ValidationError::new("ERROR"))
+            Err(ValidationError::new("VALIDATE_NAME_ERROR"))
+        }
+    }
+}
+
+pub fn validate_unique_email(email: &str) -> Result<(), ValidationError> {
+    let author_result: QueryResult<Vec<Author>> = Author::find_by_email(email.to_string());
+    match author_result {
+        Ok(authors) => {
+            if authors.is_empty() {
+                Ok(())
+            } else {
+                Err(ValidationError::new("EMAIL_EXIST"))
+            }
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            Err(ValidationError::new("VALIDATE_EMAIL_ERROR"))
         }
     }
 }

@@ -5,6 +5,7 @@ use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
 use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 #[derive(
     Debug,
@@ -16,18 +17,21 @@ use serde::{Deserialize, Serialize};
     PartialEq,
     Serialize,
     Deserialize,
+    Validate,
 )]
 #[diesel(belongs_to(Author))]
 pub struct Link {
     pub id: i32,
+    #[validate(url)]
     pub url: String,
     pub title: String,
     pub author_id: i32,
 }
 
-#[derive(Debug, Insertable, Serialize, Deserialize)]
+#[derive(Debug, Insertable, Serialize, Deserialize, Validate)]
 #[diesel(table_name = links)]
 pub struct NewLink {
+    #[validate(url)]
     pub url: String,
     pub title: String,
     pub author_id: i32,
@@ -48,7 +52,7 @@ impl Link {
     }
 
     pub fn update(update_link: Link) -> QueryResult<usize> {
-        update(links::table)
+        update(&update_link)
             .set(&update_link)
             .execute(&mut establish_connection())
     }
