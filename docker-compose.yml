@@ -7,10 +7,10 @@ services:
       - RUST_LOG=debug
       - SERVER_PORT=8000
       - SERVER_TIMEOUT=5
-      - DATABASE_URL=postgres://postgres:postgres@localhost:5432/heiwa
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/heiwa
     ports:
       - "8000:8000"
-    links:
+    depends_on:
       - postgres
   postgres:
     image: postgres

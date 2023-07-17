@@ -1,8 +1,6 @@
 image: "rust:latest"
 
 build:cargo:
-  variables:
-    DATABASE_URL: postgres://postgres:postgres@postgres:5432/heiwa
   script:
     - rustc --version && cargo --version
     - rustup component add rustfmt clippy
@@ -14,6 +12,7 @@ test:junit-report:
     - postgres:latest
    variables:
      POSTGRES_PASSWORD: postgres
+     DATABASE_URL: postgres://postgres:postgres@postgres:5432/heiwa
    script:
      - sudo apt-get update && sudo apt-get -y install libpq-dev
      - rustup install nightly && rustup default nightly

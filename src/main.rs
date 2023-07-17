@@ -54,7 +54,7 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 }
 
 fn routes_front() -> Router {
-    Router::new().route("/", post(handlers::home::show))
+    Router::new().route("/", get(handlers::home::show))
 }
 
 fn routes_api() -> Router {
