@@ -5,6 +5,7 @@ use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
 use validator::Validate;
+use crate::entities::tags::Tag;
 use crate::handlers::api::errors::handle_error;
 
 pub async fn get(Path(permalink): Path<String>) -> Response {
@@ -23,14 +24,22 @@ pub async fn get(Path(permalink): Path<String>) -> Response {
     }
 }
 
-pub async fn tag(Path(tag_id): Path<i32>) -> Response {
-    let articles_result: QueryResult<Vec<Article>> = Article::find_by_tag(tag_id);
-    match articles_result {
-        Ok(articles) => {
-            if articles.is_empty() {
-                StatusCode::NOT_FOUND.into_response()
-            } else {
-                Json(json!((articles.first().unwrap()))).into_response()
+pub async fn tag(Path(tag_permalink): Path<String>) -> Response {
+    let tag_result: QueryResult<Vec<Tag>> = Tag::find_tag_by_permalink(tag_permalink);
+    match tag_result {
+        Ok(tag) => {
+            let articles_result: QueryResult<Vec<Article>> = Article::find_by_tag(tag.first().unwrap());
+            match articles_result {
+                Ok(articles) => {
+                    if articles.is_empty() {
+                        StatusCode::NOT_FOUND.into_response()
+                    } else {
+                        Json(json!((articles.first().unwrap()))).into_response()
+                    }
+                }
+                Err(e) => {
+                    handle_error(e)
+                }
             }
         }
         Err(e) => {

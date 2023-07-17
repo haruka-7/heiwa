@@ -4,6 +4,8 @@ use diesel::prelude::*;
 use diesel::{delete, insert_into};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
+use crate::entities::articles::Article;
+use crate::entities::articles_tags::ArticleTag;
 use crate::services::database::establish_connection;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
@@ -33,10 +35,9 @@ impl Tag {
             .load(&mut establish_connection())
     }
 
-    pub fn find_tags_by_article(article_id: i32) -> QueryResult<Vec<Tag>> {
-        tags::table
-            .inner_join(articles_tags::table)
-            .filter(articles::id.eq(article_id))
+    pub fn find_tags_by_article(article: &Article) -> QueryResult<Vec<Tag>> {
+        ArticleTag::belonging_to(&article)
+            .inner_join(tags::table)
             .select(Tag::as_select())
             .load(&mut establish_connection())
     }

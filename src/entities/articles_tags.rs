@@ -8,7 +8,7 @@ use serde::Serialize;
 use crate::services::database::establish_connection;
 
 #[derive(
-    Debug, Queryable, Insertable, Selectable, Identifiable, Associations, PartialEq, Serialize,
+Debug, Queryable, Insertable, Selectable, Identifiable, Associations, PartialEq, Serialize,
 )]
 #[diesel(belongs_to(Article))]
 #[diesel(belongs_to(Tag))]

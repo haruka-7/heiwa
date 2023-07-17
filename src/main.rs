@@ -15,7 +15,10 @@ mod services;
 
 #[tokio::main]
 async fn main() {
-    let (app, addr) = init_server(routes_api());
+    let routes: Router = Router::new()
+        .merge(routes_front())
+        .merge(routes_api());
+    let (app, addr) = init_server(routes);
 
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
@@ -50,6 +53,11 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], server_port));
     (app, addr)
+}
+
+fn routes_front() -> Router {
+    Router::new()
+        .route("/", post(handlers::home::show))
 }
 
 fn routes_api() -> Router {

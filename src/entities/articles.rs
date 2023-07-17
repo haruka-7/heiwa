@@ -5,6 +5,8 @@ use diesel::{delete, insert_into};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use validator::{Validate, ValidationError};
+use crate::entities::articles_tags::ArticleTag;
+use crate::entities::tags::Tag;
 use crate::services::database::establish_connection;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
@@ -50,10 +52,9 @@ impl Article {
             .load(&mut establish_connection())
     }
 
-    pub fn find_by_tag(tag_id: i32) -> QueryResult<Vec<Article>> {
-        articles::table
-            .inner_join(articles_tags::table)
-            .filter(tags::id.eq(tag_id))
+    pub fn find_by_tag(tag: &Tag) -> QueryResult<Vec<Article>> {
+        ArticleTag::belonging_to(&tag)
+            .inner_join(articles::table)
             .select(Article::as_select())
             .load(&mut establish_connection())
     }

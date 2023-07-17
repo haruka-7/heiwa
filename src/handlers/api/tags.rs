@@ -15,7 +15,7 @@ pub async fn get(Path(article_permalink): Path<String>) -> Response {
             if article.is_empty() {
                 StatusCode::NOT_FOUND.into_response()
             } else {
-                let tags_result: QueryResult<Vec<Tag>> = Tag::find_tags_by_article(article.first().unwrap().id);
+                let tags_result: QueryResult<Vec<Tag>> = Tag::find_tags_by_article(article.first().unwrap());
                 match tags_result {
                     Ok(tags) => {
                         Json(json!(tags)).into_response()
@@ -77,28 +77,7 @@ pub async fn delete(Path(article_id): Path<i32>, Path(tag_id): Path<i32>) -> Res
                 );
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             } else {
-                // Remove Tag if any article used it
-                let articles_result: QueryResult<Vec<Article>> = Article::find_by_tag(tag_id);
-                match articles_result {
-                    Ok(articles) => {
-                        if articles.is_empty() {
-                            let delete_result: QueryResult<usize> = Tag::delete(tag_id);
-                            match delete_result {
-                                Ok(_) => {
-                                    StatusCode::OK.into_response()
-                                }
-                                Err(e) => {
-                                    handle_error(e)
-                                }
-                            }
-                        } else {
-                            StatusCode::OK.into_response()
-                        }
-                    }
-                    Err(e) => {
-                        handle_error(e)
-                    }
-                }
+                StatusCode::OK.into_response()
             }
         }
         Err(e) => {
