@@ -6,7 +6,7 @@ use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
-use crate::handlers::errors::handle_error;
+use crate::handlers::api::errors::handle_error;
 
 pub async fn get(Path(article_permalink): Path<String>) -> Response {
     let article_result: QueryResult<Vec<Article>> = Article::find_by_permalink(article_permalink);

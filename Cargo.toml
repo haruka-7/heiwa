@@ -1,5 +1,5 @@
 [package]
-name = "heiwa-authors"
+name = "heiwa"
 license = "GPL-3.0-or-later"
 repository = "https://git.sr.ht/~hidrile/heiwa-authors"
 version = "0.1.0"

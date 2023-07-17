@@ -5,7 +5,7 @@ use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
 use validator::Validate;
-use crate::handlers::errors::handle_error;
+use crate::handlers::api::errors::handle_error;
 
 pub async fn get(Path(permalink): Path<String>) -> Response {
     let article_result: QueryResult<Vec<Article>> = Article::find_by_permalink(permalink);

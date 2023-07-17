@@ -7,7 +7,7 @@ use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
 use validator::Validate;
-use crate::handlers::errors::{handle_error, handler_validation_error};
+use crate::handlers::api::errors::{handle_error, handler_validation_error};
 
 pub async fn get(Path(name): Path<String>) -> Response {
     let author_result: QueryResult<Vec<Author>> = Author::find_by_name(name);

@@ -464,7 +464,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "heiwa-authors"
+name = "heiwa"
 version = "0.1.0"
 dependencies = [
  "argon2",
