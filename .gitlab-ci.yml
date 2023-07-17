@@ -1,0 +1,25 @@
+image: "rust:latest"
+
+services:
+   - postgres:latest
+
+test:cargo:
+  script:
+    - rustc --version && cargo --version  # Print version info for debugging
+    - cargo fmt -- --check
+    - cargo clippy -- -D warnings
+    - cargo test --workspace --verbose
+
+test:junit-report:
+   script:
+     - cargo install junitify
+     - cargo test -- --format=json -Z unstable-options --report-time | junitify --out $CI_PROJECT_DIR/tests/
+   artifacts:
+     when: always
+     reports:
+       junit: $CI_PROJECT_DIR/tests/*.xml
+
+#deploy:
+#  stage: deploy
+#  script: echo "Define your deployment script!"
+#  environment: production
