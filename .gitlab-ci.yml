@@ -3,6 +3,10 @@ image: "rust:latest"
 services:
    - postgres:latest
 
+variables:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+
 test:cargo:
   script:
     - rustc --version && cargo --version
