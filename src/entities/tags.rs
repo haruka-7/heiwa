@@ -1,12 +1,12 @@
+use crate::entities::articles::Article;
+use crate::entities::articles_tags::ArticleTag;
 use crate::schema::*;
+use crate::services::database::establish_connection;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
-use crate::entities::articles::Article;
-use crate::entities::articles_tags::ArticleTag;
-use crate::services::database::establish_connection;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
 #[diesel(table_name = tags)]
@@ -50,8 +50,7 @@ impl Tag {
     }
 
     pub fn delete(id: i32) -> QueryResult<usize> {
-        delete(Tag::table().find(id))
-            .execute(&mut establish_connection())
+        delete(Tag::table().find(id)).execute(&mut establish_connection())
     }
 }
 

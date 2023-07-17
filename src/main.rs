@@ -1,9 +1,9 @@
-use std::{env, net::SocketAddr};
-use std::time::Duration;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, patch, post};
 use axum::Router;
 use dotenvy::dotenv;
+use std::time::Duration;
+use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
 use tower_http::trace::TraceLayer;
@@ -15,9 +15,7 @@ mod services;
 
 #[tokio::main]
 async fn main() {
-    let routes: Router = Router::new()
-        .merge(routes_front())
-        .merge(routes_api());
+    let routes: Router = Router::new().merge(routes_front()).merge(routes_api());
     let (app, addr) = init_server(routes);
 
     tracing::info!("Listening on {}", addr);
@@ -56,36 +54,62 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 }
 
 fn routes_front() -> Router {
-    Router::new()
-        .route("/", post(handlers::home::show))
+    Router::new().route("/", post(handlers::home::show))
 }
 
 fn routes_api() -> Router {
     Router::new()
         .route("/api/authors/create", post(handlers::api::authors::create))
         .route("/api/authors/update", patch(handlers::api::authors::update))
-        .route("/api/authors/delete/:id", delete(handlers::api::authors::delete))
+        .route(
+            "/api/authors/delete/:id",
+            delete(handlers::api::authors::delete),
+        )
         .route("/api/authors/get/:name", get(handlers::api::authors::get))
         .route("/api/authors/login", post(handlers::api::authors::login))
         .route("/api/links/create", post(handlers::api::links::create))
         .route("/api/links/update", patch(handlers::api::links::update))
-        .route("/api/links/delete/:id", delete(handlers::api::links::delete))
-        .route("/api/links/get/:author_name", get(handlers::api::links::get))
-        .route("/api/articles/create", post(handlers::api::articles::create))
+        .route(
+            "/api/links/delete/:id",
+            delete(handlers::api::links::delete),
+        )
+        .route(
+            "/api/links/get/:author_name",
+            get(handlers::api::links::get),
+        )
+        .route(
+            "/api/articles/create",
+            post(handlers::api::articles::create),
+        )
         // TODO add search and update articles route
-        .route("/api/articles/delete/:id", delete(handlers::api::articles::delete))
-        .route("/api/articles/get/:permalink", get(handlers::api::articles::get))
-        .route("/api/articles/tag/:tag_id", get(handlers::api::articles::tag))
+        .route(
+            "/api/articles/delete/:id",
+            delete(handlers::api::articles::delete),
+        )
+        .route(
+            "/api/articles/get/:permalink",
+            get(handlers::api::articles::get),
+        )
+        .route(
+            "/api/articles/tag/:tag_id",
+            get(handlers::api::articles::tag),
+        )
         .route(
             "/api/articles/author/:author_id",
             get(handlers::api::articles::author),
         )
-        .route("/api/tags/create/:article_id", post(handlers::api::tags::create))
+        .route(
+            "/api/tags/create/:article_id",
+            post(handlers::api::tags::create),
+        )
         .route(
             "/api/tags/delete/:article_id/:tag_id",
             delete(handlers::api::tags::delete),
         )
-        .route("/api/tags/get/:article_permalink", get(handlers::api::tags::get))
+        .route(
+            "/api/tags/get/:article_permalink",
+            get(handlers::api::tags::get),
+        )
 }
 
 #[cfg(test)]

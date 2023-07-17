@@ -1,12 +1,12 @@
 use crate::entities::articles::{Article, NewArticle};
+use crate::entities::tags::Tag;
+use crate::handlers::api::errors::handle_error;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
 use validator::Validate;
-use crate::entities::tags::Tag;
-use crate::handlers::api::errors::handle_error;
 
 pub async fn get(Path(permalink): Path<String>) -> Response {
     let article_result: QueryResult<Vec<Article>> = Article::find_by_permalink(permalink);
@@ -18,9 +18,7 @@ pub async fn get(Path(permalink): Path<String>) -> Response {
                 Json(json!((article.first().unwrap()))).into_response()
             }
         }
-        Err(e) => {
-            handle_error(e)
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -28,7 +26,8 @@ pub async fn tag(Path(tag_permalink): Path<String>) -> Response {
     let tag_result: QueryResult<Vec<Tag>> = Tag::find_tag_by_permalink(tag_permalink);
     match tag_result {
         Ok(tag) => {
-            let articles_result: QueryResult<Vec<Article>> = Article::find_by_tag(tag.first().unwrap());
+            let articles_result: QueryResult<Vec<Article>> =
+                Article::find_by_tag(tag.first().unwrap());
             match articles_result {
                 Ok(articles) => {
                     if articles.is_empty() {
@@ -37,14 +36,10 @@ pub async fn tag(Path(tag_permalink): Path<String>) -> Response {
                         Json(json!((articles.first().unwrap()))).into_response()
                     }
                 }
-                Err(e) => {
-                    handle_error(e)
-                }
+                Err(e) => handle_error(e),
             }
         }
-        Err(e) => {
-            handle_error(e)
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -58,9 +53,7 @@ pub async fn author(Path(author_id): Path<i32>) -> Response {
                 Json(json!((articles.first().unwrap()))).into_response()
             }
         }
-        Err(e) => {
-            handle_error(e)
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -70,9 +63,7 @@ pub async fn create(Json(payload): Json<NewArticle>) -> Response {
             let article: QueryResult<Article> = Article::create(payload);
             match article {
                 Ok(_) => StatusCode::CREATED.into_response(),
-                Err(e) => {
-                    handle_error(e)
-                }
+                Err(e) => handle_error(e),
             }
         }
         Err(e) => Json(json!(e)).into_response(),
@@ -82,11 +73,7 @@ pub async fn create(Json(payload): Json<NewArticle>) -> Response {
 pub async fn delete(Path(id): Path<i32>) -> Response {
     let delete_result: QueryResult<usize> = Article::delete(id);
     match delete_result {
-        Ok(_) => {
-            StatusCode::OK.into_response()
-        }
-        Err(e) => {
-            handle_error(e)
-        }
+        Ok(_) => StatusCode::OK.into_response(),
+        Err(e) => handle_error(e),
     }
 }

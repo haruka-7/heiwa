@@ -1,11 +1,11 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
+use crate::handlers::api::errors::handle_error;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
-use crate::handlers::api::errors::handle_error;
 
 pub async fn get(Path(author_name): Path<String>) -> Response {
     let author_result: QueryResult<Vec<Author>> = Author::find_by_name(author_name);

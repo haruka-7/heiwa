@@ -1,13 +1,13 @@
+use crate::entities::articles_tags::ArticleTag;
+use crate::entities::tags::Tag;
 use crate::schema::*;
+use crate::services::database::establish_connection;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use validator::{Validate, ValidationError};
-use crate::entities::articles_tags::ArticleTag;
-use crate::entities::tags::Tag;
-use crate::services::database::establish_connection;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
 #[diesel(table_name = articles)]
@@ -67,8 +67,7 @@ impl Article {
     }
 
     pub fn delete(id: i32) -> QueryResult<usize> {
-        delete(Article::table().find(id))
-            .execute(&mut establish_connection())
+        delete(Article::table().find(id)).execute(&mut establish_connection())
     }
 }
 

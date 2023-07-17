@@ -1,12 +1,12 @@
 use crate::entities::articles::Article;
 use crate::entities::articles_tags::ArticleTag;
 use crate::entities::tags::{NewTag, Tag};
+use crate::handlers::api::errors::handle_error;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
-use crate::handlers::api::errors::handle_error;
 
 pub async fn get(Path(article_permalink): Path<String>) -> Response {
     let article_result: QueryResult<Vec<Article>> = Article::find_by_permalink(article_permalink);
@@ -15,20 +15,15 @@ pub async fn get(Path(article_permalink): Path<String>) -> Response {
             if article.is_empty() {
                 StatusCode::NOT_FOUND.into_response()
             } else {
-                let tags_result: QueryResult<Vec<Tag>> = Tag::find_tags_by_article(article.first().unwrap());
+                let tags_result: QueryResult<Vec<Tag>> =
+                    Tag::find_tags_by_article(article.first().unwrap());
                 match tags_result {
-                    Ok(tags) => {
-                        Json(json!(tags)).into_response()
-                    }
-                    Err(e) => {
-                        handle_error(e)
-                    }
+                    Ok(tags) => Json(json!(tags)).into_response(),
+                    Err(e) => handle_error(e),
                 }
             }
         }
-        Err(e) => {
-            handle_error(e)
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -42,9 +37,7 @@ pub async fn create(Path(article_id): Path<i32>, Json(payload): Json<NewTag>) ->
             };
             let article_tag_result: QueryResult<ArticleTag> = ArticleTag::create(article_tag);
             match article_tag_result {
-                Ok(_) => {
-                    StatusCode::CREATED.into_response()
-                }
+                Ok(_) => StatusCode::CREATED.into_response(),
                 Err(e) => {
                     tracing::error!("Can not insert article-tag relation with error {}", e);
                     // Rollback Tag insertion if ArticleTag can not be inserted
@@ -59,9 +52,7 @@ pub async fn create(Path(article_id): Path<i32>, Json(payload): Json<NewTag>) ->
                 }
             }
         }
-        Err(e) => {
-            handle_error(e)
-        }
+        Err(e) => handle_error(e),
     }
 }
 
@@ -80,8 +71,6 @@ pub async fn delete(Path(article_id): Path<i32>, Path(tag_id): Path<i32>) -> Res
                 StatusCode::OK.into_response()
             }
         }
-        Err(e) => {
-            handle_error(e)
-        }
+        Err(e) => handle_error(e),
     }
 }

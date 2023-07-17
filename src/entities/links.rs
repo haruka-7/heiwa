@@ -1,11 +1,11 @@
 use crate::entities::authors::Author;
 use crate::schema::*;
+use crate::services::database::establish_connection;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-use crate::services::database::establish_connection;
 
 #[derive(
     Debug,
