@@ -147,7 +147,8 @@ mod tests {
             author_id: 1,
         };
 
-        let app = init_server(routes()).0;
+        let routes: Router = Router::new().merge(routes_front()).merge(routes_api());
+        let app = init_server(routes).0;
 
         // Create author
         let response = app
