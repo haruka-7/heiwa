@@ -1,23 +1,21 @@
 image: "rust:latest"
 
-services:
-   - postgres:latest
-
-variables:
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: postgres
-  POSTGRES_HOST_AUTH_METHOD: trust
-
-test:cargo:
+build:cargo:
   script:
     - rustc --version && cargo --version
     - rustup component add rustfmt clippy
     - cargo fmt -- --check
     - cargo clippy -- -D warnings
-    - cargo test
 
 test:junit-report:
+   services:
+    - postgres:latest
+   variables:
+     POSTGRES_PASSWORD: postgres
    script:
+     - sudo apt-get update && sudo apt-get -y install libpq-dev
+     - cargo install diesel_cli --no-default-features --features postgres
+     - diesel setup
      - cargo install junitify
      - cargo test -- --format=json -Z unstable-options --report-time | junitify --out $CI_PROJECT_DIR/tests/
    artifacts:
