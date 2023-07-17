@@ -6,7 +6,7 @@ services:
 test:cargo:
   script:
     - rustc --version && cargo --version
-    - rustup component add rustfmt
+    - rustup component add rustfmt clippy
     - cargo fmt -- --check
     - cargo clippy -- -D warnings
     - cargo test --workspace --verbose
