@@ -13,7 +13,7 @@ test:cargo:
     - rustup component add rustfmt clippy
     - cargo fmt -- --check
     - cargo clippy -- -D warnings
-    - cargo test --workspace --verbose
+    - cargo test
 
 test:junit-report:
    script:
