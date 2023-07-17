@@ -5,9 +5,9 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
-use heiwa_common::utils::establish_connection;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
+use crate::services::database::establish_connection;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

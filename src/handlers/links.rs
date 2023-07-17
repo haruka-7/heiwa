@@ -4,8 +4,8 @@ use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
-use heiwa_common::handle_error;
 use serde_json::json;
+use crate::handlers::errors::handle_error;
 
 pub async fn get(Path(author_name): Path<String>) -> Response {
     let author_result: QueryResult<Vec<Author>> = Author::find_by_name(author_name);

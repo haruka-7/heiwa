@@ -471,29 +471,10 @@ dependencies = [
  "axum",
  "diesel",
  "dotenvy",
- "heiwa-common",
  "hyper",
  "mime",
  "pretty_assertions",
  "serde",
- "serde_json",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "validator",
-]
-
-[[package]]
-name = "heiwa-common"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b32db40bdc6d3dd8f4b9d7f3986a93ecc2fe1043145d532abe826b2370ce8f25"
-dependencies = [
- "axum",
- "diesel",
- "dotenvy",
  "serde_json",
  "tokio",
  "tower",

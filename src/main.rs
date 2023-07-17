@@ -1,10 +1,17 @@
+use std::{env, net::SocketAddr};
+use std::time::Duration;
+use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, patch, post};
 use axum::Router;
-use heiwa_common::init_server;
+use dotenvy::dotenv;
+use tower::ServiceBuilder;
+use tower_http::compression::CompressionLayer;
+use tower_http::trace::TraceLayer;
 
 mod entities;
 mod handlers;
 mod schema;
+mod services;
 
 #[tokio::main]
 async fn main() {
@@ -15,6 +22,34 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+fn init_server(routes: Router) -> (Router, SocketAddr) {
+    dotenv().ok();
+    tracing_subscriber::fmt::init();
+
+    let server_timeout: u64 = env::var("SERVER_TIMEOUT")
+        .unwrap_or("5".to_string())
+        .parse::<i64>()
+        .expect("SERVER_PORT environment variable should be parsed correctly")
+        as u64;
+
+    let middleware_stack = ServiceBuilder::new()
+        .layer(TraceLayer::new_for_http())
+        .layer(CompressionLayer::new())
+        .layer(HandleErrorLayer::new(handlers::errors::error))
+        .timeout(Duration::from_secs(server_timeout));
+
+    let app = Router::new().merge(routes).layer(middleware_stack);
+
+    let server_port: u16 = env::var("SERVER_PORT")
+        .unwrap_or("3000".to_string())
+        .parse::<i16>()
+        .expect("SERVER_PORT environment variable should be parsed correctly")
+        as u16;
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], server_port));
+    (app, addr)
 }
 
 fn routes() -> Router {
@@ -28,6 +63,21 @@ fn routes() -> Router {
         .route("/links/update", patch(handlers::links::update))
         .route("/links/delete/:id", delete(handlers::links::delete))
         .route("/links/get/:author_name", get(handlers::links::get))
+        .route("/articles/create", post(handlers::articles::create))
+        // TODO add search and update articles route
+        .route("/articles/delete/:id", delete(handlers::articles::delete))
+        .route("/articles/get/:permalink", get(handlers::articles::get))
+        .route("/articles/tag/:tag_id", get(handlers::articles::tag))
+        .route(
+            "/articles/author/:author_id",
+            get(handlers::articles::author),
+        )
+        .route("/tags/create/:article_id", post(handlers::tags::create))
+        .route(
+            "/tags/delete/:article_id/:tag_id",
+            delete(handlers::tags::delete),
+        )
+        .route("/tags/get/:article_permalink", get(handlers::tags::get))
 }
 
 #[cfg(test)]
