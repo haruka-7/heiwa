@@ -1,6 +1,8 @@
 image: "rust:latest"
 
 build:cargo:
+  variables:
+    DATABASE_URL: postgres://postgres:postgres@postgres:5432/heiwa
   script:
     - rustc --version && cargo --version
     - rustup component add rustfmt clippy

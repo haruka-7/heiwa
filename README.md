@@ -25,4 +25,11 @@ TODO
 
 TODO
 
+## Development
+
+sudo apt install libpq-dev
+cargo install diesel_cli --no-default-features --features postgres
+diesel setup
+cargo build
+
 
