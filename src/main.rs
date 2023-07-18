@@ -15,7 +15,8 @@ mod services;
 
 #[tokio::main]
 async fn main() {
-    let (app, addr) = init_server(routes_api());
+    let routes: Router = Router::new().merge(routes_front()).merge(routes_api());
+    let (app, addr) = init_server(routes);
 
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
@@ -37,7 +38,7 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
-        .layer(HandleErrorLayer::new(handlers::errors::error))
+        .layer(HandleErrorLayer::new(handlers::api::errors::error))
         .timeout(Duration::from_secs(server_timeout));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
@@ -52,32 +53,63 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     (app, addr)
 }
 
+fn routes_front() -> Router {
+    Router::new().route("/", get(handlers::home::show))
+}
+
 fn routes_api() -> Router {
     Router::new()
-        .route("/authors/create", post(handlers::authors::create))
-        .route("/authors/update", patch(handlers::authors::update))
-        .route("/authors/delete/:id", delete(handlers::authors::delete))
-        .route("/authors/get/:name", get(handlers::authors::get))
-        .route("/authors/login", post(handlers::authors::login))
-        .route("/links/create", post(handlers::links::create))
-        .route("/links/update", patch(handlers::links::update))
-        .route("/links/delete/:id", delete(handlers::links::delete))
-        .route("/links/get/:author_name", get(handlers::links::get))
-        .route("/articles/create", post(handlers::articles::create))
+        .route("/api/authors/create", post(handlers::api::authors::create))
+        .route("/api/authors/update", patch(handlers::api::authors::update))
+        .route(
+            "/api/authors/delete/:id",
+            delete(handlers::api::authors::delete),
+        )
+        .route("/api/authors/get/:name", get(handlers::api::authors::get))
+        .route("/api/authors/login", post(handlers::api::authors::login))
+        .route("/api/links/create", post(handlers::api::links::create))
+        .route("/api/links/update", patch(handlers::api::links::update))
+        .route(
+            "/api/links/delete/:id",
+            delete(handlers::api::links::delete),
+        )
+        .route(
+            "/api/links/get/:author_name",
+            get(handlers::api::links::get),
+        )
+        .route(
+            "/api/articles/create",
+            post(handlers::api::articles::create),
+        )
         // TODO add search and update articles route
-        .route("/articles/delete/:id", delete(handlers::articles::delete))
-        .route("/articles/get/:permalink", get(handlers::articles::get))
-        .route("/articles/tag/:tag_id", get(handlers::articles::tag))
         .route(
-            "/articles/author/:author_id",
-            get(handlers::articles::author),
+            "/api/articles/delete/:id",
+            delete(handlers::api::articles::delete),
         )
-        .route("/tags/create/:article_id", post(handlers::tags::create))
         .route(
-            "/tags/delete/:article_id/:tag_id",
-            delete(handlers::tags::delete),
+            "/api/articles/get/:permalink",
+            get(handlers::api::articles::get),
         )
-        .route("/tags/get/:article_permalink", get(handlers::tags::get))
+        .route(
+            "/api/articles/tag/:tag_id",
+            get(handlers::api::articles::tag),
+        )
+        .route(
+            "/api/articles/author/:author_id",
+            get(handlers::api::articles::author),
+        )
+        .route(
+            "/api/tags/create/:article_id",
+            post(handlers::api::tags::create),
+        )
+        .route(
+            "/api/tags/delete/:article_id/:tag_id",
+            delete(handlers::api::tags::delete),
+        )
+        .route(
+            "/api/tags/get/:article_permalink",
+            get(handlers::api::tags::get),
+        )
 }
 
 #[cfg(test)]
@@ -124,7 +156,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
-                    .uri("/authors/create")
+                    .uri("/api/authors/create")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(serde_json::to_vec(&json!(new_author)).unwrap()))
                     .unwrap(),
@@ -143,7 +175,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
-                    .uri("/authors/create")
+                    .uri("/api/authors/create")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(serde_json::to_vec(&json!(new_author)).unwrap()))
                     .unwrap(),
@@ -165,7 +197,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::PATCH)
-                    .uri("/authors/update")
+                    .uri("/api/authors/update")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(
                         serde_json::to_vec(&json!(update_author)).unwrap(),
@@ -181,7 +213,7 @@ mod tests {
             .clone()
             .oneshot(
                 Request::builder()
-                    .uri(format!("/authors/get/{}", update_author.name.unwrap()))
+                    .uri(format!("/api/authors/get/{}", update_author.name.unwrap()))
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -195,7 +227,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
-                    .uri("/authors/login")
+                    .uri("/api/authors/login")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(
                         serde_json::to_vec(&json!(login_author)).unwrap(),
@@ -212,7 +244,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
-                    .uri("/authors/login")
+                    .uri("/api/authors/login")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(
                         serde_json::to_vec(&json!(login_author_failed)).unwrap(),
@@ -229,7 +261,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::DELETE)
-                    .uri(format!("/authors/delete/{}", author.id))
+                    .uri(format!("/api/authors/delete/{}", author.id))
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -243,7 +275,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::POST)
-                    .uri("/links/create")
+                    .uri("/api/links/create")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(serde_json::to_vec(&json!(new_link)).unwrap()))
                     .unwrap(),
@@ -261,7 +293,7 @@ mod tests {
             .clone()
             .oneshot(
                 Request::builder()
-                    .uri(format!("/links/get/{}", "admin"))
+                    .uri(format!("/api/links/get/{}", "admin"))
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -281,7 +313,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::PATCH)
-                    .uri("/links/update")
+                    .uri("/api/links/update")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
                     .body(Body::from(serde_json::to_vec(&json!(update_link)).unwrap()))
                     .unwrap(),
@@ -296,7 +328,7 @@ mod tests {
             .oneshot(
                 Request::builder()
                     .method(http::Method::DELETE)
-                    .uri(format!("/links/delete/{}", link.id))
+                    .uri(format!("/api/links/delete/{}", link.id))
                     .body(Body::empty())
                     .unwrap(),
             )
