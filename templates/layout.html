@@ -5,10 +5,30 @@
     {% block head %}{% endblock %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/statics/dist/styles.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/statics/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/statics/favicon.ico" type="image/x-icon">
+    <link href="/statics/pico.min.css" rel="stylesheet">
+    <link href="/statics/styles.css" rel="stylesheet">
 </head>
 <body>
-<div id="content">
-    {% block content %}<p>Placeholder content</p>{% endblock %}
-</div>
+<main class="container">
+    <header></header>
+    <nav>
+        <ul>
+            <li><strong>Brand</strong></li>
+        </ul>
+        <ul>
+            <li><a href="#">Link</a></li>
+            <li><a href="#">Link</a></li>
+        </ul>
+    </nav>
+    <section>
+        {% block content %}<p>Placeholder content</p>{% endblock %}
+    </section>
+    <footer>
+        <div class="grid">
+            <div><small>Made with &hearts; by Hidrile</small></div>
+        </div>
+    </footer>
+</main>
 </body>
