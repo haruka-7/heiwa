@@ -4,7 +4,7 @@ COPY . .
 RUN cargo install --path .
 
 FROM debian:bullseye-slim
-EXPOSE 8000/tcp
+EXPOSE 8000
 RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
 RUN cargo install diesel_cli --no-default-features --features postgres && diesel setup
 COPY --from=builder /usr/src/heiwa/migrations /usr/src/heiwa/
