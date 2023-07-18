@@ -1,9 +1,9 @@
-# Heiwa - Authors Microservice
+# Heiwa
 By Pedro CADETE aka Hidrile
 
 https://getheiwa.org
 
-[![Rust](https://github.com/hidrile/heiwa-authors/actions/workflows/rust.yml/badge.svg)](https://github.com/hidrile/heiwa-authors/actions/workflows/rust.yml)
+![pipeline badge](https://framagit.org/heiwa/heiwa/badges/main/pipeline.svg)
 
 ## Description
 
