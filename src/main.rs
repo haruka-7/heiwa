@@ -12,6 +12,7 @@ mod entities;
 mod handlers;
 mod schema;
 mod services;
+mod templates;
 
 #[tokio::main]
 async fn main() {
