@@ -11,24 +11,23 @@
     <link href="/statics/styles.css" rel="stylesheet">
 </head>
 <body>
+<nav class="container-fluid">
+    <ul>
+        <li><a href="#" class="contrast"><strong>Brand</strong></a></li>
+    </ul>
+    <ul>
+        <li><a href="#">Link</a></li>
+        <li><a href="#">Link</a></li>
+    </ul>
+</nav>
 <main class="container">
-    <header></header>
-    <nav>
-        <ul>
-            <li><strong>Brand</strong></li>
-        </ul>
-        <ul>
-            <li><a href="#">Link</a></li>
-            <li><a href="#">Link</a></li>
-        </ul>
-    </nav>
     <section>
         {% block content %}<p>Placeholder content</p>{% endblock %}
     </section>
-    <footer>
-        <div class="grid">
-            <div><small>Made with &hearts; by Hidrile</small></div>
-        </div>
-    </footer>
 </main>
+<footer class="container-fluid">
+    <div class="grid">
+        <div><small>Made with &hearts; by Hidrile</small></div>
+    </div>
+</footer>
 </body>
