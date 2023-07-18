@@ -1,7 +1,7 @@
 use crate::entities::authors::{
     verify_password, Author, LoginAuthor, LoginAuthorPassword, NewAuthor, UpdateAuthor,
 };
-use crate::handlers::errors::{handle_error, handler_validation_error};
+use crate::handlers::api::errors::{handle_error, handler_validation_error};
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
