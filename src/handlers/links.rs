@@ -1,6 +1,6 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
-use crate::handlers::api::errors::handle_error;
+use crate::handlers::errors::handle_error;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};

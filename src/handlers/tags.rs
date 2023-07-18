@@ -1,7 +1,7 @@
 use crate::entities::articles::Article;
 use crate::entities::articles_tags::ArticleTag;
 use crate::entities::tags::{NewTag, Tag};
-use crate::handlers::api::errors::handle_error;
+use crate::handlers::errors::handle_error;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
