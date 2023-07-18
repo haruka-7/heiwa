@@ -1,11 +1,12 @@
 use axum::error_handling::HandleErrorLayer;
-use axum::routing::{delete, get, patch, post};
+use axum::routing::{delete, get, get_service, patch, post};
 use axum::Router;
 use dotenvy::dotenv;
 use std::time::Duration;
 use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
+use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
 mod entities;
@@ -16,7 +17,11 @@ mod templates;
 
 #[tokio::main]
 async fn main() {
-    let routes: Router = Router::new().merge(routes_front()).merge(routes_api());
+    let routes: Router = Router::new()
+        .merge(routes_front())
+        .merge(routes_api())
+        .fallback_service(routes_statics());
+
     let (app, addr) = init_server(routes);
 
     tracing::info!("Listening on {}", addr);
@@ -56,6 +61,13 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
 fn routes_front() -> Router {
     Router::new().route("/", get(handlers::home::show))
+}
+
+fn routes_statics() -> Router {
+    Router::new().nest_service(
+        "/statics/",
+        get_service(ServeDir::new("./templates/statics")),
+    )
 }
 
 fn routes_api() -> Router {
