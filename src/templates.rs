@@ -9,11 +9,17 @@ pub struct HomeTemplate {
 #[derive(Template)]
 #[template(path = "pages/login.html")]
 pub struct LoginTemplate {
-    pub name: String,
+    pub alert: String,
 }
 
 #[derive(Template)]
 #[template(path = "pages/register.html")]
 pub struct RegisterTemplate {
+    pub name: String,
+}
+
+#[derive(Template)]
+#[template(path = "pages/account/dashboard.html")]
+pub struct DashboardTemplate {
     pub name: String,
 }

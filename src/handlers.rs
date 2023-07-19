@@ -1,3 +1,3 @@
 pub mod api;
-pub mod authors;
+pub mod account;
 pub mod home;
