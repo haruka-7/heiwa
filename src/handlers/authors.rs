@@ -11,4 +11,3 @@ pub async fn register() -> RegisterTemplate {
         name: "register".to_string(),
     }
 }
-
