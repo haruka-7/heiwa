@@ -62,8 +62,14 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 fn routes_front() -> Router {
     Router::new()
         .route("/", get(handlers::home::show))
-        .route("/login", get(handlers::account::login).post(handlers::account::login_action))
-        .route("/register", get(handlers::account::register).post(handlers::account::register_action))
+        .route(
+            "/login",
+            get(handlers::account::login).post(handlers::account::login_action),
+        )
+        .route(
+            "/register",
+            get(handlers::account::register).post(handlers::account::register_action),
+        )
 }
 
 fn routes_statics() -> Router {

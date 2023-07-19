@@ -1,7 +1,7 @@
+use crate::entities::authors::{verify_password, LoginAuthor, LoginAuthorPassword};
+use crate::templates::{LoginTemplate, RegisterTemplate};
 use axum::Json;
 use diesel::QueryResult;
-use crate::entities::authors::{LoginAuthor, LoginAuthorPassword, verify_password};
-use crate::templates::{LoginTemplate, RegisterTemplate};
 
 pub async fn login() -> LoginTemplate {
     LoginTemplate {
