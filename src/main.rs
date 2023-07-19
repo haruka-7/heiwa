@@ -60,7 +60,10 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 }
 
 fn routes_front() -> Router {
-    Router::new().route("/", get(handlers::home::show))
+    Router::new()
+        .route("/", get(handlers::home::show))
+        .route("/login", get(handlers::authors::login))
+        .route("/register", get(handlers::authors::register))
 }
 
 fn routes_statics() -> Router {
