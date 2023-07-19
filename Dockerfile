@@ -9,7 +9,8 @@ EXPOSE 8000
 COPY --from=builder /usr/src/heiwa/migrations /usr/src/heiwa/migrations
 COPY --from=builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
 COPY --from=builder /usr/local/cargo/bin/heiwa /usr/local/bin/heiwa
-RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/* && cd /usr/src/heiwa/ && diesel setup
+RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
+CMD ["cd /usr/src/heiwa/ && diesel setup"]
 CMD ["heiwa"]
 
 
