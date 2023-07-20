@@ -1,5 +1,6 @@
 use crate::entities::authors::{verify_password, LoginAuthor, LoginAuthorPassword};
 use crate::templates::{LoginTemplate, RegisterTemplate};
+use axum::response::Redirect;
 use axum::Json;
 use diesel::QueryResult;
 
@@ -9,25 +10,25 @@ pub async fn login() -> LoginTemplate {
     }
 }
 
-pub async fn login_action(Json(payload): Json<LoginAuthor>) {
+pub async fn login_action(Json(payload): Json<LoginAuthor>) -> Redirect {
     let author_result: QueryResult<Vec<LoginAuthorPassword>> =
         LoginAuthorPassword::find_by_name_for_login(payload.name);
     match author_result {
         Ok(author) => {
             if author.is_empty() {
-                // TODO redirect login handler
+                Redirect::permanent("/login")
             } else {
                 let author: &LoginAuthorPassword = author.first().unwrap();
                 if verify_password(payload.password, &author.password) {
-                    // TODO redirect dashboard handler
+                    Redirect::permanent("/dashboard")
                 } else {
-                    // TODO redirect login handler
+                    Redirect::permanent("/login")
                 }
             }
         }
         Err(e) => {
             tracing::error!("{}", e);
-            // TODO redirect login handler
+            Redirect::permanent("/login")
         }
     }
 }

@@ -1,6 +1,7 @@
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
 use axum::Router;
+use axum_sessions::{async_session, SessionLayer};
 use dotenvy::dotenv;
 use std::time::Duration;
 use std::{env, net::SocketAddr};
@@ -41,10 +42,14 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
         .expect("SERVER_PORT environment variable should be parsed correctly")
         as u64;
 
+    //  Must be at least 64 bytes
+    let secret = b"wYE2uofBXMhkrgC6VEIpSCUegYzNZK5x9aUX0KCTZiw11YrC+Bsxao78TvJS7PzC7Cy001+48RseG0s9LZtPKyoDKOD96l71SUEJsT5fGuM=";
+
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
         .layer(HandleErrorLayer::new(handlers::api::errors::error))
+        .layer(SessionLayer::new(async_session::MemoryStore::new(), secret))
         .timeout(Duration::from_secs(server_timeout));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
