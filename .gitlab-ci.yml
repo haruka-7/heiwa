@@ -25,33 +25,6 @@ test:junit-report:
      reports:
        junit: $CI_PROJECT_DIR/tests/*.xml
 
-test:coverage:
-  image: "rustdocker/rust:nightly"
-  needs: ["test:junit-report"]
-  cache:
-    paths: [ '/root/.cargo', '/root/.cache', './target' ]
-  script:
-    - apt-get update && apt-get install -yqq --no-install-recommends python3-pip python3-setuptools lcov
-    - rustup component add llvm-tools-preview
-    - (cargo test -- -Z unstable-options) || true
-    # generate html report
-    - cargo install grcov
-    - grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing --ignore "*cargo*" --ignore "*main*" -o ./coverage/
-    # generate cobertura report for gitlab integration
-    - pip3 install lcov_cobertura
-    - grcov . --binary-path ./target/debug/ -s . -t lcov --llvm --branch --ignore-not-existing --ignore "*cargo*" --ignore "*main*" -o coverage.lcov
-    - lcov --summary coverage.lcov
-    - lcov_cobertura coverage.lcov
-  coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
-  artifacts:
-    paths:
-      - 'coverage'
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
-
-
 #deploy:
 #  stage: deploy
 #  script: echo "Define your deployment script!"
