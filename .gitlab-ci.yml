@@ -26,8 +26,6 @@ test:junit-report:
        junit: $CI_PROJECT_DIR/tests/*.xml
 
 test:coverage:
-  tags:
-    - "docker"
   image: "rustdocker/rust:nightly"
   stage: test
   needs: ["test:junit-report"]
