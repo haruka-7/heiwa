@@ -27,7 +27,6 @@ test:junit-report:
 
 test:coverage:
   image: "rustdocker/rust:nightly"
-  stage: test
   needs: ["test:junit-report"]
   cache:
     paths: [ '/root/.cargo', '/root/.cache', './target' ]
