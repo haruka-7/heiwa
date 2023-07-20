@@ -3,6 +3,7 @@ use axum::routing::{delete, get, get_service, patch, post};
 use axum::Router;
 use axum_sessions::{async_session, SessionLayer};
 use dotenvy::dotenv;
+use rand::RngCore;
 use std::time::Duration;
 use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
@@ -43,13 +44,17 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
         as u64;
 
     //  Must be at least 64 bytes
-    let secret = b"wYE2uofBXMhkrgC6VEIpSCUegYzNZK5x9aUX0KCTZiw11YrC+Bsxao78TvJS7PzC7Cy001+48RseG0s9LZtPKyoDKOD96l71SUEJsT5fGuM=";
+    let mut secret = [0u8; 128];
+    rand::thread_rng().fill_bytes(&mut secret);
 
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
         .layer(HandleErrorLayer::new(handlers::api::errors::error))
-        .layer(SessionLayer::new(async_session::MemoryStore::new(), secret))
+        .layer(SessionLayer::new(
+            async_session::MemoryStore::new(),
+            &secret,
+        ))
         .timeout(Duration::from_secs(server_timeout));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
@@ -71,10 +76,12 @@ fn routes_front() -> Router {
             "/login",
             get(handlers::account::login).post(handlers::account::login_action),
         )
+        .route("/logout", get(handlers::account::logout_action))
         .route(
             "/register",
             get(handlers::account::register).post(handlers::account::register_action),
         )
+        .route("/dashboard", get(handlers::account::dashboard))
 }
 
 fn routes_statics() -> Router {
