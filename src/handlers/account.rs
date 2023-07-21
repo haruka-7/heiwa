@@ -1,24 +1,25 @@
 use crate::entities::authors::{verify_password, LoginAuthor, LoginAuthorPassword};
 use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{DashboardTemplate, LoginTemplate, RegisterTemplate};
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use diesel::QueryResult;
 use std::string::ToString;
-use axum::http::StatusCode;
 
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
 
 pub async fn login(session: WritableSession) -> Response {
     if session.get::<String>("author_name").is_some() {
-        return Redirect::to("/dashboard").into_response()
+        return Redirect::to("/dashboard").into_response();
     }
     let alert_message: String = session.get("alert").unwrap_or("".to_string());
     session_remove_alert(session);
     LoginTemplate {
         alert: alert_message,
-    }.into_response()
+    }
+    .into_response()
 }
 
 pub async fn login_action(mut session: WritableSession, Form(form): Form<LoginAuthor>) -> Redirect {
@@ -76,7 +77,10 @@ pub async fn dashboard(mut session: WritableSession) -> Response {
     if session.get::<String>("author_name").is_some() {
         // TODO do not work
         session.expire_in(std::time::Duration::from_secs(15778800));
-        DashboardTemplate { name: session.get("author_name").unwrap() }.into_response()
+        DashboardTemplate {
+            name: session.get("author_name").unwrap(),
+        }
+        .into_response()
     } else {
         (StatusCode::FORBIDDEN, Redirect::to("/login")).into_response()
     }
