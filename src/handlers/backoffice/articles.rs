@@ -1,5 +1,7 @@
 use crate::templates::DashboardTemplate;
 
+// TODO protect these handlers
+
 pub async fn list() -> DashboardTemplate {
     DashboardTemplate {
         name: "list".to_string(),
