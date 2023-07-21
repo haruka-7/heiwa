@@ -51,9 +51,8 @@ pub async fn login_action(session: WritableSession, Form(form): Form<LoginAuthor
 }
 
 pub async fn logout_action(mut session: WritableSession) -> Redirect {
-    // TODO do not work
     session.destroy();
-    Redirect::permanent("/")
+    Redirect::to("/")
 }
 
 pub async fn register() -> RegisterTemplate {
