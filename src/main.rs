@@ -82,8 +82,15 @@ fn routes_front() -> Router {
             get(handlers::account::register).post(handlers::account::register_action),
         )
         .route("/dashboard", get(handlers::account::dashboard))
-        .route("/dashboard/articles", get(handlers::backoffice::articles::list))
-        .route("/dashboard/article", get(handlers::backoffice::articles::new).post(handlers::backoffice::articles::new_action))
+        .route(
+            "/dashboard/articles",
+            get(handlers::backoffice::articles::list),
+        )
+        .route(
+            "/dashboard/article",
+            get(handlers::backoffice::articles::new)
+                .post(handlers::backoffice::articles::new_action),
+        )
 }
 
 fn routes_statics() -> Router {
