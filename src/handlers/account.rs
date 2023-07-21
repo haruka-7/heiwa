@@ -3,9 +3,10 @@ use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{DashboardTemplate, LoginTemplate, RegisterTemplate};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::Form;
-use axum_sessions::extractors::{ReadableSession, WritableSession};
+use axum_sessions::extractors::WritableSession;
 use diesel::QueryResult;
 use std::string::ToString;
+use axum::http::StatusCode;
 
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
 
@@ -18,6 +19,9 @@ pub async fn login(session: WritableSession) -> LoginTemplate {
 }
 
 pub async fn login_action(mut session: WritableSession, Form(form): Form<LoginAuthor>) -> Redirect {
+    if session.get("author_name").is_some() {
+        return Redirect::to("/login")
+    }
     let author_result: QueryResult<Vec<LoginAuthorPassword>> =
         LoginAuthorPassword::find_by_name_for_login(form.name);
     match author_result {
@@ -28,6 +32,7 @@ pub async fn login_action(mut session: WritableSession, Form(form): Form<LoginAu
             } else {
                 let author: &LoginAuthorPassword = author.first().unwrap();
                 if verify_password(form.password, &author.password) {
+                    // Session duration set to 6 mouths
                     session
                         .insert("author_name", &author.name)
                         .expect("Should insert author name in session");
@@ -66,9 +71,11 @@ pub async fn register_action() -> RegisterTemplate {
     }
 }
 
-pub async fn dashboard(session: ReadableSession) -> Response {
-    match session.get("author_name") {
-        Some(author_name) => DashboardTemplate { name: author_name }.into_response(),
-        None => Redirect::to("/login").into_response(),
+pub async fn dashboard(mut session: WritableSession) -> Response {
+    if session.get("author_name").is_some() {
+        session.expire_in(std::time::Duration::from_secs(15778800));
+        DashboardTemplate { name: session.get("author_name").unwrap() }.into_response()
+    } else {
+        (StatusCode::FORBIDDEN, Redirect::to("/login")).into_response()
     }
 }
