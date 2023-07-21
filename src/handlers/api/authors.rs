@@ -26,9 +26,9 @@ pub async fn get(Path(name): Path<String>) -> Response {
 pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
     match payload.validate() {
         Ok(_) => {
-            let author_result: QueryResult<Author> = Author::create(payload);
+            let author_result: QueryResult<LoginAuthorPassword> = Author::create(payload);
             match author_result {
-                Ok(author) => (StatusCode::CREATED, Json(json!(author))).into_response(),
+                Ok(_) => StatusCode::CREATED.into_response(),
                 Err(e) => handle_error(e),
             }
         }

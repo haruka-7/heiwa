@@ -15,7 +15,7 @@ pub struct LoginTemplate {
 #[derive(Template)]
 #[template(path = "pages/register.html")]
 pub struct RegisterTemplate {
-    pub name: String,
+    pub alert: String,
 }
 
 #[derive(Template)]

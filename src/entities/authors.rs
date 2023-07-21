@@ -75,11 +75,11 @@ impl Author {
             .load(&mut establish_connection())
     }
 
-    pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
+    pub fn create(mut new_author: NewAuthor) -> QueryResult<LoginAuthorPassword> {
         new_author.password = hash_password(&new_author.password);
         insert_into(authors::table)
             .values(&new_author)
-            .returning(Author::as_returning())
+            .returning(LoginAuthorPassword::as_returning())
             .get_result(&mut establish_connection())
     }
 

@@ -4,28 +4,30 @@
 
 {% block content %}
 <h1>Se connecter</h1>
-<article>
-    <form action="/login" method="post">
-        <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                aria-label="Name"
-                autocomplete="nickname"
-                required
-        />
-        <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                aria-label="Password"
-                autocomplete="current-password"
-                required
-        />
-        <input type="submit">
-    </form>
-    {% if alert.len() != 0 %}
-    <p>{{ alert }}</p>
-    {% endif %}
+<article class="grid">
+    <div>
+        <form action="/login" method="post">
+            <input
+                    type="text"
+                    name="name"
+                    placeholder="Name"
+                    aria-label="Name"
+                    autocomplete="username"
+                    required
+            />
+            <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    aria-label="Password"
+                    autocomplete="current-password"
+                    required
+            />
+            <input type="submit">
+        </form>
+        {% if alert.len() != 0 %}
+        <p>{{ alert }}</p>
+        {% endif %}
+    </div>
 </article>
 {% endblock %}
