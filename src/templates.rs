@@ -19,7 +19,7 @@ pub struct RegisterTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "pages/account/dashboard.html")]
+#[template(path = "pages/backoffice/dashboard.html")]
 pub struct DashboardTemplate {
     pub name: String,
 }
