@@ -47,6 +47,8 @@ pub struct UpdateAuthor {
 #[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct LoginAuthorPassword {
+    pub name: String,
+    pub role: Option<String>,
     pub password: String,
 }
 
