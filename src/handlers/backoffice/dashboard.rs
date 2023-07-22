@@ -1,11 +1,10 @@
+use crate::services::session::is_author_logged;
 use crate::templates::BackDashboardTemplate;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum_sessions::extractors::WritableSession;
 
 pub async fn show(mut session: WritableSession) -> Response {
-    if session.get::<String>("author_name").is_some() {
-        // TODO do not work
-        session.expire_in(std::time::Duration::from_secs(15778800));
+    if is_author_logged(&mut session) {
         BackDashboardTemplate {
             name: session.get("author_name").unwrap(),
         }
