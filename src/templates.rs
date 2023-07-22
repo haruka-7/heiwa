@@ -20,6 +20,18 @@ pub struct RegisterTemplate {
 
 #[derive(Template)]
 #[template(path = "pages/backoffice/dashboard.html")]
-pub struct DashboardTemplate {
+pub struct BackDashboardTemplate {
     pub name: String,
+}
+
+#[derive(Template)]
+#[template(path = "pages/backoffice/articles-list.html")]
+pub struct BackArticlesListTemplate {
+    pub alert: String,
+}
+
+#[derive(Template)]
+#[template(path = "pages/backoffice/articles-new.html")]
+pub struct BackArticleNewTemplate {
+    pub alert: String,
 }

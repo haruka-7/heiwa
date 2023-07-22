@@ -1,0 +1,44 @@
+{% extends "layout-dashboard.html" %}
+
+{% block title %}Index{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold underline">
+  Dashboard - New
+</h1>
+<div>
+  <form action="/dashboard/article" method="post">
+    <input
+            type="text"
+            name="title"
+            placeholder="Titre"
+            aria-label="Title"
+            required
+    />
+    <input
+            type="text"
+            name="content"
+            placeholder="Contenu"
+            aria-label="content"
+            required
+    />
+    <input
+            type="text"
+            name="permalink"
+            placeholder="URL"
+            aria-label="url"
+            required
+    />
+    <input
+            type="text"
+            name="meta_description"
+            placeholder="Meta-description"
+            aria-label="meta-description"
+    />
+    <input type="submit">
+    {% if alert.len() != 0 %}
+    <p>{{ alert }}</p>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

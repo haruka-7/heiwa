@@ -81,7 +81,7 @@ fn routes_front() -> Router {
             "/register",
             get(handlers::account::register).post(handlers::account::register_action),
         )
-        .route("/dashboard", get(handlers::account::dashboard))
+        .route("/dashboard", get(handlers::backoffice::dashboard::show))
         .route(
             "/dashboard/articles",
             get(handlers::backoffice::articles::list),

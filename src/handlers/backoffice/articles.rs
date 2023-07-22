@@ -1,21 +1,20 @@
-use crate::templates::DashboardTemplate;
+use crate::templates::{BackArticleNewTemplate, BackArticlesListTemplate};
+use axum::response::Redirect;
 
 // TODO protect these handlers
 
-pub async fn list() -> DashboardTemplate {
-    DashboardTemplate {
-        name: "list".to_string(),
+pub async fn list() -> BackArticlesListTemplate {
+    BackArticlesListTemplate {
+        alert: "list".to_string(),
     }
 }
 
-pub async fn new() -> DashboardTemplate {
-    DashboardTemplate {
-        name: "new".to_string(),
+pub async fn new() -> BackArticleNewTemplate {
+    BackArticleNewTemplate {
+        alert: "new".to_string(),
     }
 }
 
-pub async fn new_action() -> DashboardTemplate {
-    DashboardTemplate {
-        name: "new".to_string(),
-    }
+pub async fn new_action() -> Redirect {
+    Redirect::to("/dashboard/articles")
 }

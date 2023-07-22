@@ -1,7 +1,7 @@
 use crate::entities::authors::{Author, LoginAuthor, LoginAuthorPassword, NewAuthor};
 use crate::services::author::author_sign_in;
 use crate::services::session::{session_insert_alert, session_remove_alert};
-use crate::templates::{DashboardTemplate, LoginTemplate, RegisterTemplate};
+use crate::templates::{LoginTemplate, RegisterTemplate};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::Form;
 use axum_sessions::extractors::WritableSession;
@@ -77,19 +77,5 @@ pub async fn register_action(session: WritableSession, Form(form): Form<NewAutho
             session_insert_alert(session, LOGIN_ALERT);
             Redirect::to("/login")
         }
-    }
-}
-
-pub async fn dashboard(mut session: WritableSession) -> Response {
-    if session.get::<String>("author_name").is_some() {
-        // TODO do not work
-        session.expire_in(std::time::Duration::from_secs(15778800));
-        DashboardTemplate {
-            name: session.get("author_name").unwrap(),
-        }
-        .into_response()
-    } else {
-        // TODO add 403 status code
-        Redirect::to("/login").into_response()
     }
 }
