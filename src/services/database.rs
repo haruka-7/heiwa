@@ -1,6 +1,5 @@
-use diesel::prelude::*;
-use std::env;
 use crate::services::config::Config;
+use diesel::prelude::*;
 
 pub fn establish_connection() -> PgConnection {
     let config: Config = Config::new();

@@ -2,8 +2,8 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum Roles {
-    ADMIN,
-    AUTHOR,
+    Admin,
+    Author,
 }
 
 impl fmt::Display for Roles {

@@ -1,3 +1,4 @@
+use crate::services::config::Config;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
 use axum::Router;
@@ -5,12 +6,11 @@ use axum_sessions::{async_session, SessionLayer};
 use dotenvy::dotenv;
 use rand::RngCore;
 use std::time::Duration;
-use std::{env, net::SocketAddr};
+use std::net::SocketAddr;
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
-use crate::services::config::Config;
 
 mod entities;
 mod handlers;
