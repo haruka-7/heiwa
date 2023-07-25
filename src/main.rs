@@ -10,6 +10,7 @@ use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
+use crate::services::config::Config;
 
 mod entities;
 mod handlers;
@@ -35,13 +36,10 @@ async fn main() {
 
 fn init_server(routes: Router) -> (Router, SocketAddr) {
     dotenv().ok();
+    let config = Config::new();
     tracing_subscriber::fmt::init();
 
-    let server_timeout: u64 = env::var("SERVER_TIMEOUT")
-        .unwrap_or("5".to_string())
-        .parse::<i64>()
-        .expect("SERVER_PORT environment variable should be parsed correctly")
-        as u64;
+    let server_timeout: u64 = config.server_timeout;
 
     //  Must be at least 64 bytes
     let mut secret = [0u8; 128];
@@ -59,11 +57,7 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let app = Router::new().merge(routes).layer(middleware_stack);
 
-    let server_port: u16 = env::var("SERVER_PORT")
-        .unwrap_or("3000".to_string())
-        .parse::<i16>()
-        .expect("SERVER_PORT environment variable should be parsed correctly")
-        as u16;
+    let server_port: u16 = config.server_port;
 
     let addr = SocketAddr::from(([127, 0, 0, 1], server_port));
     (app, addr)
