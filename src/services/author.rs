@@ -6,7 +6,7 @@ use axum_sessions::extractors::WritableSession;
 // TODO duplicated const
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
 
-pub fn author_sign_in(
+pub fn author_login(
     mut session: WritableSession,
     form_password: String,
     author_name: &String,

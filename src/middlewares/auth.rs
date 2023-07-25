@@ -24,6 +24,7 @@ pub async fn auth_session_required<B>(
         cookie.set_expires(expire);
         next.run(request).await
     } else {
+        tracing::error!("session author NOT FOUND");
         Redirect::to("/login").into_response()
     }
 }

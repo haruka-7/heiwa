@@ -1,6 +1,6 @@
 use crate::entities::authors::{Author, LoginAuthor, LoginAuthorPassword, NewAuthor};
 use crate::entities::roles::Roles;
-use crate::services::author::author_sign_in;
+use crate::services::author::author_login;
 use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{LoginTemplate, RegisterTemplate};
 use axum::response::{IntoResponse, Redirect, Response};
@@ -34,7 +34,7 @@ pub async fn login_action(session: WritableSession, Form(form): Form<LoginAuthor
                 Redirect::to("/login")
             } else {
                 let author: &LoginAuthorPassword = author.first().unwrap();
-                author_sign_in(
+                author_login(
                     session,
                     form.password,
                     &author.name,
@@ -66,7 +66,7 @@ pub async fn register_action(session: WritableSession, Form(form): Form<NewAutho
     let form_password = form.password.clone();
     let author_result: QueryResult<LoginAuthorPassword> = Author::create(form);
     match author_result {
-        Ok(author) => author_sign_in(
+        Ok(author) => author_login(
             session,
             (form_password).parse().unwrap(),
             &author.name,

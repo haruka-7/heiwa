@@ -53,13 +53,13 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
-        .layer(CompressionLayer::new())
         .layer(SessionLayer::new(
             async_session::MemoryStore::new(),
             &secret,
         ))
         .layer(HandleErrorLayer::new(handlers::error::error))
         .layer(CatchPanicLayer::custom(handlers::error::panic))
+        .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(CONFIG.server_timeout));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
