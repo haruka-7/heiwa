@@ -1,8 +1,9 @@
 use crate::services::config::Config;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
-use axum::Router;
+use axum::{middleware, Router};
 use axum_sessions::{async_session, SessionLayer};
+use dotenvy::dotenv;
 use lazy_static::lazy_static;
 use rand::RngCore;
 use std::net::SocketAddr;
@@ -14,6 +15,7 @@ use tower_http::trace::TraceLayer;
 
 mod entities;
 mod handlers;
+mod middlewares;
 mod schema;
 mod services;
 mod templates;
@@ -24,7 +26,10 @@ lazy_static! {
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
+
     let routes: Router = Router::new()
+        .merge(routes_protected())
         .merge(routes_front())
         .merge(routes_api())
         .fallback_service(routes_statics());
@@ -43,14 +48,14 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let server_timeout: u64 = CONFIG.server_timeout;
 
-    //  Must be at least 64 bytes
+    // Session secret must be at least 64 bytes
     let mut secret = [0u8; 128];
     rand::thread_rng().fill_bytes(&mut secret);
 
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
-        .layer(HandleErrorLayer::new(handlers::api::errors::error))
+        .layer(HandleErrorLayer::new(handlers::error::show))
         .layer(SessionLayer::new(
             async_session::MemoryStore::new(),
             &secret,
@@ -58,11 +63,25 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
         .timeout(Duration::from_secs(server_timeout));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
-
-    let server_port: u16 = CONFIG.server_port;
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], server_port));
+    let addr = SocketAddr::from(([127, 0, 0, 1], CONFIG.server_port));
     (app, addr)
+}
+
+fn routes_protected() -> Router {
+    Router::new()
+        .route("/dashboard", get(handlers::backoffice::dashboard::show))
+        .route(
+            "/dashboard/articles",
+            get(handlers::backoffice::articles::list),
+        )
+        .route(
+            "/dashboard/article",
+            get(handlers::backoffice::articles::new)
+                .post(handlers::backoffice::articles::new_action),
+        )
+        .route_layer(middleware::from_fn(
+            middlewares::auth::auth_session_required,
+        ))
 }
 
 fn routes_front() -> Router {
@@ -76,16 +95,6 @@ fn routes_front() -> Router {
         .route(
             "/register",
             get(handlers::account::register).post(handlers::account::register_action),
-        )
-        .route("/dashboard", get(handlers::backoffice::dashboard::show))
-        .route(
-            "/dashboard/articles",
-            get(handlers::backoffice::articles::list),
-        )
-        .route(
-            "/dashboard/article",
-            get(handlers::backoffice::articles::new)
-                .post(handlers::backoffice::articles::new_action),
         )
 }
 
