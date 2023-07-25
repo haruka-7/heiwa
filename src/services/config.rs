@@ -1,3 +1,4 @@
+use dotenvy::dotenv;
 use std::env;
 
 #[derive(Debug, Clone)]
@@ -13,6 +14,7 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Config {
+        dotenv().ok();
         Config {
             rust_log: env::var("RUST_LOG").unwrap_or("ERROR".to_string()),
             server_port: env::var("SERVER_PORT")

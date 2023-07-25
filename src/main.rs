@@ -3,10 +3,10 @@ use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
 use axum::Router;
 use axum_sessions::{async_session, SessionLayer};
-use dotenvy::dotenv;
+use lazy_static::lazy_static;
 use rand::RngCore;
-use std::time::Duration;
 use std::net::SocketAddr;
+use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
@@ -17,6 +17,10 @@ mod handlers;
 mod schema;
 mod services;
 mod templates;
+
+lazy_static! {
+    static ref CONFIG: Config = Config::new();
+}
 
 #[tokio::main]
 async fn main() {
@@ -35,11 +39,9 @@ async fn main() {
 }
 
 fn init_server(routes: Router) -> (Router, SocketAddr) {
-    dotenv().ok();
-    let config = Config::new();
     tracing_subscriber::fmt::init();
 
-    let server_timeout: u64 = config.server_timeout;
+    let server_timeout: u64 = CONFIG.server_timeout;
 
     //  Must be at least 64 bytes
     let mut secret = [0u8; 128];
@@ -57,7 +59,7 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let app = Router::new().merge(routes).layer(middleware_stack);
 
-    let server_port: u16 = config.server_port;
+    let server_port: u16 = CONFIG.server_port;
 
     let addr = SocketAddr::from(([127, 0, 0, 1], server_port));
     (app, addr)
