@@ -35,3 +35,7 @@ pub struct BackArticlesListTemplate {
 pub struct BackArticleNewTemplate {
     pub alert: String,
 }
+
+#[derive(Template)]
+#[template(path = "pages/error-page.html")]
+pub struct ErrorPageTemplate {}

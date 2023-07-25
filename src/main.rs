@@ -9,6 +9,7 @@ use rand::RngCore;
 use std::net::SocketAddr;
 use std::time::Duration;
 use tower::ServiceBuilder;
+use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
@@ -46,8 +47,6 @@ async fn main() {
 fn init_server(routes: Router) -> (Router, SocketAddr) {
     tracing_subscriber::fmt::init();
 
-    let server_timeout: u64 = CONFIG.server_timeout;
-
     // Session secret must be at least 64 bytes
     let mut secret = [0u8; 128];
     rand::thread_rng().fill_bytes(&mut secret);
@@ -55,12 +54,13 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
-        .layer(HandleErrorLayer::new(handlers::error::show))
         .layer(SessionLayer::new(
             async_session::MemoryStore::new(),
             &secret,
         ))
-        .timeout(Duration::from_secs(server_timeout));
+        .layer(HandleErrorLayer::new(handlers::error::error))
+        .layer(CatchPanicLayer::custom(handlers::error::panic))
+        .timeout(Duration::from_secs(CONFIG.server_timeout));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
     let addr = SocketAddr::from(([127, 0, 0, 1], CONFIG.server_port));
@@ -96,6 +96,7 @@ fn routes_front() -> Router {
             "/register",
             get(handlers::account::register).post(handlers::account::register_action),
         )
+        .route("/error-page", get(handlers::error::show))
 }
 
 fn routes_statics() -> Router {
