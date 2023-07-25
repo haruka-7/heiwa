@@ -5,7 +5,7 @@ CREATE TABLE authors (
     display_name VARCHAR NOT NULL,
     password VARCHAR NOT NULL,
     biography TEXT,
-    role VARCHAR DEFAULT 'author'
+    role VARCHAR DEFAULT 'AUTHOR'
 );
 
 CREATE TABLE links (
@@ -20,7 +20,7 @@ INSERT INTO authors (name, email, display_name, password, role) VALUES (
     'admin@getheiwa.fr',
     'Admin',
     '$argon2id$v=19$m=19456,t=2,p=1$p4XJkjVIrvkUkDHsw3u3GA$eh3zH5sxy1qZNUeEaAdZZU0dmr4gnaA8HP92w3A35no',
-    'administrator'
+    'ADMIN'
 );
 
 CREATE TABLE articles (
