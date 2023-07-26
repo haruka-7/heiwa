@@ -21,6 +21,8 @@ mod schema;
 mod services;
 mod templates;
 
+// TODO use AppState for postgres connection
+
 lazy_static! {
     static ref CONFIG: Config = Config::new();
 }
@@ -53,12 +55,12 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let middleware_stack = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
+        .layer(CatchPanicLayer::custom(handlers::error::panic))
+        .layer(HandleErrorLayer::new(handlers::error::error))
         .layer(SessionLayer::new(
             async_session::MemoryStore::new(),
             &secret,
         ))
-        .layer(HandleErrorLayer::new(handlers::error::error))
-        .layer(CatchPanicLayer::custom(handlers::error::panic))
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(CONFIG.server_timeout));
 
