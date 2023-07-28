@@ -1,8 +1,14 @@
+use crate::services::jwt::auth;
 use crate::templates::BackDashboardTemplate;
-use axum_sessions::extractors::WritableSession;
+use axum::response::{IntoResponse, Redirect, Response};
+use axum_auth::AuthBearer;
 
-pub async fn show(session: WritableSession) -> BackDashboardTemplate {
-    BackDashboardTemplate {
-        name: session.get("author_name").unwrap(),
+pub async fn show(AuthBearer(token): AuthBearer) -> Response {
+    match auth(token) {
+        Ok(_) => BackDashboardTemplate {
+            name: "Dashboard".to_string(),
+        }
+        .into_response(),
+        Err(_) => Redirect::to("/login").into_response(),
     }
 }

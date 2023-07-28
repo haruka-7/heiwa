@@ -1,8 +1,8 @@
+use crate::templates::ErrorPageTemplate;
 use axum::http::{header, StatusCode};
 use axum::response::Response;
 use axum::BoxError;
 use std::any::Any;
-use crate::templates::ErrorPageTemplate;
 
 pub async fn show() -> ErrorPageTemplate {
     ErrorPageTemplate {}

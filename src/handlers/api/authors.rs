@@ -2,6 +2,7 @@ use crate::entities::authors::{
     verify_password, Author, LoginAuthor, LoginAuthorPassword, NewAuthor, UpdateAuthor,
 };
 use crate::handlers::api::errors::{handle_error, handler_validation_error};
+use crate::services::jwt;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
@@ -28,7 +29,14 @@ pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
         Ok(_) => {
             let author_result: QueryResult<LoginAuthorPassword> = Author::create(payload);
             match author_result {
-                Ok(_) => StatusCode::CREATED.into_response(),
+                Ok(author) => {
+                    let jwt_token = jwt::sign(author.name).unwrap();
+                    (
+                        StatusCode::CREATED,
+                        Json(json!({"access_token": jwt_token})),
+                    )
+                        .into_response()
+                }
                 Err(e) => handle_error(e),
             }
         }
@@ -59,7 +67,8 @@ pub async fn login(Json(payload): Json<LoginAuthor>) -> Response {
             } else {
                 let author: &LoginAuthorPassword = author.first().unwrap();
                 if verify_password(payload.password, &author.password) {
-                    StatusCode::OK.into_response()
+                    let jwt_token = jwt::sign(author.name.clone()).unwrap();
+                    Json(json!({"access_token": jwt_token})).into_response()
                 } else {
                     StatusCode::UNAUTHORIZED.into_response()
                 }

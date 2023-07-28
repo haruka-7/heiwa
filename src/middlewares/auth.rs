@@ -1,8 +1,5 @@
 use axum::response::{IntoResponse, Redirect, Response};
-use axum::{
-    http::Request,
-    middleware::Next,
-};
+use axum::{http::Request, middleware::Next};
 use axum_extra::extract::cookie::CookieJar;
 use axum_sessions::extractors::WritableSession;
 use std::time::Duration;
