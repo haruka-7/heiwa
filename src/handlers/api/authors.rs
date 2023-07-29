@@ -66,11 +66,12 @@ pub async fn login(Json(payload): Json<LoginAuthor>) -> Response {
                 StatusCode::NOT_FOUND.into_response()
             } else {
                 let author: &LoginAuthorPassword = author.first().unwrap();
-                if verify_password(payload.password, &author.password) {
-                    let jwt_token = jwt::sign(author.name.clone()).unwrap();
-                    Json(json!({"access_token": jwt_token})).into_response()
-                } else {
-                    StatusCode::UNAUTHORIZED.into_response()
+                match verify_password(&payload.password, &author.password) {
+                    Ok(_) => {
+                        let jwt_token = jwt::sign(author.name.clone()).unwrap();
+                        Json(json!({"access_token": jwt_token})).into_response()
+                    }
+                    Err(_) => StatusCode::UNAUTHORIZED.into_response(),
                 }
             }
         }

@@ -1,7 +1,7 @@
 use crate::services::config::Config;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
-use axum::{middleware, Router};
+use axum::Router;
 use axum_sessions::{async_session, SessionLayer};
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
@@ -81,9 +81,6 @@ fn routes_protected() -> Router {
             get(handlers::backoffice::articles::new)
                 .post(handlers::backoffice::articles::new_action),
         )
-        .route_layer(middleware::from_fn(
-            middlewares::auth::auth_session_required,
-        ))
 }
 
 fn routes_front() -> Router {

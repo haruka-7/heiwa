@@ -43,7 +43,7 @@ pub struct UpdateAuthor {
     pub password: Option<String>,
 }
 
-#[derive(Debug, Queryable, Selectable, Deserialize)]
+#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = authors)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct LoginAuthorPassword {
@@ -56,6 +56,11 @@ pub struct LoginAuthorPassword {
 pub struct LoginAuthor {
     pub name: String,
     pub password: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AuthorAccessToken {
+    pub access_token: String,
 }
 
 impl Author {
@@ -150,11 +155,12 @@ pub fn hash_password(password: &String) -> String {
         .to_string()
 }
 
-pub fn verify_password(password: String, password_hash: &str) -> bool {
+pub fn verify_password(
+    password: &String,
+    password_hash: &str,
+) -> argon2::password_hash::Result<()> {
     let parsed_hash = PasswordHash::new(password_hash).unwrap();
-    Argon2::default()
-        .verify_password(password.as_ref(), &parsed_hash)
-        .is_ok()
+    Argon2::default().verify_password(password.as_ref(), &parsed_hash)
 }
 
 #[cfg(test)]
@@ -165,6 +171,6 @@ mod tests {
     fn test_hash_and_verify_password() {
         let password: String = "thee michel gun elephant".to_string();
         let password_hash: String = hash_password(&password);
-        assert!(verify_password(password, password_hash.as_ref()))
+        assert!(verify_password(&password, password_hash.as_ref()))
     }
 }
