@@ -24,32 +24,7 @@ pub async fn login(mut session: WritableSession) -> Response {
 }
 
 pub async fn login_action(mut session: WritableSession, Form(form): Form<LoginAuthor>) -> Response {
-    let author_result: QueryResult<Vec<LoginAuthorPassword>> =
-        LoginAuthorPassword::find_by_name_for_login(form.name.clone());
-    match author_result {
-        Ok(author) => {
-            if author.is_empty() {
-                session_insert_alert(&mut session, LOGIN_ALERT);
-                Redirect::to("/login").into_response()
-            } else {
-                match auth(form).await {
-                    Ok(token) => {
-                        session.insert("token", &token).unwrap_or(());
-                        Redirect::to("/dashboard").into_response()
-                    }
-                    Err(_) => {
-                        session_insert_alert(&mut session, LOGIN_ALERT);
-                        Redirect::to("/login").into_response()
-                    }
-                }
-            }
-        }
-        Err(e) => {
-            tracing::error!("{}", e);
-            session_insert_alert(&mut session, LOGIN_ALERT);
-            Redirect::to("/login").into_response()
-        }
-    }
+    do_login(session, form).await
 }
 
 pub async fn logout_action(mut session: WritableSession) -> Redirect {
@@ -71,7 +46,36 @@ pub async fn register_action(mut session: WritableSession, Form(form): Form<NewA
                 name: author.name,
                 password: author.password,
             };
-            login_action(session, Form(login_author)).await
+            do_login(session, login_author).await
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            session_insert_alert(&mut session, LOGIN_ALERT);
+            Redirect::to("/login").into_response()
+        }
+    }
+}
+
+async fn do_login(mut session: WritableSession, login_author: LoginAuthor) -> Response {
+    let author_result: QueryResult<Vec<LoginAuthorPassword>> =
+        LoginAuthorPassword::find_by_name_for_login(login_author.name.clone());
+    match author_result {
+        Ok(author) => {
+            if author.is_empty() {
+                session_insert_alert(&mut session, LOGIN_ALERT);
+                Redirect::to("/login").into_response()
+            } else {
+                match auth(login_author).await {
+                    Ok(token) => {
+                        session.insert("token", &token).unwrap_or(());
+                        Redirect::to("/dashboard").into_response()
+                    }
+                    Err(_) => {
+                        session_insert_alert(&mut session, LOGIN_ALERT);
+                        Redirect::to("/login").into_response()
+                    }
+                }
+            }
         }
         Err(e) => {
             tracing::error!("{}", e);
