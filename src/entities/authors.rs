@@ -1,13 +1,11 @@
 use crate::schema::*;
 use crate::services::database::establish_connection;
-use argon2::password_hash::rand_core::OsRng;
-use argon2::password_hash::SaltString;
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
+use crate::services::authors::hash_password;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -143,34 +141,5 @@ pub fn validate_unique_email(email: &str) -> Result<(), ValidationError> {
             tracing::error!("{}", e);
             Err(ValidationError::new("VALIDATE_EMAIL_ERROR"))
         }
-    }
-}
-
-pub fn hash_password(password: &String) -> String {
-    let salt: SaltString = SaltString::generate(&mut OsRng);
-    let argon2: Argon2 = Argon2::default();
-    argon2
-        .hash_password(password.as_ref(), &salt)
-        .unwrap()
-        .to_string()
-}
-
-pub fn verify_password(
-    password: &String,
-    password_hash: &str,
-) -> argon2::password_hash::Result<()> {
-    let parsed_hash = PasswordHash::new(password_hash).unwrap();
-    Argon2::default().verify_password(password.as_ref(), &parsed_hash)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_hash_and_verify_password() {
-        let password: String = "thee michel gun elephant".to_string();
-        let password_hash: String = hash_password(&password);
-        assert!(verify_password(&password, password_hash.as_ref()))
     }
 }

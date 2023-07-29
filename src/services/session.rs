@@ -7,7 +7,3 @@ pub fn session_insert_alert(session: &mut WritableSession, alert_message: &str) 
 pub fn session_remove_alert(session: &mut WritableSession) {
     session.remove("alert");
 }
-
-pub fn session_insert_token(session: &mut WritableSession, token: &str) {
-    session.insert("token", token).unwrap_or(());
-}
