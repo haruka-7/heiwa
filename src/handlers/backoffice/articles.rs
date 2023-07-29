@@ -1,5 +1,7 @@
 use crate::templates::{BackArticleNewTemplate, BackArticlesListTemplate};
 use axum::response::Redirect;
+use axum_sessions::extractors::WritableSession;
+use crate::services::session::session_remove_alert;
 
 pub async fn list() -> BackArticlesListTemplate {
     BackArticlesListTemplate {
@@ -7,9 +9,11 @@ pub async fn list() -> BackArticlesListTemplate {
     }
 }
 
-pub async fn new() -> BackArticleNewTemplate {
+pub async fn new(mut session: WritableSession) -> BackArticleNewTemplate {
+    let alert_message: String = session.get("alert").unwrap_or("".to_string());
+    session_remove_alert(&mut session);
     BackArticleNewTemplate {
-        alert: "new".to_string(),
+        alert: alert_message,
     }
 }
 
