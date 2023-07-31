@@ -37,7 +37,7 @@ pub fn sign(name: String) -> Result<String, ()> {
     }
 }
 
-pub fn verify(token: &str) -> Result<Claims, ()> {
+pub fn verify(token: &str) -> Result<Claims, String> {
     let token_decoded = jsonwebtoken::decode(
         token,
         &DecodingKey::from_secret(CONFIG.jwt_secret.as_bytes()),
@@ -46,7 +46,7 @@ pub fn verify(token: &str) -> Result<Claims, ()> {
     .map(|data| data.claims);
     match token_decoded {
         Ok(claims) => Ok(claims),
-        Err(_) => Err(()),
+        Err(_) => Err("Invalid JWT token".to_string()),
     }
 }
 

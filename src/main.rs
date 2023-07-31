@@ -1,7 +1,7 @@
 use crate::services::config::Config;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
-use axum::Router;
+use axum::{middleware, Router};
 use axum_sessions::{async_session, SessionLayer};
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
@@ -12,7 +12,6 @@ use tower::ServiceBuilder;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
-use tower_http::trace::TraceLayer;
 
 mod entities;
 mod handlers;
@@ -32,9 +31,10 @@ async fn main() {
     dotenv().ok();
 
     let routes: Router = Router::new()
-        .merge(routes_protected())
+        .merge(routes_dashboard())
         .merge(routes_front())
         .merge(routes_api())
+        .merge(routes_api_with_bearer_token())
         .fallback_service(routes_statics());
 
     let (app, addr) = init_server(routes);
@@ -54,7 +54,6 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     rand::thread_rng().fill_bytes(&mut secret);
 
     let middleware_stack = ServiceBuilder::new()
-        .layer(TraceLayer::new_for_http())
         .layer(CatchPanicLayer::custom(handlers::error::panic))
         .layer(HandleErrorLayer::new(handlers::error::error))
         .layer(SessionLayer::new(
@@ -69,7 +68,7 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     (app, addr)
 }
 
-fn routes_protected() -> Router {
+fn routes_dashboard() -> Router {
     Router::new()
         .route("/dashboard", get(handlers::backoffice::dashboard::show))
         .route(
@@ -107,32 +106,12 @@ fn routes_statics() -> Router {
 
 fn routes_api() -> Router {
     Router::new()
-        .route("/api/authors/create", post(handlers::api::authors::create))
-        .route("/api/authors/update", patch(handlers::api::authors::update))
-        .route(
-            "/api/authors/delete/:id",
-            delete(handlers::api::authors::delete),
-        )
-        .route("/api/authors/get/:name", get(handlers::api::authors::get))
         .route("/api/authors/login", post(handlers::api::authors::login))
-        .route("/api/links/create", post(handlers::api::links::create))
-        .route("/api/links/update", patch(handlers::api::links::update))
-        .route(
-            "/api/links/delete/:id",
-            delete(handlers::api::links::delete),
-        )
+        .route("/api/authors/create", post(handlers::api::authors::create))
+        .route("/api/authors/get/:name", get(handlers::api::authors::get))
         .route(
             "/api/links/get/:author_name",
             get(handlers::api::links::get),
-        )
-        .route(
-            "/api/articles/create",
-            post(handlers::api::articles::create),
-        )
-        // TODO add search and update articles route
-        .route(
-            "/api/articles/delete/:id",
-            delete(handlers::api::articles::delete),
         )
         .route(
             "/api/articles/get/:permalink",
@@ -147,6 +126,34 @@ fn routes_api() -> Router {
             get(handlers::api::articles::author),
         )
         .route(
+            "/api/tags/get/:article_permalink",
+            get(handlers::api::tags::get),
+        )
+}
+
+fn routes_api_with_bearer_token() -> Router {
+    Router::new()
+        .route("/api/authors/update", patch(handlers::api::authors::update))
+        .route(
+            "/api/authors/delete/:id",
+            delete(handlers::api::authors::delete),
+        )
+        .route("/api/links/create", post(handlers::api::links::create))
+        .route("/api/links/update", patch(handlers::api::links::update))
+        .route(
+            "/api/links/delete/:id",
+            delete(handlers::api::links::delete),
+        )
+        .route(
+            "/api/articles/create",
+            post(handlers::api::articles::create),
+        )
+        // TODO add search and update articles route
+        .route(
+            "/api/articles/delete/:id",
+            delete(handlers::api::articles::delete),
+        )
+        .route(
             "/api/tags/create/:article_id",
             post(handlers::api::tags::create),
         )
@@ -154,10 +161,9 @@ fn routes_api() -> Router {
             "/api/tags/delete/:article_id/:tag_id",
             delete(handlers::api::tags::delete),
         )
-        .route(
-            "/api/tags/get/:article_permalink",
-            get(handlers::api::tags::get),
-        )
+        .layer(middleware::from_fn(
+            middlewares::authentication::authorization_bearer_required,
+        ))
 }
 
 #[cfg(test)]
@@ -165,7 +171,8 @@ mod tests {
     use super::*;
     use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
     use crate::entities::links::{Link, NewLink};
-    use crate::handlers::api::authors::{AuthAuthor, FormLoginAuthor};
+    use crate::handlers::api::authors::FormLoginAuthor;
+    use crate::services::jwt::sign;
     use axum::body::Body;
     use axum::http;
     use axum::http::{Request, StatusCode};
@@ -197,7 +204,11 @@ mod tests {
             author_id: 1,
         };
 
-        let routes: Router = Router::new().merge(routes_front()).merge(routes_api());
+        let routes: Router = Router::new()
+            .merge(routes_dashboard())
+            .merge(routes_front())
+            .merge(routes_api())
+            .merge(routes_api_with_bearer_token());
         let app = init_server(routes).0;
 
         // Create author
@@ -218,6 +229,7 @@ mod tests {
 
         let authors: Vec<Author> = Author::find_by_name(author_name).unwrap();
         let author: &Author = authors.first().unwrap();
+        let jwt_token: String = sign(author.name.clone()).unwrap();
 
         // Create author error name exist
         let response = app
@@ -232,7 +244,7 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 
         // Update author name and password
         let update_author: UpdateAuthor = UpdateAuthor {
@@ -242,6 +254,7 @@ mod tests {
             display_name: None,
             password: Option::from("pretenders".to_string()),
         };
+
         let response = app
             .clone()
             .oneshot(
@@ -249,6 +262,10 @@ mod tests {
                     .method(http::Method::PATCH)
                     .uri("/api/authors/update")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .header(
+                        http::header::AUTHORIZATION,
+                        format!("Bearer {}", &jwt_token),
+                    )
                     .body(Body::from(
                         serde_json::to_vec(&json!(update_author)).unwrap(),
                     ))
@@ -312,6 +329,10 @@ mod tests {
                 Request::builder()
                     .method(http::Method::DELETE)
                     .uri(format!("/api/authors/delete/{}", author.id))
+                    .header(
+                        http::header::AUTHORIZATION,
+                        format!("Bearer {}", &jwt_token),
+                    )
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -327,6 +348,10 @@ mod tests {
                     .method(http::Method::POST)
                     .uri("/api/links/create")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .header(
+                        http::header::AUTHORIZATION,
+                        format!("Bearer {}", &jwt_token),
+                    )
                     .body(Body::from(serde_json::to_vec(&json!(new_link)).unwrap()))
                     .unwrap(),
             )
@@ -365,6 +390,10 @@ mod tests {
                     .method(http::Method::PATCH)
                     .uri("/api/links/update")
                     .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+                    .header(
+                        http::header::AUTHORIZATION,
+                        format!("Bearer {}", &jwt_token),
+                    )
                     .body(Body::from(serde_json::to_vec(&json!(update_link)).unwrap()))
                     .unwrap(),
             )
@@ -379,6 +408,10 @@ mod tests {
                 Request::builder()
                     .method(http::Method::DELETE)
                     .uri(format!("/api/links/delete/{}", link.id))
+                    .header(
+                        http::header::AUTHORIZATION,
+                        format!("Bearer {}", &jwt_token),
+                    )
                     .body(Body::empty())
                     .unwrap(),
             )

@@ -1,11 +1,13 @@
+use crate::entities::authors::NewAuthor;
 use crate::handlers::api::authors::{AuthAuthor, FormLoginAuthor};
 use crate::services::jwt::verify_token;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum_sessions::extractors::WritableSession;
+use hyper::StatusCode;
 
-pub async fn auth(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> {
+pub async fn auth_api_call(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> {
     let client = reqwest::Client::new();
     let request = client
         .post("http://localhost:3000/api/authors/login")
@@ -22,6 +24,24 @@ pub async fn auth(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> 
         .unwrap_or(AuthAuthor::default());
     if !auth.token.is_empty() {
         Ok(auth)
+    } else {
+        Err(())
+    }
+}
+
+pub async fn create_api_call(author: NewAuthor) -> Result<(), ()> {
+    let client = reqwest::Client::new();
+    let request = client
+        .post("http://localhost:3000/api/authors/create")
+        .json(&author);
+    let response = request.send().await.unwrap();
+    tracing::debug!(
+        "\nREQUEST POST http://localhost:3000/api/authors/create \n{:?}\nRESPONSE\n{:?}",
+        &author,
+        &response
+    );
+    if response.status() == StatusCode::CREATED {
+        Ok(())
     } else {
         Err(())
     }
