@@ -1,4 +1,5 @@
 use crate::entities::authors::{Author, NewAuthor};
+use crate::handlers::api::authors::FormLoginAuthor;
 use crate::services::authors::auth;
 use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{LoginTemplate, RegisterTemplate};
@@ -7,7 +8,6 @@ use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use diesel::QueryResult;
 use std::string::ToString;
-use crate::handlers::api::authors::FormLoginAuthor;
 
 // TODO duplicated const
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";

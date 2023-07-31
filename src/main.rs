@@ -165,13 +165,13 @@ mod tests {
     use super::*;
     use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
     use crate::entities::links::{Link, NewLink};
+    use crate::handlers::api::authors::FormLoginAuthor;
     use axum::body::Body;
     use axum::http;
     use axum::http::{Request, StatusCode};
     use serde_json::{json, Value};
     use std::env;
     use tower::ServiceExt;
-    use crate::handlers::api::authors::FormLoginAuthor;
 
     #[tokio::test]
     async fn integration_tests() {

@@ -1,7 +1,7 @@
+use crate::services::session::session_remove_alert;
 use crate::templates::{BackArticleNewTemplate, BackArticlesListTemplate};
 use axum::response::Redirect;
 use axum_sessions::extractors::WritableSession;
-use crate::services::session::session_remove_alert;
 
 pub async fn list() -> BackArticlesListTemplate {
     BackArticlesListTemplate {

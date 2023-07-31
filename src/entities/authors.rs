@@ -1,11 +1,11 @@
 use crate::schema::*;
+use crate::services::authors::hash_password;
 use crate::services::database::establish_connection;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
-use crate::services::authors::hash_password;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

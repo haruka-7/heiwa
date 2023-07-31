@@ -1,5 +1,7 @@
 use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
+use crate::entities::roles::Roles;
 use crate::handlers::api::errors::{handle_error, handler_validation_error};
+use crate::services::authors::verify_password;
 use crate::services::jwt;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
@@ -8,8 +10,6 @@ use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use validator::Validate;
-use crate::entities::roles::Roles;
-use crate::services::authors::verify_password;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormLoginAuthor {
@@ -20,22 +20,19 @@ pub struct FormLoginAuthor {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthAuthor {
     pub token: String,
-    pub role: String
+    pub role: String,
 }
 
 impl AuthAuthor {
     fn new(token: String, role: String) -> Self {
+        Self { token, role }
+    }
+    pub(crate) fn default() -> Self {
         Self {
-            token,
-            role
+            token: "".to_string(),
+            role: "".to_string(),
         }
     }
-     pub(crate) fn default() -> Self {
-         Self {
-             token: "".to_string(),
-             role: "".to_string(),
-         }
-     }
 }
 
 pub async fn get(Path(name): Path<String>) -> Response {
@@ -96,7 +93,11 @@ pub async fn login(Json(payload): Json<FormLoginAuthor>) -> Response {
                 match verify_password(&payload.password, &author.password) {
                     Ok(_) => {
                         let jwt_token = jwt::sign(author.name.clone()).unwrap();
-                        Json(json!(AuthAuthor::new(jwt_token, author.role.clone().unwrap_or(Roles::Author.to_string())))).into_response()
+                        Json(json!(AuthAuthor::new(
+                            jwt_token,
+                            author.role.clone().unwrap_or(Roles::Author.to_string())
+                        )))
+                        .into_response()
                     }
                     Err(_) => StatusCode::UNAUTHORIZED.into_response(),
                 }
