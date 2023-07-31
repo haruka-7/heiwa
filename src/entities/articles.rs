@@ -1,7 +1,7 @@
 use crate::entities::articles_tags::ArticleTag;
 use crate::entities::tags::Tag;
 use crate::schema::*;
-use crate::services::database::establish_connection;
+use crate::services::database::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into};
@@ -42,32 +42,32 @@ impl Article {
             .filter(articles::permalink.eq(permalink_param))
             .limit(1)
             .select(Article::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn find_by_author(author_param: i32) -> QueryResult<Vec<Article>> {
         Article::table()
             .filter(articles::author_id.eq(author_param))
             .select(Article::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn find_by_tag(tag: &Tag) -> QueryResult<Vec<Article>> {
         ArticleTag::belonging_to(&tag)
             .inner_join(articles::table)
             .select(Article::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn create(new_article: NewArticle) -> QueryResult<Article> {
         insert_into(articles::table)
             .values(&new_article)
             .returning(Article::as_returning())
-            .get_result(&mut establish_connection())
+            .get_result(&mut connection_pool().get().unwrap())
     }
 
     pub fn delete(id: i32) -> QueryResult<usize> {
-        delete(Article::table().find(id)).execute(&mut establish_connection())
+        delete(Article::table().find(id)).execute(&mut connection_pool().get().unwrap())
     }
 }
 

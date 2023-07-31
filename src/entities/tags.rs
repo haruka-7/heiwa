@@ -1,7 +1,7 @@
 use crate::entities::articles::Article;
 use crate::entities::articles_tags::ArticleTag;
 use crate::schema::*;
-use crate::services::database::establish_connection;
+use crate::services::database::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into};
@@ -32,25 +32,25 @@ impl Tag {
             .filter(tags::permalink.eq(permalink_param))
             .limit(1)
             .select(Tag::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn find_tags_by_article(article: &Article) -> QueryResult<Vec<Tag>> {
         ArticleTag::belonging_to(&article)
             .inner_join(tags::table)
             .select(Tag::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn create(new_tag: NewTag) -> QueryResult<Tag> {
         insert_into(tags::table)
             .values(&new_tag)
             .returning(Tag::as_returning())
-            .get_result(&mut establish_connection())
+            .get_result(&mut connection_pool().get().unwrap())
     }
 
     pub fn delete(id: i32) -> QueryResult<usize> {
-        delete(Tag::table().find(id)).execute(&mut establish_connection())
+        delete(Tag::table().find(id)).execute(&mut connection_pool().get().unwrap())
     }
 }
 

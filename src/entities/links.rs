@@ -1,6 +1,6 @@
 use crate::entities::authors::Author;
 use crate::schema::*;
-use crate::services::database::establish_connection;
+use crate::services::database::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
@@ -41,23 +41,23 @@ impl Link {
     pub fn find_by_author(author: &Author) -> QueryResult<Vec<Link>> {
         Link::belonging_to(&author)
             .select(Link::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn create(new_link: NewLink) -> QueryResult<Link> {
         insert_into(links::table)
             .values(&new_link)
             .returning(Link::as_returning())
-            .get_result(&mut establish_connection())
+            .get_result(&mut connection_pool().get().unwrap())
     }
 
     pub fn update(update_link: Link) -> QueryResult<usize> {
         update(&update_link)
             .set(&update_link)
-            .execute(&mut establish_connection())
+            .execute(&mut connection_pool().get().unwrap())
     }
 
     pub fn delete(id: i32) -> QueryResult<usize> {
-        delete(Link::table().find(id)).execute(&mut establish_connection())
+        delete(Link::table().find(id)).execute(&mut connection_pool().get().unwrap())
     }
 }

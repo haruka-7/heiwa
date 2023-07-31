@@ -1,6 +1,6 @@
 use crate::schema::*;
 use crate::services::authors::hash_password;
-use crate::services::database::establish_connection;
+use crate::services::database::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};
@@ -48,7 +48,7 @@ impl Author {
             .filter(authors::name.eq(name_param))
             .limit(1)
             .select(Author::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn find_by_email(email_param: String) -> QueryResult<Vec<Self>> {
@@ -56,7 +56,7 @@ impl Author {
             .filter(authors::email.eq(email_param))
             .limit(1)
             .select(Author::as_select())
-            .load(&mut establish_connection())
+            .load(&mut connection_pool().get().unwrap())
     }
 
     pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
@@ -64,7 +64,7 @@ impl Author {
         insert_into(authors::table)
             .values(&new_author)
             .returning(Author::as_returning())
-            .get_result(&mut establish_connection())
+            .get_result(&mut connection_pool().get().unwrap())
     }
 
     pub fn update(mut update_author: UpdateAuthor) -> QueryResult<usize> {
@@ -73,11 +73,11 @@ impl Author {
         }
         update(&update_author)
             .set(&update_author)
-            .execute(&mut establish_connection())
+            .execute(&mut connection_pool().get().unwrap())
     }
 
     pub fn delete(author_id: i32) -> QueryResult<usize> {
-        delete(Author::table().find(author_id)).execute(&mut establish_connection())
+        delete(Author::table().find(author_id)).execute(&mut connection_pool().get().unwrap())
     }
 }
 
