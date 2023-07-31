@@ -1,7 +1,7 @@
 use crate::entities::articles::Article;
 use crate::entities::tags::Tag;
 use crate::schema::*;
-use crate::services::database::{connection_pool, establish_connection};
+use crate::services::database::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into};
@@ -29,6 +29,7 @@ impl ArticleTag {
     }
 
     pub fn delete(article_id: i32, tag_id: i32) -> QueryResult<usize> {
-        delete(ArticleTag::table().find((article_id, tag_id))).execute(&mut establish_connection())
+        delete(ArticleTag::table().find((article_id, tag_id)))
+            .execute(&mut connection_pool().get().unwrap())
     }
 }

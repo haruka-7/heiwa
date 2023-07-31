@@ -1,6 +1,6 @@
-use crate::entities::authors::{Author, NewAuthor};
+use crate::entities::authors::NewAuthor;
 use crate::handlers::api::authors::FormLoginAuthor;
-use crate::services::authors::{auth_api_call, create_api_call};
+use crate::services::authors::{auth_api_call, create_author_api_call, find_author_api_call};
 use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{LoginTemplate, RegisterTemplate};
 use axum::response::{IntoResponse, Redirect, Response};
@@ -28,18 +28,9 @@ pub async fn login_action(
     mut session: WritableSession,
     Form(form): Form<FormLoginAuthor>,
 ) -> Response {
-    let author_result = Author::find_by_name(form.name.clone());
-    match author_result {
-        Ok(authors) => {
-            if authors.is_empty() {
-                session_insert_alert(&mut session, LOGIN_ALERT);
-                Redirect::to("/login").into_response()
-            } else {
-                do_login(session, form).await
-            }
-        }
-        Err(e) => {
-            tracing::error!("{}", e);
+    match find_author_api_call(form.name.clone()).await {
+        Ok(_) => do_login(session, form).await,
+        Err(_) => {
             session_insert_alert(&mut session, LOGIN_ALERT);
             Redirect::to("/login").into_response()
         }
@@ -65,7 +56,7 @@ pub async fn register_action(
 ) -> Response {
     let password: String = form.password.clone();
     let name: String = form.name.clone();
-    match create_api_call(form).await {
+    match create_author_api_call(form).await {
         Ok(_) => {
             let auth_author: FormLoginAuthor = FormLoginAuthor { name, password };
             do_login(session, auth_author).await

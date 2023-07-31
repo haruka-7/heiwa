@@ -1,14 +1,17 @@
 use crate::entities::authors::Author;
 use crate::entities::links::{Link, NewLink};
 use crate::handlers::api::errors::handle_error;
-use axum::extract::Path;
+use crate::AppState;
+use axum::extract::{Path, State};
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
+use std::sync::Arc;
 
-pub async fn get(Path(author_name): Path<String>) -> Response {
-    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(author_name);
+pub async fn get(State(state): State<Arc<AppState>>, Path(author_name): Path<String>) -> Response {
+    let author_result: QueryResult<Vec<Author>> =
+        Author::find_by_name(state.db_connection.get().unwrap(), author_name);
     match author_result {
         Ok(author) => {
             if author.is_empty() {

@@ -1,4 +1,4 @@
-use crate::services::jwt::verify_token;
+use crate::services::jwt::verify;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::{http::Request, middleware::Next};
@@ -13,7 +13,7 @@ pub async fn authorization_bearer_required<B>(
     req: Request<B>,
     next: Next<B>,
 ) -> Result<Response, StatusCode> {
-    match verify_token(token.0) {
+    match verify(token.0.as_str()) {
         Ok(_) => Ok(next.run(req).await),
         Err(_) => Err(StatusCode::UNAUTHORIZED),
     }

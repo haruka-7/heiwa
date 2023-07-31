@@ -1,7 +1,6 @@
-use crate::entities::authors::Author;
 use crate::CONFIG;
 use chrono::{Duration, Utc};
-use diesel::QueryResult;
+
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -37,6 +36,7 @@ pub fn sign(name: String) -> Result<String, ()> {
     }
 }
 
+//TODO SECURITY verify that claims.sub is the logged user, because actually with the same token I can do action on others authors
 pub fn verify(token: &str) -> Result<Claims, String> {
     let token_decoded = jsonwebtoken::decode(
         token,
@@ -48,9 +48,4 @@ pub fn verify(token: &str) -> Result<Claims, String> {
         Ok(claims) => Ok(claims),
         Err(_) => Err("Invalid JWT token".to_string()),
     }
-}
-
-pub fn verify_token(token: String) -> QueryResult<Vec<Author>> {
-    let claims = verify(&token).unwrap();
-    Author::find_by_name(claims.sub)
 }

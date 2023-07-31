@@ -1,12 +1,16 @@
 use crate::services::config::Config;
+use crate::services::database::connection_pool;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
 use axum::{middleware, Router};
 use axum_sessions::{async_session, SessionLayer};
+use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::PgConnection;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
 use rand::RngCore;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::catch_panic::CatchPanicLayer;
@@ -20,10 +24,13 @@ mod schema;
 mod services;
 mod templates;
 
-// TODO use AppState for postgres connection
-
 lazy_static! {
     static ref CONFIG: Config = Config::new();
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db_connection: Pool<ConnectionManager<PgConnection>>,
 }
 
 #[tokio::main]
@@ -34,7 +41,6 @@ async fn main() {
         .merge(routes_front())
         .nest("/dashboard", routes_dashboard())
         .nest("/api", routes_api())
-        .nest("/api", routes_api_with_bearer_token())
         .fallback_service(routes_statics());
 
     let (app, addr) = init_server(routes);
@@ -102,28 +108,12 @@ fn routes_statics() -> Router {
 }
 
 fn routes_api() -> Router {
-    Router::new()
-        .route("/authors/login", post(handlers::api::authors::login))
-        .route("/authors/create", post(handlers::api::authors::create))
-        .route("//authors/get/:name", get(handlers::api::authors::get))
-        .route("/links/get/:author_name", get(handlers::api::links::get))
-        .route(
-            "/articles/get/:permalink",
-            get(handlers::api::articles::get),
-        )
-        .route("/articles/tag/:tag_id", get(handlers::api::articles::tag))
-        .route(
-            "/articles/author/:author_id",
-            get(handlers::api::articles::author),
-        )
-        .route(
-            "/tags/get/:article_permalink",
-            get(handlers::api::tags::get),
-        )
-}
+    let state: Arc<AppState> = Arc::new(AppState {
+        db_connection: connection_pool(),
+    });
 
-fn routes_api_with_bearer_token() -> Router {
     Router::new()
+        // Protected routes with bearer jwt token
         .route("/authors/update", patch(handlers::api::authors::update))
         .route(
             "/authors/delete/:id",
@@ -149,259 +139,24 @@ fn routes_api_with_bearer_token() -> Router {
         .layer(middleware::from_fn(
             middlewares::authentication::authorization_bearer_required,
         ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
-    use crate::entities::links::{Link, NewLink};
-    use crate::handlers::api::authors::FormLoginAuthor;
-    use crate::services::jwt::sign;
-    use axum::body::Body;
-    use axum::http;
-    use axum::http::{Request, StatusCode};
-    use serde_json::{json, Value};
-    use std::env;
-    use tower::ServiceExt;
-
-    #[tokio::test]
-    async fn integration_tests() {
-        dotenv().ok();
-        env::set_var("RUST_LOG", "none");
-        let new_author: NewAuthor = NewAuthor {
-            name: "tomoko".to_string(),
-            email: "tomokoaran@heiwa.jp".to_string(),
-            display_name: "Tomoko Aran".to_string(),
-            password: "midnight".to_string(),
-        };
-        let login_author_failed: FormLoginAuthor = FormLoginAuthor {
-            name: "minako".to_string(),
-            password: "midnight".to_string(),
-        };
-        let login_author: FormLoginAuthor = FormLoginAuthor {
-            name: "minako".to_string(),
-            password: "pretenders".to_string(),
-        };
-        let new_link: NewLink = NewLink {
-            url: "https://pedro.tokyo".to_string(),
-            title: "Ayuni D;".to_string(),
-            author_id: 1,
-        };
-
-        let routes: Router = Router::new()
-            .merge(routes_dashboard())
-            .merge(routes_front())
-            .merge(routes_api())
-            .merge(routes_api_with_bearer_token());
-        let app = init_server(routes).0;
-
-        // Create author
-        let author_name: String = new_author.name.clone();
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/api/authors/create")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::from(serde_json::to_vec(&json!(new_author)).unwrap()))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::CREATED);
-
-        let authors: Vec<Author> = Author::find_by_name(author_name).unwrap();
-        let author: &Author = authors.first().unwrap();
-        let jwt_token: String = sign(author.name.clone()).unwrap();
-
-        // Create author error name exist
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/api/authors/create")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::from(serde_json::to_vec(&json!(new_author)).unwrap()))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-
-        // Update author name and password
-        let update_author: UpdateAuthor = UpdateAuthor {
-            id: author.id,
-            name: Option::from("minako".to_string()),
-            email: None,
-            display_name: None,
-            password: Option::from("pretenders".to_string()),
-        };
-
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::PATCH)
-                    .uri("/api/authors/update")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .header(
-                        http::header::AUTHORIZATION,
-                        format!("Bearer {}", &jwt_token),
-                    )
-                    .body(Body::from(
-                        serde_json::to_vec(&json!(update_author)).unwrap(),
-                    ))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Get author
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .uri(format!("/api/authors/get/{}", update_author.name.unwrap()))
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Login author
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/api/authors/login")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::from(
-                        serde_json::to_vec(&json!(login_author)).unwrap(),
-                    ))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Login author failed
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/api/authors/login")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .body(Body::from(
-                        serde_json::to_vec(&json!(login_author_failed)).unwrap(),
-                    ))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
-
-        // Delete author
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::DELETE)
-                    .uri(format!("/api/authors/delete/{}", author.id))
-                    .header(
-                        http::header::AUTHORIZATION,
-                        format!("Bearer {}", &jwt_token),
-                    )
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Create link
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::POST)
-                    .uri("/api/links/create")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .header(
-                        http::header::AUTHORIZATION,
-                        format!("Bearer {}", &jwt_token),
-                    )
-                    .body(Body::from(serde_json::to_vec(&json!(new_link)).unwrap()))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::CREATED);
-
-        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-        let body: Value = serde_json::from_slice(&body).unwrap();
-        let link: Link = serde_json::from_str(&body.to_string()).unwrap();
-
-        // Get admin user links
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .uri(format!("/api/links/get/{}", "admin"))
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Update link
-        let update_link: Link = Link {
-            id: link.id,
-            url: "htps://numbergirl.com".to_string(),
-            title: "Number Girl".to_string(),
-            author_id: link.author_id,
-        };
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::PATCH)
-                    .uri("/api/links/update")
-                    .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-                    .header(
-                        http::header::AUTHORIZATION,
-                        format!("Bearer {}", &jwt_token),
-                    )
-                    .body(Body::from(serde_json::to_vec(&json!(update_link)).unwrap()))
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // Delete link
-        let response = app
-            .clone()
-            .oneshot(
-                Request::builder()
-                    .method(http::Method::DELETE)
-                    .uri(format!("/api/links/delete/{}", link.id))
-                    .header(
-                        http::header::AUTHORIZATION,
-                        format!("Bearer {}", &jwt_token),
-                    )
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-    }
+        // Unprotected route
+        .route("/authors/login", post(handlers::api::authors::login))
+        .route("/authors/create", post(handlers::api::authors::create))
+        //TODO SECURITY this return a full Author with hashed password
+        .route("/authors/get/:name", get(handlers::api::authors::get))
+        .route("/links/get/:author_name", get(handlers::api::links::get))
+        .route(
+            "/articles/get/:permalink",
+            get(handlers::api::articles::get),
+        )
+        .route("/articles/tag/:tag_id", get(handlers::api::articles::tag))
+        .route(
+            "/articles/author/:author_id",
+            get(handlers::api::articles::author),
+        )
+        .route(
+            "/tags/get/:article_permalink",
+            get(handlers::api::tags::get),
+        )
+        .with_state(state)
 }

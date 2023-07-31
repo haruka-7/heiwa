@@ -1,14 +1,18 @@
-use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
+use crate::entities::authors::{validate_unique_name, Author, NewAuthor, UpdateAuthor};
 use crate::entities::roles::Roles;
-use crate::handlers::api::errors::{handle_error, handler_validation_error};
+use crate::handlers::api::errors::{
+    handle_error, handler_validation_error, handler_validation_errors,
+};
 use crate::services::authors::verify_password;
 use crate::services::jwt;
-use axum::extract::Path;
+use crate::AppState;
+use axum::extract::{Path, State};
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::sync::Arc;
 use validator::Validate;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,8 +39,9 @@ impl AuthAuthor {
     }
 }
 
-pub async fn get(Path(name): Path<String>) -> Response {
-    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(name);
+pub async fn get(State(state): State<Arc<AppState>>, Path(name): Path<String>) -> Response {
+    let author_result: QueryResult<Vec<Author>> =
+        Author::find_by_name(state.db_connection.get().unwrap(), name);
     match author_result {
         Ok(author) => {
             if author.is_empty() {
@@ -49,41 +54,12 @@ pub async fn get(Path(name): Path<String>) -> Response {
     }
 }
 
-pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
-    match payload.validate() {
-        Ok(_) => {
-            let author_result: QueryResult<Author> = Author::create(payload);
-            match author_result {
-                Ok(author) => {
-                    let jwt_token = jwt::sign(author.name).unwrap();
-                    (
-                        StatusCode::CREATED,
-                        Json(json!({"access_token": jwt_token})),
-                    )
-                        .into_response()
-                }
-                Err(e) => handle_error(e),
-            }
-        }
-        Err(e) => handler_validation_error(e),
-    }
-}
-
-pub async fn update(Json(payload): Json<UpdateAuthor>) -> Response {
-    match payload.validate() {
-        Ok(_) => {
-            let update_result: QueryResult<usize> = Author::update(payload);
-            match update_result {
-                Ok(_) => StatusCode::OK.into_response(),
-                Err(e) => handle_error(e),
-            }
-        }
-        Err(e) => handler_validation_error(e),
-    }
-}
-
-pub async fn login(Json(payload): Json<FormLoginAuthor>) -> Response {
-    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(payload.name);
+pub async fn login(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<FormLoginAuthor>,
+) -> Response {
+    let author_result: QueryResult<Vec<Author>> =
+        Author::find_by_name(state.db_connection.get().unwrap(), payload.name);
     match author_result {
         Ok(authors) => {
             if authors.is_empty() {
@@ -104,6 +80,45 @@ pub async fn login(Json(payload): Json<FormLoginAuthor>) -> Response {
             }
         }
         Err(e) => handle_error(e),
+    }
+}
+
+pub async fn create(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<NewAuthor>,
+) -> Response {
+    match payload.validate() {
+        Ok(_) => match validate_unique_name(state, &payload.name) {
+            Ok(_) => {
+                let author_result: QueryResult<Author> = Author::create(payload);
+                match author_result {
+                    Ok(author) => {
+                        let jwt_token = jwt::sign(author.name).unwrap();
+                        (
+                            StatusCode::CREATED,
+                            Json(json!({"access_token": jwt_token})),
+                        )
+                            .into_response()
+                    }
+                    Err(e) => handle_error(e),
+                }
+            }
+            Err(e) => handler_validation_error(e),
+        },
+        Err(e) => handler_validation_errors(e),
+    }
+}
+
+pub async fn update(Json(payload): Json<UpdateAuthor>) -> Response {
+    match payload.validate() {
+        Ok(_) => {
+            let update_result: QueryResult<usize> = Author::update(payload);
+            match update_result {
+                Ok(_) => StatusCode::OK.into_response(),
+                Err(e) => handle_error(e),
+            }
+        }
+        Err(e) => handler_validation_errors(e),
     }
 }
 

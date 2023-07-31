@@ -1,10 +1,13 @@
 use crate::schema::*;
 use crate::services::authors::hash_password;
 use crate::services::database::connection_pool;
+use crate::AppState;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, PooledConnection};
 use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use validator::{Validate, ValidationError};
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
@@ -22,7 +25,6 @@ pub struct Author {
 #[derive(Debug, Insertable, Serialize, Deserialize, Validate)]
 #[diesel(table_name = authors)]
 pub struct NewAuthor {
-    #[validate(custom = "validate_unique_name")]
     pub name: String,
     #[validate(email, custom = "validate_unique_email")]
     pub email: String,
@@ -34,7 +36,6 @@ pub struct NewAuthor {
 #[diesel(table_name = authors)]
 pub struct UpdateAuthor {
     pub id: i32,
-    #[validate(custom = "validate_unique_name")]
     pub name: Option<String>,
     #[validate(email, custom = "validate_unique_email")]
     pub email: Option<String>,
@@ -43,12 +44,15 @@ pub struct UpdateAuthor {
 }
 
 impl Author {
-    pub fn find_by_name(name_param: String) -> QueryResult<Vec<Self>> {
+    pub fn find_by_name(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        name_param: String,
+    ) -> QueryResult<Vec<Self>> {
         Self::table()
             .filter(authors::name.eq(name_param))
             .limit(1)
             .select(Author::as_select())
-            .load(&mut connection_pool().get().unwrap())
+            .load(&mut connection)
     }
 
     pub fn find_by_email(email_param: String) -> QueryResult<Vec<Self>> {
@@ -81,8 +85,9 @@ impl Author {
     }
 }
 
-pub fn validate_unique_name(name: &str) -> Result<(), ValidationError> {
-    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(name.to_string());
+pub fn validate_unique_name(state: Arc<AppState>, name: &str) -> Result<(), ValidationError> {
+    let author_result: QueryResult<Vec<Author>> =
+        Author::find_by_name(state.db_connection.get().unwrap(), name.to_string());
     match author_result {
         Ok(authors) => {
             if authors.is_empty() {
