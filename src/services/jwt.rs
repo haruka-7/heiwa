@@ -50,7 +50,7 @@ pub fn verify(token: &str) -> Result<Claims, ()> {
     }
 }
 
-pub fn auth(token: String) -> QueryResult<Vec<Author>> {
+pub fn verify_token(token: String) -> QueryResult<Vec<Author>> {
     let claims = verify(&token).unwrap();
     Author::find_by_name(claims.sub)
 }

@@ -1,7 +1,9 @@
 use crate::handlers::api::authors::{AuthAuthor, FormLoginAuthor};
+use crate::services::jwt::verify_token;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use axum_sessions::extractors::WritableSession;
 
 pub async fn auth(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> {
     let client = reqwest::Client::new();
@@ -20,6 +22,17 @@ pub async fn auth(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> 
         .unwrap_or(AuthAuthor::default());
     if !auth.token.is_empty() {
         Ok(auth)
+    } else {
+        Err(())
+    }
+}
+
+pub fn is_author_logged(session: &WritableSession) -> Result<(), ()> {
+    if session.get::<String>("token").is_some() {
+        match verify_token(session.get::<String>("token").unwrap()) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(()),
+        }
     } else {
         Err(())
     }
