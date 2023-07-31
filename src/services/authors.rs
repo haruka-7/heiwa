@@ -66,7 +66,13 @@ pub async fn find_author_api_call(name: String) -> Result<(), ()> {
 pub fn is_author_logged(session: &WritableSession) -> Result<(), ()> {
     if session.get::<String>("token").is_some() {
         match verify(session.get::<String>("token").unwrap().as_str()) {
-            Ok(_) => Ok(()),
+            Ok(claims) => {
+                if claims.sub == session.get::<i32>("id").unwrap() {
+                    Ok(())
+                } else {
+                    Err(())
+                }
+            },
             Err(_) => Err(()),
         }
     } else {

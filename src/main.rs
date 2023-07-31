@@ -2,7 +2,7 @@ use crate::services::config::Config;
 use crate::services::database::connection_pool;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{delete, get, get_service, patch, post};
-use axum::{middleware, Router};
+use axum::Router;
 use axum_sessions::{async_session, SessionLayer};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
@@ -113,7 +113,7 @@ fn routes_api() -> Router {
     });
 
     Router::new()
-        // Protected routes with bearer jwt token
+        // Protected API routes with bearer jwt token
         .route("/authors/update", patch(handlers::api::authors::update))
         .route(
             "/authors/delete/:id",
@@ -136,10 +136,9 @@ fn routes_api() -> Router {
             "/tags/delete/:article_id/:tag_id",
             delete(handlers::api::tags::delete),
         )
-        .layer(middleware::from_fn(
-            middlewares::authentication::authorization_bearer_required,
-        ))
-        // Unprotected route
+
+
+        // Unprotected API routes
         .route("/authors/login", post(handlers::api::authors::login))
         .route("/authors/create", post(handlers::api::authors::create))
         //TODO SECURITY this return a full Author with hashed password

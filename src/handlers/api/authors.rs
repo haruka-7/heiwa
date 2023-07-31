@@ -13,7 +13,9 @@ use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
+use axum_auth::AuthBearer;
 use validator::Validate;
+use crate::services::jwt::verify;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormLoginAuthor {
@@ -23,16 +25,18 @@ pub struct FormLoginAuthor {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthAuthor {
+    pub id: i32,
     pub token: String,
     pub role: String,
 }
 
 impl AuthAuthor {
-    fn new(token: String, role: String) -> Self {
-        Self { token, role }
+    fn new(id: i32, token: String, role: String) -> Self {
+        Self { id, token, role }
     }
     pub(crate) fn default() -> Self {
         Self {
+            id: 0,
             token: "".to_string(),
             role: "".to_string(),
         }
@@ -68,8 +72,9 @@ pub async fn login(
                 let author: &Author = authors.first().unwrap();
                 match verify_password(&payload.password, &author.password) {
                     Ok(_) => {
-                        let jwt_token = jwt::sign(author.name.clone()).unwrap();
+                        let jwt_token = jwt::sign(author.id).unwrap();
                         Json(json!(AuthAuthor::new(
+                            author.id,
                             jwt_token,
                             author.role.clone().unwrap_or(Roles::Author.to_string())
                         )))
@@ -93,7 +98,7 @@ pub async fn create(
                 let author_result: QueryResult<Author> = Author::create(payload);
                 match author_result {
                     Ok(author) => {
-                        let jwt_token = jwt::sign(author.name).unwrap();
+                        let jwt_token = jwt::sign(author.id).unwrap();
                         (
                             StatusCode::CREATED,
                             Json(json!({"access_token": jwt_token})),
@@ -109,16 +114,24 @@ pub async fn create(
     }
 }
 
-pub async fn update(Json(payload): Json<UpdateAuthor>) -> Response {
-    match payload.validate() {
-        Ok(_) => {
-            let update_result: QueryResult<usize> = Author::update(payload);
-            match update_result {
-                Ok(_) => StatusCode::OK.into_response(),
-                Err(e) => handle_error(e),
-            }
+// TODO add the author id as param to the verify function
+pub async fn update(token: AuthBearer, Json(payload): Json<UpdateAuthor>) -> Response {
+    match verify(token.0.as_str()) {
+        Ok(claims) => {
+            if claims.sub == payload.id {
+                match payload.validate() {
+                    Ok(_) => {
+                        let update_result: QueryResult<usize> = Author::update(payload);
+                        match update_result {
+                            Ok(_) => StatusCode::OK.into_response(),
+                            Err(e) => handle_error(e),
+                        }
+                    }
+                    Err(e) => handler_validation_errors(e),
+                }
+            } else { StatusCode::FORBIDDEN.into_response() }
         }
-        Err(e) => handler_validation_errors(e),
+        Err(_) => StatusCode::BAD_REQUEST.into_response()
     }
 }
 
