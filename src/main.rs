@@ -71,10 +71,7 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 fn routes_dashboard() -> Router {
     Router::new()
         .route("/", get(handlers::backoffice::dashboard::show))
-        .route(
-            "/articles",
-            get(handlers::backoffice::articles::list),
-        )
+        .route("/articles", get(handlers::backoffice::articles::list))
         .route(
             "/article",
             get(handlers::backoffice::articles::new)
@@ -109,18 +106,12 @@ fn routes_api() -> Router {
         .route("/authors/login", post(handlers::api::authors::login))
         .route("/authors/create", post(handlers::api::authors::create))
         .route("//authors/get/:name", get(handlers::api::authors::get))
-        .route(
-            "/links/get/:author_name",
-            get(handlers::api::links::get),
-        )
+        .route("/links/get/:author_name", get(handlers::api::links::get))
         .route(
             "/articles/get/:permalink",
             get(handlers::api::articles::get),
         )
-        .route(
-            "/articles/tag/:tag_id",
-            get(handlers::api::articles::tag),
-        )
+        .route("/articles/tag/:tag_id", get(handlers::api::articles::tag))
         .route(
             "/articles/author/:author_id",
             get(handlers::api::articles::author),
@@ -140,14 +131,8 @@ fn routes_api_with_bearer_token() -> Router {
         )
         .route("/links/create", post(handlers::api::links::create))
         .route("/links/update", patch(handlers::api::links::update))
-        .route(
-            "/links/delete/:id",
-            delete(handlers::api::links::delete),
-        )
-        .route(
-            "/articles/create",
-            post(handlers::api::articles::create),
-        )
+        .route("/links/delete/:id", delete(handlers::api::links::delete))
+        .route("/articles/create", post(handlers::api::articles::create))
         // TODO add search and update articles route
         .route(
             "/articles/delete/:id",
