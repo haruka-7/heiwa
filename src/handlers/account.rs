@@ -8,7 +8,7 @@ use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use std::string::ToString;
 
-// TODO duplicated const
+// TODO use a toml file
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
 const REGISTER_ALERT: &str = "Erreur lors de la création du compte";
 

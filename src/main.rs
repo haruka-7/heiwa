@@ -31,10 +31,10 @@ async fn main() {
     dotenv().ok();
 
     let routes: Router = Router::new()
-        .merge(routes_dashboard())
         .merge(routes_front())
-        .merge(routes_api())
-        .merge(routes_api_with_bearer_token())
+        .nest("/dashboard", routes_dashboard())
+        .nest("/api", routes_api())
+        .nest("/api", routes_api_with_bearer_token())
         .fallback_service(routes_statics());
 
     let (app, addr) = init_server(routes);
@@ -70,13 +70,13 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
 fn routes_dashboard() -> Router {
     Router::new()
-        .route("/dashboard", get(handlers::backoffice::dashboard::show))
+        .route("/", get(handlers::backoffice::dashboard::show))
         .route(
-            "/dashboard/articles",
+            "/articles",
             get(handlers::backoffice::articles::list),
         )
         .route(
-            "/dashboard/article",
+            "/article",
             get(handlers::backoffice::articles::new)
                 .post(handlers::backoffice::articles::new_action),
         )
@@ -106,59 +106,59 @@ fn routes_statics() -> Router {
 
 fn routes_api() -> Router {
     Router::new()
-        .route("/api/authors/login", post(handlers::api::authors::login))
-        .route("/api/authors/create", post(handlers::api::authors::create))
-        .route("/api/authors/get/:name", get(handlers::api::authors::get))
+        .route("/authors/login", post(handlers::api::authors::login))
+        .route("/authors/create", post(handlers::api::authors::create))
+        .route("//authors/get/:name", get(handlers::api::authors::get))
         .route(
-            "/api/links/get/:author_name",
+            "/links/get/:author_name",
             get(handlers::api::links::get),
         )
         .route(
-            "/api/articles/get/:permalink",
+            "/articles/get/:permalink",
             get(handlers::api::articles::get),
         )
         .route(
-            "/api/articles/tag/:tag_id",
+            "/articles/tag/:tag_id",
             get(handlers::api::articles::tag),
         )
         .route(
-            "/api/articles/author/:author_id",
+            "/articles/author/:author_id",
             get(handlers::api::articles::author),
         )
         .route(
-            "/api/tags/get/:article_permalink",
+            "/tags/get/:article_permalink",
             get(handlers::api::tags::get),
         )
 }
 
 fn routes_api_with_bearer_token() -> Router {
     Router::new()
-        .route("/api/authors/update", patch(handlers::api::authors::update))
+        .route("/authors/update", patch(handlers::api::authors::update))
         .route(
-            "/api/authors/delete/:id",
+            "/authors/delete/:id",
             delete(handlers::api::authors::delete),
         )
-        .route("/api/links/create", post(handlers::api::links::create))
-        .route("/api/links/update", patch(handlers::api::links::update))
+        .route("/links/create", post(handlers::api::links::create))
+        .route("/links/update", patch(handlers::api::links::update))
         .route(
-            "/api/links/delete/:id",
+            "/links/delete/:id",
             delete(handlers::api::links::delete),
         )
         .route(
-            "/api/articles/create",
+            "/articles/create",
             post(handlers::api::articles::create),
         )
         // TODO add search and update articles route
         .route(
-            "/api/articles/delete/:id",
+            "/articles/delete/:id",
             delete(handlers::api::articles::delete),
         )
         .route(
-            "/api/tags/create/:article_id",
+            "/tags/create/:article_id",
             post(handlers::api::tags::create),
         )
         .route(
-            "/api/tags/delete/:article_id/:tag_id",
+            "/tags/delete/:article_id/:tag_id",
             delete(handlers::api::tags::delete),
         )
         .layer(middleware::from_fn(
