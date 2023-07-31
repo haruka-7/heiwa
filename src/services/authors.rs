@@ -1,21 +1,21 @@
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use crate::entities::authors::{AuthorAccessToken, LoginAuthor};
+use crate::handlers::api::authors::{AuthAuthor, FormLoginAuthor};
 
-pub async fn auth(login_author: LoginAuthor) -> Result<String, ()> {
+pub async fn auth(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> {
     let client = reqwest::Client::new();
-    let response = client
+    let request = client
         .post("http://localhost:3000/api/authors/login")
-        .json(&login_author)
-        .send()
+        .json(&form_login_author);
+    let response = request.send().await.unwrap();
+    tracing::debug!("\nREQUEST POST http://localhost:3000/api/authors/login \n{:?}\nRESPONSE\n{:?}", &form_login_author, &response);
+    let auth = response
+        .json::<AuthAuthor>()
         .await
-        .unwrap()
-        .json::<AuthorAccessToken>()
-        .await
-        .unwrap();
-    if !response.access_token.is_empty() {
-        Ok(response.access_token)
+        .unwrap_or(AuthAuthor::default());
+    if !auth.token.is_empty() {
+        Ok(auth)
     } else {
         Err(())
     }

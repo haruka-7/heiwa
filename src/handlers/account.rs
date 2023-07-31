@@ -1,4 +1,5 @@
-use crate::entities::authors::{Author, LoginAuthor, LoginAuthorPassword, NewAuthor};
+use crate::entities::authors::{Author, NewAuthor};
+use crate::services::authors::auth;
 use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{LoginTemplate, RegisterTemplate};
 use axum::response::{IntoResponse, Redirect, Response};
@@ -6,7 +7,7 @@ use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use diesel::QueryResult;
 use std::string::ToString;
-use crate::services::authors::auth;
+use crate::handlers::api::authors::FormLoginAuthor;
 
 // TODO duplicated const
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
@@ -20,11 +21,29 @@ pub async fn login(mut session: WritableSession) -> Response {
     LoginTemplate {
         alert: alert_message,
     }
-        .into_response()
+    .into_response()
 }
 
-pub async fn login_action(mut session: WritableSession, Form(form): Form<LoginAuthor>) -> Response {
-    do_login(session, form).await
+pub async fn login_action(
+    mut session: WritableSession,
+    Form(form): Form<FormLoginAuthor>,
+) -> Response {
+    let author_result = Author::find_by_name(form.name.clone());
+    match author_result {
+        Ok(authors) => {
+            if authors.is_empty() {
+                session_insert_alert(&mut session, LOGIN_ALERT);
+                Redirect::to("/login").into_response()
+            } else {
+                do_login(session, form).await
+            }
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            session_insert_alert(&mut session, LOGIN_ALERT);
+            Redirect::to("/login").into_response()
+        }
+    }
 }
 
 pub async fn logout_action(mut session: WritableSession) -> Redirect {
@@ -38,15 +57,19 @@ pub async fn register() -> RegisterTemplate {
     }
 }
 
-pub async fn register_action(mut session: WritableSession, Form(form): Form<NewAuthor>) -> Response {
-    let author_result: QueryResult<LoginAuthorPassword> = Author::create(form);
+pub async fn register_action(
+    mut session: WritableSession,
+    Form(form): Form<NewAuthor>,
+) -> Response {
+    let form_password: String = form.password.clone();
+    let author_result: QueryResult<Author> = Author::create(form);
     match author_result {
         Ok(author) => {
-            let login_author: LoginAuthor = LoginAuthor {
+            let auth_author: FormLoginAuthor = FormLoginAuthor {
                 name: author.name,
-                password: author.password,
+                password: form_password,
             };
-            do_login(session, login_author).await
+            do_login(session, auth_author).await
         }
         Err(e) => {
             tracing::error!("{}", e);
@@ -56,29 +79,14 @@ pub async fn register_action(mut session: WritableSession, Form(form): Form<NewA
     }
 }
 
-async fn do_login(mut session: WritableSession, login_author: LoginAuthor) -> Response {
-    let author_result: QueryResult<Vec<LoginAuthorPassword>> =
-        LoginAuthorPassword::find_by_name_for_login(login_author.name.clone());
-    match author_result {
-        Ok(author) => {
-            if author.is_empty() {
-                session_insert_alert(&mut session, LOGIN_ALERT);
-                Redirect::to("/login").into_response()
-            } else {
-                match auth(login_author).await {
-                    Ok(token) => {
-                        session.insert("token", &token).unwrap_or(());
-                        Redirect::to("/dashboard").into_response()
-                    }
-                    Err(_) => {
-                        session_insert_alert(&mut session, LOGIN_ALERT);
-                        Redirect::to("/login").into_response()
-                    }
-                }
-            }
+async fn do_login(mut session: WritableSession, form_login_author: FormLoginAuthor) -> Response {
+    match auth(form_login_author).await {
+        Ok(auth_author) => {
+            session.insert("token", &auth_author.token).unwrap_or(());
+            session.insert("role", &auth_author.role).unwrap_or(());
+            Redirect::to("/dashboard").into_response()
         }
-        Err(e) => {
-            tracing::error!("{}", e);
+        Err(_) => {
             session_insert_alert(&mut session, LOGIN_ALERT);
             Redirect::to("/login").into_response()
         }

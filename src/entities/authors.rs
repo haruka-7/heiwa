@@ -16,6 +16,7 @@ pub struct Author {
     pub display_name: String,
     pub biography: Option<String>,
     pub role: Option<String>,
+    pub password: String,
 }
 
 #[derive(Debug, Insertable, Serialize, Deserialize, Validate)]
@@ -41,48 +42,28 @@ pub struct UpdateAuthor {
     pub password: Option<String>,
 }
 
-#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = authors)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct LoginAuthorPassword {
-    pub name: String,
-    pub role: Option<String>,
-    pub password: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LoginAuthor {
-    pub name: String,
-    pub password: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct AuthorAccessToken {
-    pub access_token: String,
-}
-
 impl Author {
-    pub fn find_by_name(name_param: String) -> QueryResult<Vec<Author>> {
-        Author::table()
+    pub fn find_by_name(name_param: String) -> QueryResult<Vec<Self>> {
+        Self::table()
             .filter(authors::name.eq(name_param))
             .limit(1)
             .select(Author::as_select())
             .load(&mut establish_connection())
     }
 
-    pub fn find_by_email(email_param: String) -> QueryResult<Vec<Author>> {
-        Author::table()
+    pub fn find_by_email(email_param: String) -> QueryResult<Vec<Self>> {
+        Self::table()
             .filter(authors::email.eq(email_param))
             .limit(1)
             .select(Author::as_select())
             .load(&mut establish_connection())
     }
 
-    pub fn create(mut new_author: NewAuthor) -> QueryResult<LoginAuthorPassword> {
+    pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
         new_author.password = hash_password(&new_author.password);
         insert_into(authors::table)
             .values(&new_author)
-            .returning(LoginAuthorPassword::as_returning())
+            .returning(Author::as_returning())
             .get_result(&mut establish_connection())
     }
 
@@ -97,16 +78,6 @@ impl Author {
 
     pub fn delete(author_id: i32) -> QueryResult<usize> {
         delete(Author::table().find(author_id)).execute(&mut establish_connection())
-    }
-}
-
-impl LoginAuthorPassword {
-    pub fn find_by_name_for_login(name_param: String) -> QueryResult<Vec<LoginAuthorPassword>> {
-        Author::table()
-            .filter(authors::name.eq(name_param))
-            .limit(1)
-            .select(LoginAuthorPassword::as_select())
-            .load(&mut establish_connection())
     }
 }
 

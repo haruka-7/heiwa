@@ -1,13 +1,42 @@
-use crate::entities::authors::{ Author, LoginAuthor, LoginAuthorPassword, NewAuthor, UpdateAuthor };
+use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
 use crate::handlers::api::errors::{handle_error, handler_validation_error};
 use crate::services::jwt;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use validator::Validate;
+use crate::entities::roles::Roles;
 use crate::services::authors::verify_password;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FormLoginAuthor {
+    pub name: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthAuthor {
+    pub token: String,
+    pub role: String
+}
+
+impl AuthAuthor {
+    fn new(token: String, role: String) -> Self {
+        Self {
+            token,
+            role
+        }
+    }
+     pub(crate) fn default() -> Self {
+         Self {
+             token: "".to_string(),
+             role: "".to_string(),
+         }
+     }
+}
 
 pub async fn get(Path(name): Path<String>) -> Response {
     let author_result: QueryResult<Vec<Author>> = Author::find_by_name(name);
@@ -26,7 +55,7 @@ pub async fn get(Path(name): Path<String>) -> Response {
 pub async fn create(Json(payload): Json<NewAuthor>) -> Response {
     match payload.validate() {
         Ok(_) => {
-            let author_result: QueryResult<LoginAuthorPassword> = Author::create(payload);
+            let author_result: QueryResult<Author> = Author::create(payload);
             match author_result {
                 Ok(author) => {
                     let jwt_token = jwt::sign(author.name).unwrap();
@@ -56,19 +85,18 @@ pub async fn update(Json(payload): Json<UpdateAuthor>) -> Response {
     }
 }
 
-pub async fn login(Json(payload): Json<LoginAuthor>) -> Response {
-    let author_result: QueryResult<Vec<LoginAuthorPassword>> =
-        LoginAuthorPassword::find_by_name_for_login(payload.name);
+pub async fn login(Json(payload): Json<FormLoginAuthor>) -> Response {
+    let author_result: QueryResult<Vec<Author>> = Author::find_by_name(payload.name);
     match author_result {
-        Ok(author) => {
-            if author.is_empty() {
+        Ok(authors) => {
+            if authors.is_empty() {
                 StatusCode::NOT_FOUND.into_response()
             } else {
-                let author: &LoginAuthorPassword = author.first().unwrap();
+                let author: &Author = authors.first().unwrap();
                 match verify_password(&payload.password, &author.password) {
                     Ok(_) => {
                         let jwt_token = jwt::sign(author.name.clone()).unwrap();
-                        Json(json!({"access_token": jwt_token})).into_response()
+                        Json(json!(AuthAuthor::new(jwt_token, author.role.clone().unwrap_or(Roles::Author.to_string())))).into_response()
                     }
                     Err(_) => StatusCode::UNAUTHORIZED.into_response(),
                 }

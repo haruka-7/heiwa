@@ -163,7 +163,7 @@ fn routes_api() -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::entities::authors::{Author, LoginAuthor, NewAuthor, UpdateAuthor};
+    use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
     use crate::entities::links::{Link, NewLink};
     use axum::body::Body;
     use axum::http;
@@ -171,6 +171,7 @@ mod tests {
     use serde_json::{json, Value};
     use std::env;
     use tower::ServiceExt;
+    use crate::handlers::api::authors::FormLoginAuthor;
 
     #[tokio::test]
     async fn integration_tests() {
@@ -181,11 +182,11 @@ mod tests {
             display_name: "Tomoko Aran".to_string(),
             password: "midnight".to_string(),
         };
-        let login_author_failed: LoginAuthor = LoginAuthor {
+        let login_author_failed: FormLoginAuthor = FormLoginAuthor {
             name: "minako".to_string(),
             password: "midnight".to_string(),
         };
-        let login_author: LoginAuthor = LoginAuthor {
+        let login_author: FormLoginAuthor = FormLoginAuthor {
             name: "minako".to_string(),
             password: "pretenders".to_string(),
         };
