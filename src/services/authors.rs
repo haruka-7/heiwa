@@ -50,6 +50,6 @@ mod tests {
     fn test_hash_and_verify_password() {
         let password: String = "thee michel gun elephant".to_string();
         let password_hash: String = hash_password(&password);
-        assert!(verify_password(&password, password_hash.as_ref()))
+        assert!(verify_password(&password, password_hash.as_ref()).is_ok())
     }
 }

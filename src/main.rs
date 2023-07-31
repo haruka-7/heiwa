@@ -165,7 +165,7 @@ mod tests {
     use super::*;
     use crate::entities::authors::{Author, NewAuthor, UpdateAuthor};
     use crate::entities::links::{Link, NewLink};
-    use crate::handlers::api::authors::FormLoginAuthor;
+    use crate::handlers::api::authors::{AuthAuthor, FormLoginAuthor};
     use axum::body::Body;
     use axum::http;
     use axum::http::{Request, StatusCode};
@@ -175,6 +175,7 @@ mod tests {
 
     #[tokio::test]
     async fn integration_tests() {
+        dotenv().ok();
         env::set_var("RUST_LOG", "none");
         let new_author: NewAuthor = NewAuthor {
             name: "tomoko".to_string(),
@@ -200,6 +201,7 @@ mod tests {
         let app = init_server(routes).0;
 
         // Create author
+        let author_name: String = new_author.name.clone();
         let response = app
             .clone()
             .oneshot(
@@ -214,9 +216,8 @@ mod tests {
             .unwrap();
         assert_eq!(response.status(), StatusCode::CREATED);
 
-        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-        let body: Value = serde_json::from_slice(&body).unwrap();
-        let author: Author = serde_json::from_str(&body.to_string()).unwrap();
+        let authors: Vec<Author> = Author::find_by_name(author_name).unwrap();
+        let author: &Author = authors.first().unwrap();
 
         // Create author error name exist
         let response = app
