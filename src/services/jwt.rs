@@ -36,7 +36,7 @@ pub fn sign(author_id: i32) -> Result<String, ()> {
     }
 }
 
-pub fn verify(token: &str) -> Result<Claims, String> {
+pub fn verify(token: &str, author_id: i32) -> Result<(), String> {
     let token_decoded = jsonwebtoken::decode(
         token,
         &DecodingKey::from_secret(CONFIG.jwt_secret.as_bytes()),
@@ -44,7 +44,13 @@ pub fn verify(token: &str) -> Result<Claims, String> {
     )
     .map(|data| data.claims);
     match token_decoded {
-        Ok(claims) => Ok(claims),
+        Ok(claims) => {
+            if claims.sub == author_id {
+                Ok(())
+            } else {
+                Err("Invalid JWT claims".to_string())
+            }
+        },
         Err(_) => Err("Invalid JWT token".to_string()),
     }
 }

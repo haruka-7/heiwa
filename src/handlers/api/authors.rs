@@ -5,17 +5,17 @@ use crate::handlers::api::errors::{
 };
 use crate::services::authors::verify_password;
 use crate::services::jwt;
+use crate::services::jwt::verify;
 use crate::AppState;
 use axum::extract::{Path, State};
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use axum_auth::AuthBearer;
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use axum_auth::AuthBearer;
 use validator::Validate;
-use crate::services::jwt::verify;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormLoginAuthor {
@@ -101,7 +101,7 @@ pub async fn create(
                         let jwt_token = jwt::sign(author.id).unwrap();
                         (
                             StatusCode::CREATED,
-                            Json(json!({"access_token": jwt_token})),
+                            Json(json!({ "access_token": jwt_token })),
                         )
                             .into_response()
                     }
@@ -116,29 +116,30 @@ pub async fn create(
 
 // TODO add the author id as param to the verify function
 pub async fn update(token: AuthBearer, Json(payload): Json<UpdateAuthor>) -> Response {
-    match verify(token.0.as_str()) {
-        Ok(claims) => {
-            if claims.sub == payload.id {
-                match payload.validate() {
-                    Ok(_) => {
-                        let update_result: QueryResult<usize> = Author::update(payload);
-                        match update_result {
-                            Ok(_) => StatusCode::OK.into_response(),
-                            Err(e) => handle_error(e),
-                        }
-                    }
-                    Err(e) => handler_validation_errors(e),
+    match verify(token.0.as_str(), payload.id) {
+        Ok(_) => match payload.validate() {
+            Ok(_) => {
+                let update_result: QueryResult<usize> = Author::update(payload);
+                match update_result {
+                    Ok(_) => StatusCode::OK.into_response(),
+                    Err(e) => handle_error(e),
                 }
-            } else { StatusCode::FORBIDDEN.into_response() }
-        }
-        Err(_) => StatusCode::BAD_REQUEST.into_response()
+            }
+            Err(e) => handler_validation_errors(e),
+        },
+        Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
 }
 
-pub async fn delete(Path(id): Path<i32>) -> Response {
-    let delete_result: QueryResult<usize> = Author::delete(id);
-    match delete_result {
-        Ok(_) => StatusCode::OK.into_response(),
-        Err(e) => handle_error(e),
+pub async fn delete(token: AuthBearer, Path(id): Path<i32>) -> Response {
+    match verify(token.0.as_str(), id) {
+        Ok(_) => {
+            let delete_result: QueryResult<usize> = Author::delete(id);
+            match delete_result {
+                Ok(_) => StatusCode::OK.into_response(),
+                Err(e) => handle_error(e),
+            }
+        }
+        Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
 }

@@ -1,9 +1,11 @@
 use crate::entities::articles::{Article, NewArticle};
 use crate::entities::tags::Tag;
 use crate::handlers::api::errors::handle_error;
+use crate::services::jwt::verify;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use axum_auth::AuthBearer;
 use diesel::QueryResult;
 use serde_json::json;
 use validator::Validate;
@@ -57,16 +59,19 @@ pub async fn author(Path(author_id): Path<i32>) -> Response {
     }
 }
 
-pub async fn create(Json(payload): Json<NewArticle>) -> Response {
-    match payload.validate() {
-        Ok(_) => {
-            let article: QueryResult<Article> = Article::create(payload);
-            match article {
-                Ok(_) => StatusCode::CREATED.into_response(),
-                Err(e) => handle_error(e),
+pub async fn create(token: AuthBearer, Json(payload): Json<NewArticle>) -> Response {
+    match verify(token.0.as_str(), payload.author_id) {
+        Ok(_) => match payload.validate() {
+            Ok(_) => {
+                let article: QueryResult<Article> = Article::create(payload);
+                match article {
+                    Ok(_) => StatusCode::CREATED.into_response(),
+                    Err(e) => handle_error(e),
+                }
             }
-        }
-        Err(e) => Json(json!(e)).into_response(),
+            Err(e) => Json(json!(e)).into_response(),
+        },
+        Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
 }
 
