@@ -65,7 +65,7 @@ pub async fn find_author_api_call(name: String) -> Result<(), ()> {
 }
 
 pub fn is_author_logged(session: &WritableSession) -> Result<(), ()> {
-    let (token, id) = (session.get::<String>("token").unwrap(), session.get::<i32>("author_id").unwrap());
+    let (token, id) = (session.get::<String>("token").unwrap_or("".to_string()), session.get::<i32>("author_id").unwrap_or(0));
     if !token.is_empty() {
         match verify(
             token.as_str(),

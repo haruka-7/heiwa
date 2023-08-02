@@ -33,7 +33,7 @@ pub struct BackArticlesListTemplate {
 #[derive(Template)]
 #[template(path = "pages/backoffice/articles-new.html")]
 pub struct BackArticleNewTemplate {
-    pub author_id: String,
+    pub author_id: i32,
     pub alert: String,
 }
 

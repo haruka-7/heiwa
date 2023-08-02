@@ -23,10 +23,10 @@ pub async fn list(session: WritableSession) -> Response {
 pub async fn new(mut session: WritableSession) -> Response {
     match is_author_logged(&session) {
         Ok(_) => {
-            let alert_message: String = session.get("alert").unwrap_or("".to_string());
+            let alert_message: String = session.get::<String>("alert").unwrap_or("".to_string());
             session_remove_alert(&mut session);
             BackArticleNewTemplate {
-                author_id: session.get("author_id").unwrap_or("".to_string()),
+                author_id: session.get::<i32>("author_id").unwrap_or(0),
                 alert: alert_message,
             }
             .into_response()
