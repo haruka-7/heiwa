@@ -9,6 +9,12 @@
 <div>
   <form action="/dashboard/article" method="post">
     <input
+            type="hidden"
+            name="author_id"
+            value="{{ author_id }}"
+            required
+    />
+    <input
             type="text"
             name="title"
             placeholder="Titre"

@@ -26,6 +26,7 @@ pub async fn new(mut session: WritableSession) -> Response {
             let alert_message: String = session.get("alert").unwrap_or("".to_string());
             session_remove_alert(&mut session);
             BackArticleNewTemplate {
+                author_id: session.get("author_id").unwrap_or("".to_string()),
                 alert: alert_message,
             }
             .into_response()
