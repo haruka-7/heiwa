@@ -1,4 +1,5 @@
 use std::env;
+use std::str::FromStr;
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -7,6 +8,7 @@ pub struct Config {
     pub server_timeout: u64,
     pub database_url: String,
     pub jwt_secret: String,
+    pub http_client_proxy_enabled: bool
 }
 
 impl Config {
@@ -23,6 +25,7 @@ impl Config {
                 .unwrap(),
             database_url: env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
             jwt_secret: env::var("JWT_SECRET").expect("DATABASE_URL must be set"),
+            http_client_proxy_enabled: bool::from_str(env::var("HTTP_CLIENT_PROXY_ENABLE").unwrap_or("false".to_string()).as_str()).unwrap_or(false)
         }
     }
 }

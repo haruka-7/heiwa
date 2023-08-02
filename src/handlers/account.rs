@@ -8,7 +8,7 @@ use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use std::string::ToString;
 
-// TODO use a toml file
+/// TODO use a toml file
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
 const REGISTER_ALERT: &str = "Erreur lors de la création du compte";
 
@@ -71,7 +71,7 @@ pub async fn register_action(
 async fn do_login(mut session: WritableSession, form_login_author: FormLoginAuthor) -> Response {
     match auth_api_call(form_login_author).await {
         Ok(auth_author) => {
-            session.insert("id", &auth_author.id).unwrap_or(());
+            session.insert("author_id", &auth_author.id).unwrap_or(());
             session.insert("token", &auth_author.token).unwrap_or(());
             session.insert("role", &auth_author.role).unwrap_or(());
             Redirect::to("/dashboard").into_response()

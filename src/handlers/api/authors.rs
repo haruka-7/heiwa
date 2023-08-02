@@ -114,7 +114,7 @@ pub async fn create(
     }
 }
 
-// TODO add the author id as param to the verify function
+/// TODO add the author id as param to the verify function
 pub async fn update(token: AuthBearer, Json(payload): Json<UpdateAuthor>) -> Response {
     match verify(token.0.as_str(), payload.id) {
         Ok(_) => match payload.validate() {

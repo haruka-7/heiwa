@@ -25,7 +25,7 @@ pub struct Article {
     pub author_id: i32,
 }
 
-#[derive(Debug, Validate, Insertable, Deserialize)]
+#[derive(Debug, Validate, Insertable, Serialize, Deserialize)]
 #[diesel(table_name = articles)]
 pub struct NewArticle {
     #[validate(custom = "validate_unique_permalink")]

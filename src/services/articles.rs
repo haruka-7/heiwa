@@ -2,12 +2,13 @@ use crate::entities::articles::NewArticle;
 use axum::http::StatusCode;
 use axum_sessions::extractors::WritableSession;
 use reqwest::header::AUTHORIZATION;
+use crate::services::http_client::build_http_client;
 
 pub async fn create_article_api_call(
-    session: WritableSession,
+    session: &mut WritableSession,
     new_article: NewArticle,
 ) -> Result<(), ()> {
-    let client = reqwest::Client::new();
+    let client = build_http_client();
     let request = client
         .post("http://localhost:3000/api/articles/create")
         .header(

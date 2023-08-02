@@ -1,7 +1,7 @@
 use crate::CONFIG;
 use chrono::{Duration, Utc};
 
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -36,13 +36,14 @@ pub fn sign(author_id: i32) -> Result<String, ()> {
     }
 }
 
+// TODO update token/session expiration
 pub fn verify(token: &str, author_id: i32) -> Result<(), String> {
     let token_decoded = jsonwebtoken::decode(
         token,
         &DecodingKey::from_secret(CONFIG.jwt_secret.as_bytes()),
         &Validation::default(),
     )
-    .map(|data| data.claims);
+    .map(|data: TokenData<Claims>| data.claims);
     match token_decoded {
         Ok(claims) => {
             if claims.sub == author_id {

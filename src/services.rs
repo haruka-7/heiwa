@@ -4,3 +4,4 @@ pub mod database;
 pub mod jwt;
 pub mod session;
 pub mod articles;
+pub mod http_client;

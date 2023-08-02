@@ -6,9 +6,10 @@ use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum_sessions::extractors::WritableSession;
 use hyper::StatusCode;
+use crate::services::http_client::build_http_client;
 
 pub async fn auth_api_call(form_login_author: FormLoginAuthor) -> Result<AuthAuthor, ()> {
-    let client = reqwest::Client::new();
+    let client = build_http_client();
     let request = client
         .post("http://localhost:3000/api/authors/login")
         .json(&form_login_author);
@@ -18,19 +19,19 @@ pub async fn auth_api_call(form_login_author: FormLoginAuthor) -> Result<AuthAut
         &form_login_author,
         &response
     );
-    let auth = response
+    let auth_author: AuthAuthor = response
         .json::<AuthAuthor>()
         .await
         .unwrap_or(AuthAuthor::default());
-    if !auth.token.is_empty() {
-        Ok(auth)
+    if !auth_author.token.is_empty() {
+        Ok(auth_author)
     } else {
         Err(())
     }
 }
 
 pub async fn create_author_api_call(author: NewAuthor) -> Result<(), ()> {
-    let client = reqwest::Client::new();
+    let client = build_http_client();
     let request = client
         .post("http://localhost:3000/api/authors/create")
         .json(&author);
@@ -48,7 +49,7 @@ pub async fn create_author_api_call(author: NewAuthor) -> Result<(), ()> {
 }
 
 pub async fn find_author_api_call(name: String) -> Result<(), ()> {
-    let client = reqwest::Client::new();
+    let client = build_http_client();
     let request = client.get(format!("http://localhost:3000/api/authors/get/{}", &name));
     let response = request.send().await.unwrap();
     tracing::debug!(
@@ -64,15 +65,13 @@ pub async fn find_author_api_call(name: String) -> Result<(), ()> {
 }
 
 pub fn is_author_logged(session: &WritableSession) -> Result<(), ()> {
-    if session.get::<String>("token").is_some() {
-        match verify(session.get::<String>("token").unwrap().as_str()) {
-            Ok(claims) => {
-                if claims.sub == session.get::<i32>("id").unwrap() {
-                    Ok(())
-                } else {
-                    Err(())
-                }
-            },
+    let (token, id) = (session.get::<String>("token").unwrap(), session.get::<i32>("author_id").unwrap());
+    if !token.is_empty() {
+        match verify(
+            token.as_str(),
+            id,
+        ) {
+            Ok(_) => Ok(()),
             Err(_) => Err(()),
         }
     } else {
