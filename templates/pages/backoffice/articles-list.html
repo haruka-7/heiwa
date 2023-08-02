@@ -4,7 +4,12 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold underline">
-  Dashboard - Articles
+    Dashboard - Articles
 </h1>
 
+<ul>
+    {% for article in articles %}
+    <li>{{ article.title|e }}</li>
+    {% endfor %}
+</ul>
 {% endblock %}

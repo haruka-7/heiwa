@@ -1,4 +1,5 @@
 use askama::Template;
+use crate::entities::articles::Article;
 
 #[derive(Template)]
 #[template(path = "pages/home.html")]
@@ -27,7 +28,7 @@ pub struct BackDashboardTemplate {
 #[derive(Template)]
 #[template(path = "pages/backoffice/articles-list.html")]
 pub struct BackArticlesListTemplate {
-    pub alert: String,
+    pub articles: Vec<Article>,
 }
 
 #[derive(Template)]

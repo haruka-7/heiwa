@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use validator::{Validate, ValidationError};
 
-#[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize)]
+#[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = articles)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Article {

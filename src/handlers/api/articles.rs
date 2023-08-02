@@ -1,6 +1,6 @@
 use crate::entities::articles::{Article, NewArticle};
 use crate::entities::tags::Tag;
-use crate::handlers::api::errors::handle_error;
+use crate::handlers::api::errors::{handle_error, handler_validation_errors};
 use crate::services::jwt::verify;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
@@ -52,7 +52,7 @@ pub async fn author(Path(author_id): Path<i32>) -> Response {
             if articles.is_empty() {
                 StatusCode::NOT_FOUND.into_response()
             } else {
-                Json(json!((articles.first().unwrap()))).into_response()
+                Json(json!((articles))).into_response()
             }
         }
         Err(e) => handle_error(e),
@@ -69,7 +69,7 @@ pub async fn create(token: AuthBearer, Json(payload): Json<NewArticle>) -> Respo
                     Err(e) => handle_error(e),
                 }
             }
-            Err(e) => Json(json!(e)).into_response(),
+            Err(e) => handler_validation_errors(e),
         },
         Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
