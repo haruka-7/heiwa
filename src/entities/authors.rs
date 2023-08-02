@@ -1,14 +1,12 @@
 use crate::schema::*;
 use crate::services::authors::hash_password;
 use crate::services::database::connection_pool;
-use crate::AppState;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -26,7 +24,7 @@ pub struct Author {
 #[diesel(table_name = authors)]
 pub struct NewAuthor {
     pub name: String,
-    #[validate(email, custom = "validate_unique_email")]
+    #[validate(email)]
     pub email: String,
     pub display_name: String,
     pub password: String,
@@ -37,7 +35,7 @@ pub struct NewAuthor {
 pub struct UpdateAuthor {
     pub id: i32,
     pub name: Option<String>,
-    #[validate(email, custom = "validate_unique_email")]
+    #[validate(email)]
     pub email: Option<String>,
     pub display_name: Option<String>,
     pub password: Option<String>,
@@ -55,12 +53,16 @@ impl Author {
             .load(&mut connection)
     }
 
-    pub fn find_by_email(email_param: String) -> QueryResult<Vec<Self>> {
+    pub fn find_by_name_or_email(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        name: String,
+        email: String,
+    ) -> QueryResult<Vec<Self>> {
         Self::table()
-            .filter(authors::email.eq(email_param))
+            .filter(authors::name.eq(name).or(authors::email.eq(email)))
             .limit(1)
             .select(Author::as_select())
-            .load(&mut connection_pool().get().unwrap())
+            .load(&mut connection)
     }
 
     pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
@@ -82,40 +84,5 @@ impl Author {
 
     pub fn delete(author_id: i32) -> QueryResult<usize> {
         delete(Author::table().find(author_id)).execute(&mut connection_pool().get().unwrap())
-    }
-}
-
-pub fn validate_unique_name(state: Arc<AppState>, name: &str) -> Result<(), ValidationError> {
-    let author_result: QueryResult<Vec<Author>> =
-        Author::find_by_name(state.db_connection.get().unwrap(), name.to_string());
-    match author_result {
-        Ok(authors) => {
-            if authors.is_empty() {
-                Ok(())
-            } else {
-                Err(ValidationError::new("NAME_EXIST"))
-            }
-        }
-        Err(e) => {
-            tracing::error!("{}", e);
-            Err(ValidationError::new("VALIDATE_NAME_ERROR"))
-        }
-    }
-}
-
-pub fn validate_unique_email(email: &str) -> Result<(), ValidationError> {
-    let author_result: QueryResult<Vec<Author>> = Author::find_by_email(email.to_string());
-    match author_result {
-        Ok(authors) => {
-            if authors.is_empty() {
-                Ok(())
-            } else {
-                Err(ValidationError::new("EMAIL_EXIST"))
-            }
-        }
-        Err(e) => {
-            tracing::error!("{}", e);
-            Err(ValidationError::new("VALIDATE_EMAIL_ERROR"))
-        }
     }
 }

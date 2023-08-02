@@ -1,7 +1,7 @@
 use crate::entities::articles::Article;
 use crate::entities::articles_tags::ArticleTag;
 use crate::entities::tags::{NewTag, Tag};
-use crate::handlers::api::errors::handle_error;
+use crate::services::errors::handler_error;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
@@ -19,11 +19,11 @@ pub async fn get(Path(article_permalink): Path<String>) -> Response {
                     Tag::find_tags_by_article(article.first().unwrap());
                 match tags_result {
                     Ok(tags) => Json(json!(tags)).into_response(),
-                    Err(e) => handle_error(e),
+                    Err(e) => handler_error(e),
                 }
             }
         }
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }
 
@@ -45,14 +45,14 @@ pub async fn create(Path(article_id): Path<i32>, Json(payload): Json<NewTag>) ->
                     match delete_result {
                         Ok(_) => {}
                         Err(e) => {
-                            return handle_error(e);
+                            return handler_error(e);
                         }
                     }
-                    handle_error(e)
+                    handler_error(e)
                 }
             }
         }
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }
 
@@ -71,6 +71,6 @@ pub async fn delete(Path(article_id): Path<i32>, Path(tag_id): Path<i32>) -> Res
                 StatusCode::OK.into_response()
             }
         }
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }

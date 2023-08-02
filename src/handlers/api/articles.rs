@@ -1,6 +1,6 @@
 use crate::entities::articles::{Article, NewArticle};
 use crate::entities::tags::Tag;
-use crate::handlers::api::errors::{handle_error, handler_validation_errors};
+use crate::services::errors::{handler_error, handler_validation_errors};
 use crate::services::jwt::verify;
 use axum::extract::Path;
 use axum::http::status::StatusCode;
@@ -20,7 +20,7 @@ pub async fn get(Path(permalink): Path<String>) -> Response {
                 Json(json!((article.first().unwrap()))).into_response()
             }
         }
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }
 
@@ -38,10 +38,10 @@ pub async fn tag(Path(tag_permalink): Path<String>) -> Response {
                         Json(json!((articles.first().unwrap()))).into_response()
                     }
                 }
-                Err(e) => handle_error(e),
+                Err(e) => handler_error(e),
             }
         }
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }
 
@@ -55,7 +55,7 @@ pub async fn author(Path(author_id): Path<i32>) -> Response {
                 Json(json!((articles))).into_response()
             }
         }
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }
 
@@ -66,7 +66,7 @@ pub async fn create(token: AuthBearer, Json(payload): Json<NewArticle>) -> Respo
                 let article: QueryResult<Article> = Article::create(payload);
                 match article {
                     Ok(_) => StatusCode::CREATED.into_response(),
-                    Err(e) => handle_error(e),
+                    Err(e) => handler_error(e),
                 }
             }
             Err(e) => handler_validation_errors(e),
@@ -79,6 +79,6 @@ pub async fn delete(Path(id): Path<i32>) -> Response {
     let delete_result: QueryResult<usize> = Article::delete(id);
     match delete_result {
         Ok(_) => StatusCode::OK.into_response(),
-        Err(e) => handle_error(e),
+        Err(e) => handler_error(e),
     }
 }

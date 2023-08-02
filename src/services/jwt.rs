@@ -51,7 +51,7 @@ pub fn verify(token: &str, author_id: i32) -> Result<(), String> {
             } else {
                 Err("Invalid JWT claims".to_string())
             }
-        },
+        }
         Err(_) => Err("Invalid JWT token".to_string()),
     }
 }

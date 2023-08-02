@@ -1,12 +1,15 @@
 use crate::entities::authors::NewAuthor;
 use crate::handlers::api::authors::FormLoginAuthor;
-use crate::services::authors::{auth_api_call, create_author_api_call, find_author_api_call};
+use crate::services::authors::{auth_author, create_author};
 use crate::services::session::{session_insert_alert, session_remove_alert};
 use crate::templates::{LoginTemplate, RegisterTemplate};
+use crate::AppState;
+use axum::extract::State;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use std::string::ToString;
+use std::sync::Arc;
 
 /// TODO use a toml file
 const LOGIN_ALERT: &str = "Login et/ou mot de passe incorrect.";
@@ -25,16 +28,11 @@ pub async fn login(mut session: WritableSession) -> Response {
 }
 
 pub async fn login_action(
-    mut session: WritableSession,
+    State(state): State<Arc<AppState>>,
+    session: WritableSession,
     Form(form): Form<FormLoginAuthor>,
 ) -> Response {
-    match find_author_api_call(form.name.clone()).await {
-        Ok(_) => do_login(session, form).await,
-        Err(_) => {
-            session_insert_alert(&mut session, LOGIN_ALERT);
-            Redirect::to("/login").into_response()
-        }
-    }
+    do_login(state, session, form)
 }
 
 pub async fn logout_action(mut session: WritableSession) -> Redirect {
@@ -51,15 +49,16 @@ pub async fn register(mut session: WritableSession) -> RegisterTemplate {
 }
 
 pub async fn register_action(
+    State(state): State<Arc<AppState>>,
     mut session: WritableSession,
     Form(form): Form<NewAuthor>,
 ) -> Response {
     let password: String = form.password.clone();
     let name: String = form.name.clone();
-    match create_author_api_call(form).await {
+    match create_author(state.db_connection.get().unwrap(), form) {
         Ok(_) => {
             let auth_author: FormLoginAuthor = FormLoginAuthor { name, password };
-            do_login(session, auth_author).await
+            do_login(state, session, auth_author)
         }
         Err(()) => {
             session_insert_alert(&mut session, REGISTER_ALERT);
@@ -68,8 +67,12 @@ pub async fn register_action(
     }
 }
 
-async fn do_login(mut session: WritableSession, form_login_author: FormLoginAuthor) -> Response {
-    match auth_api_call(form_login_author).await {
+fn do_login(
+    state: Arc<AppState>,
+    mut session: WritableSession,
+    form_login_author: FormLoginAuthor,
+) -> Response {
+    match auth_author(state.db_connection.get().unwrap(), form_login_author) {
         Ok(auth_author) => {
             session.insert("author_id", &auth_author.id).unwrap_or(());
             session.insert("token", &auth_author.token).unwrap_or(());

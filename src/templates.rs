@@ -1,5 +1,5 @@
-use askama::Template;
 use crate::entities::articles::Article;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "pages/home.html")]

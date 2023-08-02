@@ -38,9 +38,7 @@ async fn main() {
     dotenv().ok();
 
     let routes: Router = Router::new()
-        .merge(routes_front())
-        .nest("/dashboard", routes_dashboard())
-        .nest("/api", routes_api())
+        .merge(routes())
         .fallback_service(routes_statics());
 
     let (app, addr) = init_server(routes);
@@ -74,18 +72,10 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     (app, addr)
 }
 
-fn routes_dashboard() -> Router {
-    Router::new()
-        .route("/", get(handlers::backoffice::dashboard::show))
-        .route("/articles", get(handlers::backoffice::articles::list))
-        .route(
-            "/article",
-            get(handlers::backoffice::articles::new)
-                .post(handlers::backoffice::articles::new_action),
-        )
-}
-
-fn routes_front() -> Router {
+fn routes() -> Router {
+    let state: Arc<AppState> = Arc::new(AppState {
+        db_connection: connection_pool(),
+    });
     Router::new()
         .route("/", get(handlers::home::show))
         .route(
@@ -98,6 +88,64 @@ fn routes_front() -> Router {
             get(handlers::account::register).post(handlers::account::register_action),
         )
         .route("/error-page", get(handlers::error::show))
+        .nest(
+            "/api",
+            Router::new()
+                // Authors - TODO SECURITY this return a full Author with hashed password
+                .route("/authors/get/:name", get(handlers::api::authors::get))
+                .route("/authors/login", post(handlers::api::authors::login))
+                .route("/authors/create", post(handlers::api::authors::create))
+                .route("/authors/update", patch(handlers::api::authors::update))
+                .route(
+                    "/authors/delete/:id",
+                    delete(handlers::api::authors::delete),
+                )
+                // Links
+                .route("/links/get/:author_name", get(handlers::api::links::get))
+                .route("/links/create", post(handlers::api::links::create))
+                .route("/links/update", patch(handlers::api::links::update))
+                .route("/links/delete/:id", delete(handlers::api::links::delete))
+                // Articles - TODO add search and update articles route
+                .route(
+                    "/articles/get/:permalink",
+                    get(handlers::api::articles::get),
+                )
+                .route(
+                    "/articles/author/:author_id",
+                    get(handlers::api::articles::author),
+                )
+                .route("/articles/tag/:tag_id", get(handlers::api::articles::tag))
+                .route("/articles/create", post(handlers::api::articles::create))
+                .route(
+                    "/articles/delete/:id",
+                    delete(handlers::api::articles::delete),
+                )
+                // Tags
+                .route(
+                    "/tags/get/:article_permalink",
+                    get(handlers::api::tags::get),
+                )
+                .route(
+                    "/tags/create/:article_id",
+                    post(handlers::api::tags::create),
+                )
+                .route(
+                    "/tags/delete/:article_id/:tag_id",
+                    delete(handlers::api::tags::delete),
+                ),
+        )
+        .nest(
+            "/dashboard",
+            Router::new()
+                .route("/", get(handlers::backoffice::dashboard::show))
+                .route("/articles", get(handlers::backoffice::articles::list))
+                .route(
+                    "/article",
+                    get(handlers::backoffice::articles::new)
+                        .post(handlers::backoffice::articles::new_action),
+                ),
+        )
+        .with_state(state)
 }
 
 fn routes_statics() -> Router {
@@ -105,57 +153,4 @@ fn routes_statics() -> Router {
         "/statics/",
         get_service(ServeDir::new("./templates/statics")),
     )
-}
-
-fn routes_api() -> Router {
-    let state: Arc<AppState> = Arc::new(AppState {
-        db_connection: connection_pool(),
-    });
-
-    Router::new()
-        // Protected API routes with bearer jwt token
-        .route("/authors/update", patch(handlers::api::authors::update))
-        .route(
-            "/authors/delete/:id",
-            delete(handlers::api::authors::delete),
-        )
-        .route("/links/create", post(handlers::api::links::create))
-        .route("/links/update", patch(handlers::api::links::update))
-        .route("/links/delete/:id", delete(handlers::api::links::delete))
-        .route("/articles/create", post(handlers::api::articles::create))
-        // TODO add search and update articles route
-        .route(
-            "/articles/delete/:id",
-            delete(handlers::api::articles::delete),
-        )
-        .route(
-            "/tags/create/:article_id",
-            post(handlers::api::tags::create),
-        )
-        .route(
-            "/tags/delete/:article_id/:tag_id",
-            delete(handlers::api::tags::delete),
-        )
-
-
-        // Unprotected API routes
-        .route("/authors/login", post(handlers::api::authors::login))
-        .route("/authors/create", post(handlers::api::authors::create))
-        //TODO SECURITY this return a full Author with hashed password
-        .route("/authors/get/:name", get(handlers::api::authors::get))
-        .route("/links/get/:author_name", get(handlers::api::links::get))
-        .route(
-            "/articles/get/:permalink",
-            get(handlers::api::articles::get),
-        )
-        .route("/articles/tag/:tag_id", get(handlers::api::articles::tag))
-        .route(
-            "/articles/author/:author_id",
-            get(handlers::api::articles::author),
-        )
-        .route(
-            "/tags/get/:article_permalink",
-            get(handlers::api::tags::get),
-        )
-        .with_state(state)
 }
