@@ -87,12 +87,11 @@ pub fn create_author(
                     Ok(_) => Ok(()),
                     Err(e) => {
                         tracing::error!("{}", e);
-                        Err(None)
+                        Err(Some("TECHNICAL_ERROR".to_string()))
                     }
                 }
             }
             Err(e) => {
-                tracing::error!("{}", e);
                 Err(Some(e.code.to_string()))
             }
         },
