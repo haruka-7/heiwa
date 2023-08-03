@@ -56,7 +56,12 @@ pub async fn create(
 ) -> Response {
     match create_author(state.db_connection.get().unwrap(), payload) {
         Ok(_) => StatusCode::CREATED.into_response(),
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(error_code) => {
+            match error_code {
+                None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                Some(code) => (StatusCode::BAD_REQUEST, Json(json!({"error": code}))).into_response()
+            }
+        },
     }
 }
 

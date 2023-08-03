@@ -60,8 +60,8 @@ pub async fn register_action(
             let auth_author: FormLoginAuthor = FormLoginAuthor { name, password };
             do_login(state, session, auth_author)
         }
-        Err(error) => {
-            match error {
+        Err(error_code) => {
+            match error_code {
                 None => session_insert_alert(&mut session, REGISTER_ALERT),
                 Some(code) => session_insert_alert(&mut session, code.as_str())
             }
