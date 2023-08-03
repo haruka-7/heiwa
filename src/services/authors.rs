@@ -78,7 +78,7 @@ pub fn auth_author(
 pub fn create_author(
     connection: PooledConnection<ConnectionManager<PgConnection>>,
     author: NewAuthor,
-) -> Result<(), ()> {
+) -> Result<(), Option<String>> {
     match author.validate() {
         Ok(_) => match validate_unique_name_and_email(connection, &author.name, &author.email) {
             Ok(_) => {
@@ -87,16 +87,16 @@ pub fn create_author(
                     Ok(_) => Ok(()),
                     Err(e) => {
                         tracing::error!("{}", e);
-                        Err(())
+                        Err(None)
                     }
                 }
             }
             Err(e) => {
                 tracing::error!("{}", e);
-                Err(())
+                Err(Some(e.code.to_string()))
             }
         },
-        Err(_) => Err(()),
+        Err(_) => Err(None),
     }
 }
 

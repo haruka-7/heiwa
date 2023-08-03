@@ -60,8 +60,11 @@ pub async fn register_action(
             let auth_author: FormLoginAuthor = FormLoginAuthor { name, password };
             do_login(state, session, auth_author)
         }
-        Err(()) => {
-            session_insert_alert(&mut session, REGISTER_ALERT);
+        Err(error) => {
+            match error {
+                None => session_insert_alert(&mut session, REGISTER_ALERT),
+                Some(code) => session_insert_alert(&mut session, code.as_str())
+            }
             Redirect::to("/register").into_response()
         }
     }
