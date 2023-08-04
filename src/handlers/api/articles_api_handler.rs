@@ -78,37 +78,30 @@ pub async fn create(
     }
 }
 
-/*pub async fn update(
+pub async fn update(
     State(state): State<Arc<AppState>>,
     token: AuthBearer,
     Json(payload): Json<NewArticle>,
 ) -> Response {
     let article_result: Result<Article, Option<String>> =
-        find_article_by_permalink(&state, &payload.permalink);
+        find_article_by_permalink(&state, payload.permalink.clone());
     match article_result {
         Ok(article) => match verify(token.0.as_str(), article.author_id) {
-            Ok(_) => match update_article(&state, &payload) {
-                Ok(_) => {
-                    let article: QueryResult<usize> =
-                        Article::update(state.db_connection.get().unwrap(), payload);
-                    match article {
-                        Ok(_) => StatusCode::CREATED.into_response(),
-                        Err(e) => handler_error(e),
-                    }
-                }
+            Ok(_) => match update_article(&state, payload) {
+                Ok(_) => StatusCode::CREATED.into_response(),
                 Err(error) => match error {
                     None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
                     Some(_) => StatusCode::NOT_FOUND.into_response(),
                 },
             },
-            Err(_) => StatusCode::FORBIDDEN.into_response()
+            Err(_) => StatusCode::FORBIDDEN.into_response(),
         },
         Err(error) => match error {
             None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
             Some(_) => StatusCode::NOT_FOUND.into_response(),
         },
     }
-}*/
+}
 
 pub async fn delete(State(state): State<Arc<AppState>>, Path(id): Path<i32>) -> Response {
     let delete_result: QueryResult<usize> = Article::delete(state.db_connection.get().unwrap(), id);

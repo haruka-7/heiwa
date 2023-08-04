@@ -25,7 +25,7 @@ INSERT INTO authors (name, email, display_name, password, role) VALUES (
 
 CREATE TABLE articles (
     id SERIAL PRIMARY KEY,
-    permalink VARCHAR NOT NULL UNIQUE,
+    permalink VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
     creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_DATE,
     publication_date TIMESTAMP,

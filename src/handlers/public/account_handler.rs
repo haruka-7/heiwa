@@ -2,7 +2,7 @@ use crate::entities::authors_entity::NewAuthor;
 use crate::handlers::api::authors_api_handler::FormLoginAuthor;
 use crate::services::authors_service::{auth_author, create_author};
 use crate::services::session_service::{session_insert_alert, session_remove_alert};
-use crate::templates::{LoginTemplate, RegisterTemplate};
+use crate::templates::site_templates::{LoginTemplate, RegisterTemplate};
 use crate::AppState;
 use axum::extract::State;
 use axum::response::{IntoResponse, Redirect, Response};
@@ -22,7 +22,7 @@ pub async fn login(mut session: WritableSession) -> Response {
     let alert_message: String = session.get("alert").unwrap_or("".to_string());
     session_remove_alert(&mut session);
     LoginTemplate {
-        alert: alert_message
+        alert: alert_message,
     }
     .into_response()
 }
@@ -63,7 +63,7 @@ pub async fn register_action(
         Err(error_code) => {
             match error_code {
                 None => session_insert_alert(&mut session, REGISTER_ALERT),
-                Some(code) => session_insert_alert(&mut session, code.as_str())
+                Some(code) => session_insert_alert(&mut session, code.as_str()),
             }
             Redirect::to("/register").into_response()
         }

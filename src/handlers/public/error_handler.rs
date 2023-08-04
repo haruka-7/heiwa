@@ -1,4 +1,4 @@
-use crate::templates::ErrorPageTemplate;
+use crate::templates::site_templates::ErrorPageTemplate;
 use axum::http::{header, StatusCode};
 use axum::response::Response;
 use axum::BoxError;

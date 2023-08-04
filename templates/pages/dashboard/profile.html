@@ -1,0 +1,39 @@
+{% extends "layout-dashboard.html" %}
+
+{% block title %}Index{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold underline">
+  Dashboard - Profile
+</h1>
+<div>
+  {% if alert.len() != 0 %}
+  <p>{{ alert }}</p>
+  {% endif %}
+  <form action="/dashboard/profile" method="post">
+    <input
+            type="hidden"
+            name="id"
+            value="{{ author_id }}"
+            required
+    />
+    <input
+            type="text"
+            name="display_name"
+            placeholder="Display Name"
+            aria-label="Display Name"
+            value="{{ display_name }}"
+            required
+    />
+    <input
+            type="text"
+            name="biography"
+            placeholder="Biography"
+            aria-label="Biography"
+            value="{{ biography }}"
+            required
+    />
+    <input type="submit">
+  </form>
+</div>
+{% endblock %}

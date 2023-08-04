@@ -80,7 +80,9 @@ impl Article {
         mut connection: PooledConnection<ConnectionManager<PgConnection>>,
         article: NewArticle,
     ) -> QueryResult<usize> {
-        update(articles::table).set(article).execute(&mut connection)
+        update(articles::table)
+            .set(article)
+            .execute(&mut connection)
     }
 
     pub fn delete(

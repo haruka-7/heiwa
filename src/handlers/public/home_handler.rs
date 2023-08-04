@@ -1,4 +1,4 @@
-use crate::templates::HomeTemplate;
+use crate::templates::site_templates::HomeTemplate;
 
 pub async fn show() -> HomeTemplate {
     HomeTemplate {

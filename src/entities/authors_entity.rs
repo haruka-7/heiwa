@@ -37,16 +37,28 @@ pub struct UpdateAuthor {
     #[validate(email)]
     pub email: Option<String>,
     pub display_name: Option<String>,
+    pub biography: Option<String>,
     pub password: Option<String>,
 }
 
 impl Author {
-    pub fn find_by_name(
+    pub fn find_by_id(
         mut connection: PooledConnection<ConnectionManager<PgConnection>>,
-        name_param: String,
+        author_id: i32,
     ) -> QueryResult<Vec<Self>> {
         Self::table()
-            .filter(authors::name.eq(name_param))
+            .filter(authors::id.eq(author_id))
+            .limit(1)
+            .select(Author::as_select())
+            .load(&mut connection)
+    }
+
+    pub fn find_by_name(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        author_name: String,
+    ) -> QueryResult<Vec<Self>> {
+        Self::table()
+            .filter(authors::name.eq(author_name))
             .limit(1)
             .select(Author::as_select())
             .load(&mut connection)
@@ -54,17 +66,24 @@ impl Author {
 
     pub fn find_by_name_or_email(
         mut connection: PooledConnection<ConnectionManager<PgConnection>>,
-        name: String,
-        email: String,
+        author_name: String,
+        author_email: String,
     ) -> QueryResult<Vec<Self>> {
         Self::table()
-            .filter(authors::name.eq(name).or(authors::email.eq(email)))
+            .filter(
+                authors::name
+                    .eq(author_name)
+                    .or(authors::email.eq(author_email)),
+            )
             .limit(1)
             .select(Author::as_select())
             .load(&mut connection)
     }
 
-    pub fn create(mut connection: PooledConnection<ConnectionManager<PgConnection>>, mut new_author: NewAuthor) -> QueryResult<Author> {
+    pub fn create(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        mut new_author: NewAuthor,
+    ) -> QueryResult<Author> {
         new_author.password = hash_password(&new_author.password);
         insert_into(authors::table)
             .values(&new_author)
@@ -72,7 +91,10 @@ impl Author {
             .get_result(&mut connection)
     }
 
-    pub fn update(mut connection: PooledConnection<ConnectionManager<PgConnection>>, mut update_author: UpdateAuthor) -> QueryResult<usize> {
+    pub fn update(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        mut update_author: UpdateAuthor,
+    ) -> QueryResult<usize> {
         if update_author.password.is_some() {
             update_author.password = Option::from(hash_password(&update_author.password.unwrap()));
         }
@@ -81,7 +103,10 @@ impl Author {
             .execute(&mut connection)
     }
 
-    pub fn delete(mut connection: PooledConnection<ConnectionManager<PgConnection>>, author_id: i32) -> QueryResult<usize> {
+    pub fn delete(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        author_id: i32,
+    ) -> QueryResult<usize> {
         delete(Author::table().find(author_id)).execute(&mut connection)
     }
 }

@@ -69,19 +69,14 @@ pub fn create_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), 
 }
 
 pub fn update_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), Option<String>> {
-    match validate_unique_permalink(&state, &article.permalink) {
-        Ok(_) => {
-            let article_result: QueryResult<usize> =
-                Article::update(state.db_connection.get().unwrap(), article);
-            match article_result {
-                Ok(_) => Ok(()),
-                Err(e) => {
-                    tracing::error!("{}", e);
-                    Err(Some("TECHNICAL_ERROR".to_string()))
-                }
-            }
+    let article_result: QueryResult<usize> =
+        Article::update(state.db_connection.get().unwrap(), article);
+    match article_result {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            tracing::error!("{}", e);
+            Err(Some("TECHNICAL_ERROR".to_string()))
         }
-        Err(e) => Err(Some(e.code.to_string())),
     }
 }
 

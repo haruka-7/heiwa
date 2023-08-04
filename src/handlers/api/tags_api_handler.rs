@@ -1,17 +1,21 @@
-use std::sync::Arc;
 use crate::entities::articles_entity::Article;
 use crate::entities::articles_tags_entity::ArticleTag;
 use crate::entities::tags_entity::{NewTag, Tag};
 use crate::services::errors_service::handler_error;
+use crate::AppState;
 use axum::extract::{Path, State};
 use axum::http::status::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
 use diesel::QueryResult;
 use serde_json::json;
-use crate::AppState;
+use std::sync::Arc;
 
-pub async fn get(State(state): State<Arc<AppState>>, Path(article_permalink): Path<String>) -> Response {
-    let article_result: QueryResult<Vec<Article>> = Article::find_by_permalink(state.db_connection.get().unwrap(), article_permalink);
+pub async fn get(
+    State(state): State<Arc<AppState>>,
+    Path(article_permalink): Path<String>,
+) -> Response {
+    let article_result: QueryResult<Vec<Article>> =
+        Article::find_by_permalink(state.db_connection.get().unwrap(), article_permalink);
     match article_result {
         Ok(article) => {
             if article.is_empty() {

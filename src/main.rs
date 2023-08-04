@@ -1,6 +1,8 @@
 use crate::services::config_service::Config;
 use crate::services::database_service::connection_pool;
 use axum::error_handling::HandleErrorLayer;
+use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
+use axum::http::{HeaderValue, Method};
 use axum::routing::{delete, get, get_service, patch, post, put};
 use axum::Router;
 use axum_sessions::{async_session, SessionLayer};
@@ -15,6 +17,7 @@ use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::CompressionLayer;
+use tower_http::cors::CorsLayer;
 use tower_http::services::ServeDir;
 
 mod entities;
@@ -58,11 +61,17 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     rand::thread_rng().fill_bytes(&mut secret);
 
     let middleware_stack = ServiceBuilder::new()
+        .layer(
+            CorsLayer::new()
+                .allow_origin("http://localhost:3001".parse::<HeaderValue>().unwrap())
+                .allow_headers([CONTENT_TYPE, AUTHORIZATION])
+                .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE]),
+        )
         .layer(CatchPanicLayer::custom(
-            handlers::frontend::error_handler::panic,
+            handlers::public::error_handler::panic,
         ))
         .layer(HandleErrorLayer::new(
-            handlers::frontend::error_handler::error,
+            handlers::public::error_handler::error,
         ))
         .layer(SessionLayer::new(
             async_session::MemoryStore::new(),
@@ -81,22 +90,22 @@ fn routes() -> Router {
         db_connection: connection_pool(),
     });
     Router::new()
-        .route("/", get(handlers::frontend::home_handler::show))
+        .route("/", get(handlers::public::home_handler::show))
         .route(
             "/login",
-            get(handlers::frontend::account_handler::login)
-                .post(handlers::frontend::account_handler::login_action),
+            get(handlers::public::account_handler::login)
+                .post(handlers::public::account_handler::login_action),
         )
         .route(
             "/logout",
-            get(handlers::frontend::account_handler::logout_action),
+            get(handlers::public::account_handler::logout_action),
         )
         .route(
             "/register",
-            get(handlers::frontend::account_handler::register)
-                .post(handlers::frontend::account_handler::register_action),
+            get(handlers::public::account_handler::register)
+                .post(handlers::public::account_handler::register_action),
         )
-        .route("/error-page", get(handlers::frontend::error_handler::show))
+        .route("/error-page", get(handlers::public::error_handler::show))
         .nest(
             "/api",
             Router::new()
@@ -155,10 +164,10 @@ fn routes() -> Router {
                     "/articles/create",
                     post(handlers::api::articles_api_handler::create),
                 )
-                /*.route(
+                .route(
                     "/articles/edit/:permalink",
                     put(handlers::api::articles_api_handler::update),
-                )*/
+                )
                 .route(
                     "/articles/delete/:id",
                     delete(handlers::api::articles_api_handler::delete),
@@ -193,6 +202,15 @@ fn routes() -> Router {
                 .route(
                     "/article/:permalink",
                     get(handlers::dashboard::articles_handler::edit),
+                )
+                .route(
+                    "/article/update",
+                    post(handlers::dashboard::articles_handler::edit_action),
+                )
+                .route(
+                    "/profile",
+                    get(handlers::dashboard::profile_handler::edit)
+                        .post(handlers::dashboard::profile_handler::edit_action),
                 ),
         )
         .with_state(state)

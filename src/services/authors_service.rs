@@ -1,56 +1,33 @@
-use std::sync::Arc;
-use crate::entities::authors_entity::{Author, NewAuthor};
+use crate::entities::authors_entity::{Author, NewAuthor, UpdateAuthor};
 use crate::entities::roles_entity::Roles;
 use crate::handlers::api::authors_api_handler::{AuthAuthor, FormLoginAuthor};
 use crate::services::jwt_service;
 use crate::services::jwt_service::verify;
+use crate::AppState;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum_sessions::extractors::WritableSession;
 use diesel::QueryResult;
+use std::sync::Arc;
 use validator::{Validate, ValidationError};
-use crate::AppState;
 
-pub fn find_author_by_name(
-    state: &Arc<AppState>,
-    name: String,
-) -> Result<Vec<Author>, ()> {
-    let author_result = Author::find_by_name(state.db_connection.get().unwrap(), name);
-    match author_result {
-        Ok(authors) => {
-            if !authors.is_empty() {
-                Ok(authors)
-            } else {
-                Err(())
-            }
-        }
-        Err(e) => {
-            tracing::error!("{}", e);
-            Err(())
-        }
-    }
+pub fn find_author_by_id(state: &Arc<AppState>, id: i32) -> Result<Author, ()> {
+    let author_result: QueryResult<Vec<Author>> =
+        Author::find_by_id(state.db_connection.get().unwrap(), id);
+    match_author_result(author_result)
 }
 
-fn find_by_name_or_email(
-    state: &Arc<AppState>,
-    name: String,
-    email: String,
-) -> Result<Vec<Author>, ()> {
-    let author_result = Author::find_by_name_or_email(state.db_connection.get().unwrap(), name, email);
-    match author_result {
-        Ok(authors) => {
-            if !authors.is_empty() {
-                Ok(authors)
-            } else {
-                Err(())
-            }
-        }
-        Err(e) => {
-            tracing::error!("{}", e);
-            Err(())
-        }
-    }
+pub fn find_author_by_name(state: &Arc<AppState>, name: String) -> Result<Author, ()> {
+    let author_result: QueryResult<Vec<Author>> =
+        Author::find_by_name(state.db_connection.get().unwrap(), name);
+    match_author_result(author_result)
+}
+
+fn find_by_name_or_email(state: &Arc<AppState>, name: String, email: String) -> Result<Author, ()> {
+    let author_result =
+        Author::find_by_name_or_email(state.db_connection.get().unwrap(), name, email);
+    match_author_result(author_result)
 }
 
 pub fn auth_author(
@@ -58,32 +35,27 @@ pub fn auth_author(
     form_login_author: FormLoginAuthor,
 ) -> Result<AuthAuthor, ()> {
     match find_author_by_name(&state, form_login_author.name) {
-        Ok(authors) => {
-            let author: &Author = authors.first().unwrap();
-            match verify_password(&form_login_author.password, &author.password) {
-                Ok(_) => {
-                    let jwt_token = jwt_service::sign(author.id).unwrap();
-                    Ok(AuthAuthor::new(
-                        author.id,
-                        jwt_token,
-                        author.role.clone().unwrap_or(Roles::Author.to_string()),
-                    ))
-                }
-                Err(_) => Err(()),
+        Ok(author) => match verify_password(&form_login_author.password, &author.password) {
+            Ok(_) => {
+                let jwt_token = jwt_service::sign(author.id).unwrap();
+                Ok(AuthAuthor::new(
+                    author.id,
+                    jwt_token,
+                    author.role.clone().unwrap_or(Roles::Author.to_string()),
+                ))
             }
-        }
+            Err(_) => Err(()),
+        },
         Err(_) => Err(()),
     }
 }
 
-pub fn create_author(
-    state: &Arc<AppState>,
-    author: NewAuthor,
-) -> Result<(), Option<String>> {
+pub fn create_author(state: &Arc<AppState>, author: NewAuthor) -> Result<(), Option<String>> {
     match author.validate() {
         Ok(_) => match validate_unique_name_and_email(&state, &author.name, &author.email) {
             Ok(_) => {
-                let author_result: QueryResult<Author> = Author::create(state.db_connection.get().unwrap(), author);
+                let author_result: QueryResult<Author> =
+                    Author::create(state.db_connection.get().unwrap(), author);
                 match author_result {
                     Ok(_) => Ok(()),
                     Err(e) => {
@@ -92,9 +64,31 @@ pub fn create_author(
                     }
                 }
             }
-            Err(e) => {
-                Err(Some(e.code.to_string()))
+            Err(e) => Err(Some(e.code.to_string())),
+        },
+        Err(_) => Err(None),
+    }
+}
+
+pub fn update_author(state: &Arc<AppState>, author: UpdateAuthor) -> Result<(), Option<String>> {
+    match author.validate() {
+        Ok(_) => match validate_unique_name_and_email(
+            &state,
+            &author.name.clone().unwrap_or("".to_string()),
+            &author.email.clone().unwrap_or("".to_string()),
+        ) {
+            Ok(_) => {
+                let author_result: QueryResult<usize> =
+                    Author::update(state.db_connection.get().unwrap(), author);
+                match author_result {
+                    Ok(_) => Ok(()),
+                    Err(e) => {
+                        tracing::error!("{}", e);
+                        Err(Some("TECHNICAL_ERROR".to_string()))
+                    }
+                }
             }
+            Err(e) => Err(Some(e.code.to_string())),
         },
         Err(_) => Err(None),
     }
@@ -140,6 +134,22 @@ pub fn validate_unique_name_and_email(
     match find_by_name_or_email(&state, name.to_string(), email.to_string()) {
         Ok(_) => Err(ValidationError::new("NAME_OR_EMAIL_EXIST")),
         Err(_) => Ok(()),
+    }
+}
+
+fn match_author_result(author_result: QueryResult<Vec<Author>>) -> Result<Author, ()> {
+    match author_result {
+        Ok(mut authors) => {
+            if !authors.is_empty() {
+                Ok(authors.pop().unwrap())
+            } else {
+                Err(())
+            }
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            Err(())
+        }
     }
 }
 
