@@ -60,7 +60,7 @@ pub async fn edit(State(state): State<Arc<AppState>>, mut session: WritableSessi
         Ok(_) => {
             let alert_message: String = session.get::<String>("alert").unwrap_or("".to_string());
             session_remove_alert(&mut session);
-            match find_article_by_permalink(&state, &permalink) {
+            match find_article_by_permalink(&state, permalink) {
                 Ok(_) => {
                     //update
 

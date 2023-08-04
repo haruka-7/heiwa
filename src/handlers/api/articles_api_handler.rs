@@ -78,7 +78,7 @@ pub async fn create(
     }
 }
 
-pub async fn update(
+/*pub async fn update(
     State(state): State<Arc<AppState>>,
     token: AuthBearer,
     Json(payload): Json<NewArticle>,
@@ -108,7 +108,7 @@ pub async fn update(
             Some(_) => StatusCode::NOT_FOUND.into_response(),
         },
     }
-}
+}*/
 
 pub async fn delete(State(state): State<Arc<AppState>>, Path(id): Path<i32>) -> Response {
     let delete_result: QueryResult<usize> = Article::delete(state.db_connection.get().unwrap(), id);

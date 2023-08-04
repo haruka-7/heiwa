@@ -155,10 +155,10 @@ fn routes() -> Router {
                     "/articles/create",
                     post(handlers::api::articles_api_handler::create),
                 )
-                .route(
+                /*.route(
                     "/articles/edit/:permalink",
                     put(handlers::api::articles_api_handler::update),
-                )
+                )*/
                 .route(
                     "/articles/delete/:id",
                     delete(handlers::api::articles_api_handler::delete),

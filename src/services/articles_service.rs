@@ -32,7 +32,7 @@ pub fn find_articles_by_author(
 
 pub fn find_article_by_permalink(
     state: &Arc<AppState>,
-    article_permalink: &String,
+    article_permalink: String,
 ) -> Result<Article, Option<String>> {
     let articles_result =
         Article::find_by_permalink(state.db_connection.get().unwrap(), article_permalink);
@@ -68,7 +68,7 @@ pub fn create_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), 
     }
 }
 
-pub fn update_article(state: &Arc<AppState>, article: &NewArticle) -> Result<(), Option<String>> {
+pub fn update_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), Option<String>> {
     match validate_unique_permalink(&state, &article.permalink) {
         Ok(_) => {
             let article_result: QueryResult<usize> =
