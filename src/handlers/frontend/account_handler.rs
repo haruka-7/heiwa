@@ -1,7 +1,7 @@
-use crate::entities::authors::NewAuthor;
-use crate::handlers::api::authors::FormLoginAuthor;
-use crate::services::authors::{auth_author, create_author};
-use crate::services::session::{session_insert_alert, session_remove_alert};
+use crate::entities::authors_entity::NewAuthor;
+use crate::handlers::api::authors_api_handler::FormLoginAuthor;
+use crate::services::authors_service::{auth_author, create_author};
+use crate::services::session_service::{session_insert_alert, session_remove_alert};
 use crate::templates::{LoginTemplate, RegisterTemplate};
 use crate::AppState;
 use axum::extract::State;
@@ -22,7 +22,7 @@ pub async fn login(mut session: WritableSession) -> Response {
     let alert_message: String = session.get("alert").unwrap_or("".to_string());
     session_remove_alert(&mut session);
     LoginTemplate {
-        alert: alert_message,
+        alert: alert_message
     }
     .into_response()
 }
@@ -32,7 +32,7 @@ pub async fn login_action(
     session: WritableSession,
     Form(form): Form<FormLoginAuthor>,
 ) -> Response {
-    do_login(state, session, form)
+    do_login(&state, session, form)
 }
 
 pub async fn logout_action(mut session: WritableSession) -> Redirect {
@@ -55,10 +55,10 @@ pub async fn register_action(
 ) -> Response {
     let password: String = form.password.clone();
     let name: String = form.name.clone();
-    match create_author(state.db_connection.get().unwrap(), form) {
+    match create_author(&state, form) {
         Ok(_) => {
             let auth_author: FormLoginAuthor = FormLoginAuthor { name, password };
-            do_login(state, session, auth_author)
+            do_login(&state, session, auth_author)
         }
         Err(error_code) => {
             match error_code {
@@ -71,11 +71,11 @@ pub async fn register_action(
 }
 
 fn do_login(
-    state: Arc<AppState>,
+    state: &Arc<AppState>,
     mut session: WritableSession,
     form_login_author: FormLoginAuthor,
 ) -> Response {
-    match auth_author(state.db_connection.get().unwrap(), form_login_author) {
+    match auth_author(&state, form_login_author) {
         Ok(auth_author) => {
             session.insert("author_id", &auth_author.id).unwrap_or(());
             session.insert("token", &auth_author.token).unwrap_or(());

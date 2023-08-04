@@ -1,21 +1,22 @@
-use crate::entities::authors::{Author, NewAuthor};
-use crate::entities::roles::Roles;
-use crate::handlers::api::authors::{AuthAuthor, FormLoginAuthor};
-use crate::services::jwt;
-use crate::services::jwt::verify;
+use std::sync::Arc;
+use crate::entities::authors_entity::{Author, NewAuthor};
+use crate::entities::roles_entity::Roles;
+use crate::handlers::api::authors_api_handler::{AuthAuthor, FormLoginAuthor};
+use crate::services::jwt_service;
+use crate::services::jwt_service::verify;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum_sessions::extractors::WritableSession;
-use diesel::r2d2::{ConnectionManager, PooledConnection};
-use diesel::{PgConnection, QueryResult};
+use diesel::QueryResult;
 use validator::{Validate, ValidationError};
+use crate::AppState;
 
 pub fn find_author_by_name(
-    connection: PooledConnection<ConnectionManager<PgConnection>>,
+    state: &Arc<AppState>,
     name: String,
 ) -> Result<Vec<Author>, ()> {
-    let author_result = Author::find_by_name(connection, name);
+    let author_result = Author::find_by_name(state.db_connection.get().unwrap(), name);
     match author_result {
         Ok(authors) => {
             if !authors.is_empty() {
@@ -32,11 +33,11 @@ pub fn find_author_by_name(
 }
 
 fn find_by_name_or_email(
-    connection: PooledConnection<ConnectionManager<PgConnection>>,
+    state: &Arc<AppState>,
     name: String,
     email: String,
 ) -> Result<Vec<Author>, ()> {
-    let author_result = Author::find_by_name_or_email(connection, name, email);
+    let author_result = Author::find_by_name_or_email(state.db_connection.get().unwrap(), name, email);
     match author_result {
         Ok(authors) => {
             if !authors.is_empty() {
@@ -53,15 +54,15 @@ fn find_by_name_or_email(
 }
 
 pub fn auth_author(
-    connection: PooledConnection<ConnectionManager<PgConnection>>,
+    state: &Arc<AppState>,
     form_login_author: FormLoginAuthor,
 ) -> Result<AuthAuthor, ()> {
-    match find_author_by_name(connection, form_login_author.name) {
+    match find_author_by_name(&state, form_login_author.name) {
         Ok(authors) => {
             let author: &Author = authors.first().unwrap();
             match verify_password(&form_login_author.password, &author.password) {
                 Ok(_) => {
-                    let jwt_token = jwt::sign(author.id).unwrap();
+                    let jwt_token = jwt_service::sign(author.id).unwrap();
                     Ok(AuthAuthor::new(
                         author.id,
                         jwt_token,
@@ -76,13 +77,13 @@ pub fn auth_author(
 }
 
 pub fn create_author(
-    connection: PooledConnection<ConnectionManager<PgConnection>>,
+    state: &Arc<AppState>,
     author: NewAuthor,
 ) -> Result<(), Option<String>> {
     match author.validate() {
-        Ok(_) => match validate_unique_name_and_email(connection, &author.name, &author.email) {
+        Ok(_) => match validate_unique_name_and_email(&state, &author.name, &author.email) {
             Ok(_) => {
-                let author_result: QueryResult<Author> = Author::create(author);
+                let author_result: QueryResult<Author> = Author::create(state.db_connection.get().unwrap(), author);
                 match author_result {
                     Ok(_) => Ok(()),
                     Err(e) => {
@@ -132,11 +133,11 @@ pub fn verify_password(
 }
 
 pub fn validate_unique_name_and_email(
-    connection: PooledConnection<ConnectionManager<PgConnection>>,
+    state: &Arc<AppState>,
     name: &str,
     email: &str,
 ) -> Result<(), ValidationError> {
-    match find_by_name_or_email(connection, name.to_string(), email.to_string()) {
+    match find_by_name_or_email(&state, name.to_string(), email.to_string()) {
         Ok(_) => Err(ValidationError::new("NAME_OR_EMAIL_EXIST")),
         Err(_) => Ok(()),
     }

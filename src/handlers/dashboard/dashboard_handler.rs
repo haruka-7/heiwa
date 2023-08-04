@@ -1,4 +1,4 @@
-use crate::services::authors::is_author_logged;
+use crate::services::authors_service::is_author_logged;
 use crate::templates::BackDashboardTemplate;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum_sessions::extractors::WritableSession;

@@ -1,6 +1,6 @@
-pub mod articles;
-pub mod articles_tags;
-pub mod authors;
-pub mod links;
-pub mod roles;
-pub mod tags;
+pub mod articles_entity;
+pub mod articles_tags_entity;
+pub mod authors_entity;
+pub mod links_entity;
+pub mod roles_entity;
+pub mod tags_entity;

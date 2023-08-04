@@ -1,6 +1,5 @@
 use crate::schema::*;
-use crate::services::authors::hash_password;
-use crate::services::database::connection_pool;
+use crate::services::authors_service::hash_password;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
@@ -65,24 +64,24 @@ impl Author {
             .load(&mut connection)
     }
 
-    pub fn create(mut new_author: NewAuthor) -> QueryResult<Author> {
+    pub fn create(mut connection: PooledConnection<ConnectionManager<PgConnection>>, mut new_author: NewAuthor) -> QueryResult<Author> {
         new_author.password = hash_password(&new_author.password);
         insert_into(authors::table)
             .values(&new_author)
             .returning(Author::as_returning())
-            .get_result(&mut connection_pool().get().unwrap())
+            .get_result(&mut connection)
     }
 
-    pub fn update(mut update_author: UpdateAuthor) -> QueryResult<usize> {
+    pub fn update(mut connection: PooledConnection<ConnectionManager<PgConnection>>, mut update_author: UpdateAuthor) -> QueryResult<usize> {
         if update_author.password.is_some() {
             update_author.password = Option::from(hash_password(&update_author.password.unwrap()));
         }
         update(&update_author)
             .set(&update_author)
-            .execute(&mut connection_pool().get().unwrap())
+            .execute(&mut connection)
     }
 
-    pub fn delete(author_id: i32) -> QueryResult<usize> {
-        delete(Author::table().find(author_id)).execute(&mut connection_pool().get().unwrap())
+    pub fn delete(mut connection: PooledConnection<ConnectionManager<PgConnection>>, author_id: i32) -> QueryResult<usize> {
+        delete(Author::table().find(author_id)).execute(&mut connection)
     }
 }

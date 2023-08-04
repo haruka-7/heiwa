@@ -1,7 +1,7 @@
-use crate::entities::articles::Article;
-use crate::entities::articles_tags::ArticleTag;
+use crate::entities::articles_entity::Article;
+use crate::entities::articles_tags_entity::ArticleTag;
 use crate::schema::*;
-use crate::services::database::connection_pool;
+use crate::services::database_service::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into};

@@ -1,6 +1,6 @@
-use crate::entities::authors::Author;
+use crate::entities::authors_entity::Author;
 use crate::schema::*;
-use crate::services::database::connection_pool;
+use crate::services::database_service::connection_pool;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{delete, insert_into, update};

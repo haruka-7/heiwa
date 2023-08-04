@@ -1,4 +1,4 @@
-use crate::entities::articles::Article;
+use crate::entities::articles_entity::Article;
 use askama::Template;
 
 #[derive(Template)]
@@ -20,22 +20,23 @@ pub struct RegisterTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "pages/backoffice/dashboard.html")]
+#[template(path = "pages/dashboard/dashboard.html")]
 pub struct BackDashboardTemplate {
     pub name: String,
 }
 
 #[derive(Template)]
-#[template(path = "pages/backoffice/articles-list.html")]
+#[template(path = "pages/dashboard/articles-list.html")]
 pub struct BackArticlesListTemplate {
+    pub alert: String,
     pub articles: Vec<Article>,
 }
 
 #[derive(Template)]
-#[template(path = "pages/backoffice/articles-new.html")]
+#[template(path = "pages/dashboard/articles-new.html")]
 pub struct BackArticleNewTemplate {
-    pub author_id: i32,
     pub alert: String,
+    pub author_id: i32,
 }
 
 #[derive(Template)]

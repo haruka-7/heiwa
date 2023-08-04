@@ -1,6 +1,6 @@
-use crate::entities::authors::Author;
-use crate::entities::links::{Link, NewLink};
-use crate::services::errors::handler_error;
+use crate::entities::authors_entity::Author;
+use crate::entities::links_entity::{Link, NewLink};
+use crate::services::errors_service::handler_error;
 use crate::AppState;
 use axum::extract::{Path, State};
 use axum::http::status::StatusCode;
