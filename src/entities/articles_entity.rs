@@ -3,11 +3,10 @@ use crate::entities::tags_entity::Tag;
 use crate::schema::*;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
-use diesel::{delete, insert_into};
+use diesel::r2d2::{ConnectionManager, PooledConnection};
+use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
-use diesel::r2d2::{ConnectionManager, PooledConnection};
-use validator::Validate;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = articles)]
@@ -25,7 +24,7 @@ pub struct Article {
     pub author_id: i32,
 }
 
-#[derive(Debug, Insertable, Serialize, Deserialize, Validate)]
+#[derive(Debug, Insertable, AsChangeset, Serialize, Deserialize)]
 #[diesel(table_name = articles)]
 pub struct NewArticle {
     pub permalink: String,
@@ -36,7 +35,10 @@ pub struct NewArticle {
 }
 
 impl Article {
-    pub fn find_by_permalink(mut connection: PooledConnection<ConnectionManager<PgConnection>>, permalink_param: String) -> QueryResult<Vec<Article>> {
+    pub fn find_by_permalink(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        permalink_param: String,
+    ) -> QueryResult<Vec<Article>> {
         Article::table()
             .filter(articles::permalink.eq(permalink_param))
             .limit(1)
@@ -44,28 +46,47 @@ impl Article {
             .load(&mut connection)
     }
 
-    pub fn find_by_author(mut connection: PooledConnection<ConnectionManager<PgConnection>>, author_param: i32) -> QueryResult<Vec<Article>> {
+    pub fn find_by_author(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        author_param: i32,
+    ) -> QueryResult<Vec<Article>> {
         Article::table()
             .filter(articles::author_id.eq(author_param))
             .select(Article::as_select())
             .load(&mut connection)
     }
 
-    pub fn find_by_tag(mut connection: PooledConnection<ConnectionManager<PgConnection>>, tag: &Tag) -> QueryResult<Vec<Article>> {
+    pub fn find_by_tag(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        tag: &Tag,
+    ) -> QueryResult<Vec<Article>> {
         ArticleTag::belonging_to(&tag)
             .inner_join(articles::table)
             .select(Article::as_select())
             .load(&mut connection)
     }
 
-    pub fn create(mut connection: PooledConnection<ConnectionManager<PgConnection>>, new_article: NewArticle) -> QueryResult<Article> {
+    pub fn create(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        new_article: NewArticle,
+    ) -> QueryResult<Article> {
         insert_into(articles::table)
             .values(&new_article)
             .returning(Article::as_returning())
             .get_result(&mut connection)
     }
 
-    pub fn delete(mut connection: PooledConnection<ConnectionManager<PgConnection>>, id: i32) -> QueryResult<usize> {
+    pub fn update(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        article: NewArticle,
+    ) -> QueryResult<usize> {
+        update(articles::table).set(article).execute(&mut connection)
+    }
+
+    pub fn delete(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+        id: i32,
+    ) -> QueryResult<usize> {
         delete(Article::table().find(id)).execute(&mut connection)
     }
 }

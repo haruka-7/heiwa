@@ -1,7 +1,9 @@
 use crate::entities::articles_entity::{Article, NewArticle};
 use crate::entities::tags_entity::Tag;
-use crate::services::articles_service::find_articles_by_author;
-use crate::services::errors_service::{handler_error, handler_validation_errors};
+use crate::services::articles_service::{
+    find_article_by_permalink, find_articles_by_author, update_article,
+};
+use crate::services::errors_service::handler_error;
 use crate::services::jwt_service::verify;
 use crate::AppState;
 use axum::extract::{Path, State};
@@ -11,7 +13,6 @@ use axum_auth::AuthBearer;
 use diesel::QueryResult;
 use serde_json::json;
 use std::sync::Arc;
-use validator::Validate;
 
 pub async fn get(State(state): State<Arc<AppState>>, Path(permalink): Path<String>) -> Response {
     let article_result: QueryResult<Vec<Article>> =
@@ -65,18 +66,47 @@ pub async fn create(
     Json(payload): Json<NewArticle>,
 ) -> Response {
     match verify(token.0.as_str(), payload.author_id) {
-        Ok(_) => match payload.validate() {
-            Ok(_) => {
-                let article: QueryResult<Article> =
-                    Article::create(state.db_connection.get().unwrap(), payload);
-                match article {
-                    Ok(_) => StatusCode::CREATED.into_response(),
-                    Err(e) => handler_error(e),
-                }
+        Ok(_) => {
+            let article: QueryResult<Article> =
+                Article::create(state.db_connection.get().unwrap(), payload);
+            match article {
+                Ok(_) => StatusCode::CREATED.into_response(),
+                Err(e) => handler_error(e),
             }
-            Err(e) => handler_validation_errors(e),
-        },
+        }
         Err(_) => StatusCode::FORBIDDEN.into_response(),
+    }
+}
+
+pub async fn update(
+    State(state): State<Arc<AppState>>,
+    token: AuthBearer,
+    Json(payload): Json<NewArticle>,
+) -> Response {
+    let article_result: Result<Article, Option<String>> =
+        find_article_by_permalink(&state, &payload.permalink);
+    match article_result {
+        Ok(article) => match verify(token.0.as_str(), article.author_id) {
+            Ok(_) => match update_article(&state, &payload) {
+                Ok(_) => {
+                    let article: QueryResult<usize> =
+                        Article::update(state.db_connection.get().unwrap(), payload);
+                    match article {
+                        Ok(_) => StatusCode::CREATED.into_response(),
+                        Err(e) => handler_error(e),
+                    }
+                }
+                Err(error) => match error {
+                    None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                    Some(_) => StatusCode::NOT_FOUND.into_response(),
+                },
+            },
+            Err(_) => StatusCode::FORBIDDEN.into_response()
+        },
+        Err(error) => match error {
+            None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            Some(_) => StatusCode::NOT_FOUND.into_response(),
+        },
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::services::config_service::Config;
 use crate::services::database_service::connection_pool;
 use axum::error_handling::HandleErrorLayer;
-use axum::routing::{delete, get, get_service, patch, post};
+use axum::routing::{delete, get, get_service, patch, post, put};
 use axum::Router;
 use axum_sessions::{async_session, SessionLayer};
 use diesel::r2d2::{ConnectionManager, Pool};
@@ -58,8 +58,12 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
     rand::thread_rng().fill_bytes(&mut secret);
 
     let middleware_stack = ServiceBuilder::new()
-        .layer(CatchPanicLayer::custom(handlers::frontend::error_handler::panic))
-        .layer(HandleErrorLayer::new(handlers::frontend::error_handler::error))
+        .layer(CatchPanicLayer::custom(
+            handlers::frontend::error_handler::panic,
+        ))
+        .layer(HandleErrorLayer::new(
+            handlers::frontend::error_handler::error,
+        ))
         .layer(SessionLayer::new(
             async_session::MemoryStore::new(),
             &secret,
@@ -80,31 +84,60 @@ fn routes() -> Router {
         .route("/", get(handlers::frontend::home_handler::show))
         .route(
             "/login",
-            get(handlers::frontend::account_handler::login).post(handlers::frontend::account_handler::login_action),
+            get(handlers::frontend::account_handler::login)
+                .post(handlers::frontend::account_handler::login_action),
         )
-        .route("/logout", get(handlers::frontend::account_handler::logout_action))
+        .route(
+            "/logout",
+            get(handlers::frontend::account_handler::logout_action),
+        )
         .route(
             "/register",
-            get(handlers::frontend::account_handler::register).post(handlers::frontend::account_handler::register_action),
+            get(handlers::frontend::account_handler::register)
+                .post(handlers::frontend::account_handler::register_action),
         )
         .route("/error-page", get(handlers::frontend::error_handler::show))
         .nest(
             "/api",
             Router::new()
                 // Authors - TODO SECURITY this return a full Author with hashed password
-                .route("/authors/get/:name", get(handlers::api::authors_api_handler::get))
-                .route("/authors/login", post(handlers::api::authors_api_handler::login))
-                .route("/authors/create", post(handlers::api::authors_api_handler::create))
-                .route("/authors/update", patch(handlers::api::authors_api_handler::update))
+                .route(
+                    "/authors/get/:name",
+                    get(handlers::api::authors_api_handler::get),
+                )
+                .route(
+                    "/authors/login",
+                    post(handlers::api::authors_api_handler::login),
+                )
+                .route(
+                    "/authors/create",
+                    post(handlers::api::authors_api_handler::create),
+                )
+                .route(
+                    "/authors/update",
+                    patch(handlers::api::authors_api_handler::update),
+                )
                 .route(
                     "/authors/delete/:id",
                     delete(handlers::api::authors_api_handler::delete),
                 )
                 // Links
-                .route("/links/get/:author_name", get(handlers::api::links_api_handler::get))
-                .route("/links/create", post(handlers::api::links_api_handler::create))
-                .route("/links/update", patch(handlers::api::links_api_handler::update))
-                .route("/links/delete/:id", delete(handlers::api::links_api_handler::delete))
+                .route(
+                    "/links/get/:author_name",
+                    get(handlers::api::links_api_handler::get),
+                )
+                .route(
+                    "/links/create",
+                    post(handlers::api::links_api_handler::create),
+                )
+                .route(
+                    "/links/update",
+                    patch(handlers::api::links_api_handler::update),
+                )
+                .route(
+                    "/links/delete/:id",
+                    delete(handlers::api::links_api_handler::delete),
+                )
                 // Articles - TODO add search and update articles route
                 .route(
                     "/articles/get/:permalink",
@@ -114,8 +147,18 @@ fn routes() -> Router {
                     "/articles/author/:author_id",
                     get(handlers::api::articles_api_handler::author),
                 )
-                .route("/articles/tag/:tag_id", get(handlers::api::articles_api_handler::tag))
-                .route("/articles/create", post(handlers::api::articles_api_handler::create))
+                .route(
+                    "/articles/tag/:tag_id",
+                    get(handlers::api::articles_api_handler::tag),
+                )
+                .route(
+                    "/articles/create",
+                    post(handlers::api::articles_api_handler::create),
+                )
+                .route(
+                    "/articles/edit/:permalink",
+                    put(handlers::api::articles_api_handler::update),
+                )
                 .route(
                     "/articles/delete/:id",
                     delete(handlers::api::articles_api_handler::delete),
@@ -138,11 +181,18 @@ fn routes() -> Router {
             "/dashboard",
             Router::new()
                 .route("/", get(handlers::dashboard::dashboard_handler::show))
-                .route("/articles", get(handlers::dashboard::articles_handler::list))
+                .route(
+                    "/articles",
+                    get(handlers::dashboard::articles_handler::list),
+                )
                 .route(
                     "/article",
                     get(handlers::dashboard::articles_handler::new)
                         .post(handlers::dashboard::articles_handler::new_action),
+                )
+                .route(
+                    "/article/:permalink",
+                    get(handlers::dashboard::articles_handler::edit),
                 ),
         )
         .with_state(state)

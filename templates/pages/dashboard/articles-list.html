@@ -9,7 +9,7 @@
 
 <ul>
     {% for article in articles %}
-    <li>{{ article.title|e }}</li>
+    <li><a href="/dashboard/article/{{ article.permalink }}">{{ article.title|e }}</a></li>
     {% endfor %}
 </ul>
 {% endblock %}
