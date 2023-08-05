@@ -35,6 +35,14 @@ pub struct NewArticle {
 }
 
 impl Article {
+    pub fn find(
+        mut connection: PooledConnection<ConnectionManager<PgConnection>>,
+    ) -> QueryResult<Vec<Article>> {
+        Article::table()
+            .select(Article::as_select())
+            .load(&mut connection)
+    }
+
     pub fn find_by_permalink(
         mut connection: PooledConnection<ConnectionManager<PgConnection>>,
         permalink_param: String,

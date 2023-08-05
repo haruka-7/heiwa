@@ -149,6 +149,10 @@ fn routes() -> Router {
                 )
                 // Articles - TODO add search and update articles route
                 .route(
+                    "/articles/all",
+                    get(handlers::api::articles_api_handler::get_all),
+                )
+                .route(
                     "/articles/get/:permalink",
                     get(handlers::api::articles_api_handler::get),
                 )

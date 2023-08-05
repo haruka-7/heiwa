@@ -4,6 +4,25 @@ use diesel::QueryResult;
 use std::sync::Arc;
 use validator::ValidationError;
 
+pub fn find_articles(
+    state: &Arc<AppState>,
+) -> Result<Vec<Article>, Option<String>> {
+    let articles_result = Article::find(state.db_connection.get().unwrap());
+    match articles_result {
+        Ok(articles) => {
+            if !articles.is_empty() {
+                Ok(articles)
+            } else {
+                Err(Some("NO_ARTICLE_FOUND".to_string()))
+            }
+        }
+        Err(e) => {
+            tracing::error!("{}", e);
+            Err(None)
+        }
+    }
+}
+
 pub fn find_articles_by_author(
     state: &Arc<AppState>,
     author_id: i32,

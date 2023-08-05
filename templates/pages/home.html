@@ -9,38 +9,19 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold underline">
-    Hello, {{ name }}!
+    {{ title }}
 </h1>
 <input type="search" id="search" name="search" placeholder="Search">
 <div class="grid">
+    {% for article in articles %}
     <div>
         <article>
-            <header>Header</header>
-            Body
-            <footer>Footer</footer>
+            <header>{{ article.title }}</header>
+            {{ article.content }}
+            <footer>By {{ article.author }}</footer>
         </article>
     </div>
-    <div>
-        <article>
-            <header>Header</header>
-            Body
-            <footer>Footer</footer>
-        </article>
-    </div>
-    <div>
-        <article>
-            <header>Header</header>
-            Body
-            <footer>Footer</footer>
-        </article>
-    </div>
-    <div>
-        <article>
-            <header>Header</header>
-            Body
-            <footer>Footer</footer>
-        </article>
-    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}
