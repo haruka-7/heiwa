@@ -2,9 +2,7 @@ use crate::entities::authors_entity::{Author, NewAuthor, UpdateAuthor};
 use crate::services::authors_service::{
     auth_author, create_author, find_author_by_name, update_author,
 };
-use crate::services::errors_service::{
-    handle_service_error, handler_error, handler_validation_errors,
-};
+use crate::services::errors_service::{handle_service_error, handler_error};
 use crate::services::jwt_service::verify;
 use crate::AppState;
 use axum::extract::{Path, State};
@@ -15,7 +13,6 @@ use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
-use validator::Validate;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FormLoginAuthor {

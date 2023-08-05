@@ -1,14 +1,8 @@
 use crate::entities::articles_entity::{Article, NewArticle};
 use crate::AppState;
 use diesel::QueryResult;
-use serde::Deserialize;
 use std::sync::Arc;
 use validator::ValidationError;
-
-#[derive(Debug, Deserialize)]
-pub struct Articles {
-    pub articles: Vec<Article>,
-}
 
 pub fn find_articles_by_author(
     state: &Arc<AppState>,
