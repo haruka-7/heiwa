@@ -4,6 +4,7 @@ use diesel::QueryResult;
 use std::sync::Arc;
 use validator::ValidationError;
 
+//TODO add a limit or pagination
 pub fn find_articles(
     state: &Arc<AppState>,
 ) -> Result<Vec<Article>, Option<String>> {
