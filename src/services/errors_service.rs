@@ -13,6 +13,6 @@ pub fn handler_error(error: Error) -> Response {
 pub fn handle_service_error(error: Option<String>) -> Response {
     match error {
         None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        Some(code) => (StatusCode::BAD_REQUEST, Json(json!({"error": code}))).into_response(),
+        Some(code) => (StatusCode::BAD_REQUEST, Json(json!({ "error": code }))).into_response(),
     }
 }

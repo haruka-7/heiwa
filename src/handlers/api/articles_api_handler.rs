@@ -1,6 +1,8 @@
 use crate::entities::articles_entity::{Article, NewArticle};
 use crate::entities::tags_entity::Tag;
-use crate::services::articles_service::{find_article_by_permalink, find_articles, find_articles_by_author, update_article};
+use crate::services::articles_service::{
+    find_article_by_permalink, find_articles, find_articles_by_author, update_article,
+};
 use crate::services::errors_service::handler_error;
 use crate::services::jwt_service::verify;
 use crate::AppState;

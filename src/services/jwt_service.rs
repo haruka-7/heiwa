@@ -1,9 +1,9 @@
 use crate::CONFIG;
 use chrono::{Duration, Utc};
 
+use crate::entities::roles_entity::Roles;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation};
 use serde::{Deserialize, Serialize};
-use crate::entities::roles_entity::Roles;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {

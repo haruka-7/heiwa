@@ -109,6 +109,10 @@ fn routes() -> Router {
         .nest(
             "/api",
             Router::new()
+                .route(
+                    "/token/:id",
+                    get(handlers::api::tokens_handler::token_verify),
+                )
                 // Authors - TODO SECURITY this return a full Author with hashed password
                 .route(
                     "/authors/get/:name",

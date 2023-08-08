@@ -1,12 +1,12 @@
-use askama::Template;
 use crate::entities::articles_entity::Article;
+use askama::Template;
 
 #[derive(Template)]
 #[template(path = "pages/home.html")]
 pub struct HomeTemplate {
     pub title: String,
     pub alert: String,
-    pub articles: Vec<ArticleData>
+    pub articles: Vec<ArticleData>,
 }
 
 #[derive(Template)]

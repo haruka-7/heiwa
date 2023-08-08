@@ -5,9 +5,7 @@ use std::sync::Arc;
 use validator::ValidationError;
 
 //TODO add a limit or pagination
-pub fn find_articles(
-    state: &Arc<AppState>,
-) -> Result<Vec<Article>, Option<String>> {
+pub fn find_articles(state: &Arc<AppState>) -> Result<Vec<Article>, Option<String>> {
     let articles_result = Article::find(state.db_connection.get().unwrap());
     match articles_result {
         Ok(articles) => {
