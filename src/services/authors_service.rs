@@ -37,7 +37,7 @@ pub fn auth_author(
     match find_author_by_name(&state, form_login_author.name) {
         Ok(author) => match verify_password(&form_login_author.password, &author.password) {
             Ok(_) => {
-                let jwt_token = jwt_service::sign(author.id).unwrap();
+                let jwt_token = jwt_service::sign(author.id, author.role.clone().unwrap_or(Roles::Author.to_string())).unwrap();
                 Ok(AuthAuthor::new(
                     author.id,
                     jwt_token,

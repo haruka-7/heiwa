@@ -3,31 +3,34 @@ use chrono::{Duration, Utc};
 
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation};
 use serde::{Deserialize, Serialize};
+use crate::entities::roles_entity::Roles;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Claims {
     pub sub: i32,
+    pub role: String,
     pub exp: i64,
     pub iat: i64,
 }
 
 impl Claims {
-    pub fn new(author_id: i32) -> Self {
+    pub fn new(author_id: i32, author_role: String) -> Self {
         let iat = Utc::now();
         // token expire set to 6 months
         let exp = iat + Duration::hours(4383);
         Self {
             sub: author_id,
+            role: author_role,
             iat: iat.timestamp(),
             exp: exp.timestamp(),
         }
     }
 }
 
-pub fn sign(author_id: i32) -> Result<String, ()> {
+pub fn sign(author_id: i32, author_role: String) -> Result<String, ()> {
     let token_encoded = jsonwebtoken::encode(
         &Header::default(),
-        &Claims::new(author_id),
+        &Claims::new(author_id, author_role),
         &EncodingKey::from_secret(CONFIG.jwt_secret.as_bytes()),
     );
     match token_encoded {
