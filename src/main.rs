@@ -5,12 +5,10 @@ use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
 use axum::http::{HeaderValue, Method};
 use axum::routing::{delete, get, get_service, patch, post, put};
 use axum::Router;
-use axum_sessions::{async_session, SessionLayer};
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::PgConnection;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
-use rand::RngCore;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -22,10 +20,8 @@ use tower_http::services::ServeDir;
 
 mod entities;
 mod handlers;
-mod middlewares;
 mod schema;
 mod services;
-mod templates;
 
 lazy_static! {
     static ref CONFIG: Config = Config::new();
@@ -56,10 +52,6 @@ async fn main() {
 fn init_server(routes: Router) -> (Router, SocketAddr) {
     tracing_subscriber::fmt::init();
 
-    // Session secret must be at least 64 bytes
-    let mut secret = [0u8; 128];
-    rand::thread_rng().fill_bytes(&mut secret);
-
     let middleware_stack = ServiceBuilder::new()
         .layer(
             CorsLayer::new()
@@ -67,16 +59,8 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
                 .allow_headers([CONTENT_TYPE, AUTHORIZATION])
                 .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE]),
         )
-        .layer(CatchPanicLayer::custom(
-            handlers::public::error_handler::panic,
-        ))
-        .layer(HandleErrorLayer::new(
-            handlers::public::error_handler::error,
-        ))
-        .layer(SessionLayer::new(
-            async_session::MemoryStore::new(),
-            &secret,
-        ))
+        .layer(CatchPanicLayer::custom(handlers::error_handler::panic))
+        .layer(HandleErrorLayer::new(handlers::error_handler::error))
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(CONFIG.server_timeout));
 
@@ -90,136 +74,78 @@ fn routes() -> Router {
         db_connection: connection_pool(),
     });
     Router::new()
-        .route("/", get(handlers::public::home_handler::show))
+        .route("/token/:id", get(handlers::tokens_handler::token_verify))
+        // Authors - TODO SECURITY this return a full Author with hashed password
         .route(
-            "/login",
-            get(handlers::public::account_handler::login)
-                .post(handlers::public::account_handler::login_action),
+            "/authors/find/:name",
+            get(handlers::authors_api_handler::find),
+        )
+        .route("/authors/get/:id", get(handlers::authors_api_handler::get))
+        .route("/authors/login", post(handlers::authors_api_handler::login))
+        .route(
+            "/authors/create",
+            post(handlers::authors_api_handler::create),
         )
         .route(
-            "/logout",
-            get(handlers::public::account_handler::logout_action),
+            "/authors/update",
+            patch(handlers::authors_api_handler::update),
         )
         .route(
-            "/register",
-            get(handlers::public::account_handler::register)
-                .post(handlers::public::account_handler::register_action),
+            "/authors/delete/:id",
+            delete(handlers::authors_api_handler::delete),
         )
-        .route("/error-page", get(handlers::public::error_handler::show))
-        .nest(
-            "/api",
-            Router::new()
-                .route(
-                    "/token/:id",
-                    get(handlers::api::tokens_handler::token_verify),
-                )
-                // Authors - TODO SECURITY this return a full Author with hashed password
-                .route(
-                    "/authors/get/:name",
-                    get(handlers::api::authors_api_handler::get),
-                )
-                .route(
-                    "/authors/login",
-                    post(handlers::api::authors_api_handler::login),
-                )
-                .route(
-                    "/authors/create",
-                    post(handlers::api::authors_api_handler::create),
-                )
-                .route(
-                    "/authors/update",
-                    patch(handlers::api::authors_api_handler::update),
-                )
-                .route(
-                    "/authors/delete/:id",
-                    delete(handlers::api::authors_api_handler::delete),
-                )
-                // Links
-                .route(
-                    "/links/get/:author_name",
-                    get(handlers::api::links_api_handler::get),
-                )
-                .route(
-                    "/links/create",
-                    post(handlers::api::links_api_handler::create),
-                )
-                .route(
-                    "/links/update",
-                    patch(handlers::api::links_api_handler::update),
-                )
-                .route(
-                    "/links/delete/:id",
-                    delete(handlers::api::links_api_handler::delete),
-                )
-                // Articles - TODO add search and update articles route
-                .route(
-                    "/articles/all",
-                    get(handlers::api::articles_api_handler::get_all),
-                )
-                .route(
-                    "/articles/get/:permalink",
-                    get(handlers::api::articles_api_handler::get),
-                )
-                .route(
-                    "/articles/author/:author_id",
-                    get(handlers::api::articles_api_handler::author),
-                )
-                .route(
-                    "/articles/tag/:tag_id",
-                    get(handlers::api::articles_api_handler::tag),
-                )
-                .route(
-                    "/articles/create",
-                    post(handlers::api::articles_api_handler::create),
-                )
-                .route(
-                    "/articles/edit/:permalink",
-                    put(handlers::api::articles_api_handler::update),
-                )
-                .route(
-                    "/articles/delete/:id",
-                    delete(handlers::api::articles_api_handler::delete),
-                )
-                // Tags
-                .route(
-                    "/tags/get/:article_permalink",
-                    get(handlers::api::tags_api_handler::get),
-                )
-                .route(
-                    "/tags/create/:article_id",
-                    post(handlers::api::tags_api_handler::create),
-                )
-                .route(
-                    "/tags/delete/:article_id/:tag_id",
-                    delete(handlers::api::tags_api_handler::delete),
-                ),
+        // Links
+        .route(
+            "/links/get/:author_name",
+            get(handlers::links_api_handler::get),
         )
-        .nest(
-            "/dashboard",
-            Router::new()
-                .route("/", get(handlers::dashboard::dashboard_handler::show))
-                .route(
-                    "/articles",
-                    get(handlers::dashboard::articles_handler::list),
-                )
-                .route(
-                    "/article",
-                    get(handlers::dashboard::articles_handler::new)
-                        .post(handlers::dashboard::articles_handler::new_action),
-                )
-                .route(
-                    "/article/:permalink",
-                    get(handlers::dashboard::articles_handler::edit),
-                )
-                .route(
-                    "/article/update",
-                    post(handlers::dashboard::articles_handler::edit_action),
-                )
-                .route(
-                    "/profile",
-                    get(handlers::dashboard::profile_handler::edit)
-                        .post(handlers::dashboard::profile_handler::edit_action),
-                ),
+        .route("/links/create", post(handlers::links_api_handler::create))
+        .route("/links/update", patch(handlers::links_api_handler::update))
+        .route(
+            "/links/delete/:id",
+            delete(handlers::links_api_handler::delete),
+        )
+        // Articles - TODO add search and update articles route
+        .route(
+            "/articles/all",
+            get(handlers::articles_api_handler::get_all),
+        )
+        .route(
+            "/articles/get/:permalink",
+            get(handlers::articles_api_handler::get),
+        )
+        .route(
+            "/articles/author/:author_id",
+            get(handlers::articles_api_handler::author),
+        )
+        .route(
+            "/articles/tag/:tag_id",
+            get(handlers::articles_api_handler::tag),
+        )
+        .route(
+            "/articles/create",
+            post(handlers::articles_api_handler::create),
+        )
+        .route(
+            "/articles/edit/:permalink",
+            put(handlers::articles_api_handler::update),
+        )
+        .route(
+            "/articles/delete/:id",
+            delete(handlers::articles_api_handler::delete),
+        )
+        // Tags
+        .route(
+            "/tags/get/:article_permalink",
+            get(handlers::tags_api_handler::get),
+        )
+        .route(
+            "/tags/create/:article_id",
+            post(handlers::tags_api_handler::create),
+        )
+        .route(
+            "/tags/delete/:article_id/:tag_id",
+            delete(handlers::tags_api_handler::delete),
         )
         .with_state(state)
 }

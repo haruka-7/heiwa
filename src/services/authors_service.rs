@@ -1,13 +1,10 @@
 use crate::entities::authors_entity::{Author, NewAuthor, UpdateAuthor};
-use crate::entities::roles_entity::Roles;
-use crate::handlers::api::authors_api_handler::{AuthAuthor, FormLoginAuthor};
+use crate::handlers::authors_api_handler::{AuthAuthor, FormLoginAuthor};
 use crate::services::jwt_service;
-use crate::services::jwt_service::verify;
 use crate::AppState;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use axum_sessions::extractors::WritableSession;
 use diesel::QueryResult;
 use std::sync::Arc;
 use validator::{Validate, ValidationError};
@@ -34,18 +31,18 @@ pub fn auth_author(
     state: &Arc<AppState>,
     form_login_author: FormLoginAuthor,
 ) -> Result<AuthAuthor, ()> {
-    match find_author_by_name(&state, form_login_author.name) {
+    match find_author_by_name(state, form_login_author.name) {
         Ok(author) => match verify_password(&form_login_author.password, &author.password) {
             Ok(_) => {
                 let jwt_token = jwt_service::sign(
                     author.id,
-                    author.role.clone().unwrap_or(Roles::Author.to_string()),
+                    author.role.clone().unwrap_or("AUTHOR".to_string()),
                 )
                 .unwrap();
                 Ok(AuthAuthor::new(
                     author.id,
                     jwt_token,
-                    author.role.clone().unwrap_or(Roles::Author.to_string()),
+                    author.role.clone().unwrap_or("AUTHOR".to_string()),
                 ))
             }
             Err(_) => Err(()),
@@ -56,7 +53,7 @@ pub fn auth_author(
 
 pub fn create_author(state: &Arc<AppState>, author: NewAuthor) -> Result<(), Option<String>> {
     match author.validate() {
-        Ok(_) => match validate_unique_name_and_email(&state, &author.name, &author.email) {
+        Ok(_) => match validate_unique_name_and_email(state, &author.name, &author.email) {
             Ok(_) => {
                 let author_result: QueryResult<Author> =
                     Author::create(state.db_connection.get().unwrap(), author);
@@ -77,7 +74,7 @@ pub fn create_author(state: &Arc<AppState>, author: NewAuthor) -> Result<(), Opt
 pub fn update_author(state: &Arc<AppState>, author: UpdateAuthor) -> Result<(), Option<String>> {
     match author.validate() {
         Ok(_) => match validate_unique_name_and_email(
-            &state,
+            state,
             &author.name.clone().unwrap_or("".to_string()),
             &author.email.clone().unwrap_or("".to_string()),
         ) {
@@ -95,21 +92,6 @@ pub fn update_author(state: &Arc<AppState>, author: UpdateAuthor) -> Result<(), 
             Err(e) => Err(Some(e.code.to_string())),
         },
         Err(_) => Err(None),
-    }
-}
-
-pub fn is_author_logged(session: &WritableSession) -> Result<(), ()> {
-    let (token, id) = (
-        session.get::<String>("token").unwrap_or("".to_string()),
-        session.get::<i32>("author_id").unwrap_or(0),
-    );
-    if !token.is_empty() {
-        match verify(token.as_str(), id) {
-            Ok(_) => Ok(()),
-            Err(_) => Err(()),
-        }
-    } else {
-        Err(())
     }
 }
 
@@ -135,7 +117,7 @@ pub fn validate_unique_name_and_email(
     name: &str,
     email: &str,
 ) -> Result<(), ValidationError> {
-    match find_by_name_or_email(&state, name.to_string(), email.to_string()) {
+    match find_by_name_or_email(state, name.to_string(), email.to_string()) {
         Ok(_) => Err(ValidationError::new("NAME_OR_EMAIL_EXIST")),
         Err(_) => Ok(()),
     }
