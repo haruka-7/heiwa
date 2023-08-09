@@ -73,10 +73,11 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
         .layer(HandleErrorLayer::new(
             handlers::public::error_handler::error,
         ))
-        .layer(SessionLayer::new(
-            async_session::MemoryStore::new(),
-            &secret,
-        ))
+        .layer(
+            SessionLayer::new(async_session::MemoryStore::new(), &secret)
+                // expiration set to 6 months matching JWT expiration
+                .with_session_ttl(Some(Duration::from_secs(15778800))),
+        )
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(CONFIG.server_timeout));
 
