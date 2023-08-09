@@ -1,3 +1,4 @@
 .idea
 target
 node_modules
+templates/statics/dist/styles.css
