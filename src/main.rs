@@ -67,10 +67,10 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
                 .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE]),
         )
         .layer(CatchPanicLayer::custom(
-            handlers::public::error_handler::panic,
+            handlers::front::error_handler::panic,
         ))
         .layer(HandleErrorLayer::new(
-            handlers::public::error_handler::error,
+            handlers::front::error_handler::error,
         ))
         .layer(
             SessionLayer::new(async_session::MemoryStore::new(), &secret)
@@ -90,22 +90,22 @@ fn routes() -> Router {
         db_connection: connection_pool(),
     });
     Router::new()
-        .route("/", get(handlers::public::home_handler::show))
+        .route("/", get(handlers::front::home_handler::show))
         .route(
             "/login",
-            get(handlers::public::account_handler::login)
-                .post(handlers::public::account_handler::login_action),
+            get(handlers::front::account_handler::login)
+                .post(handlers::front::account_handler::login_action),
         )
         .route(
             "/logout",
-            get(handlers::public::account_handler::logout_action),
+            get(handlers::front::account_handler::logout_action),
         )
         .route(
             "/register",
-            get(handlers::public::account_handler::register)
-                .post(handlers::public::account_handler::register_action),
+            get(handlers::front::account_handler::register)
+                .post(handlers::front::account_handler::register_action),
         )
-        .route("/error-page", get(handlers::public::error_handler::show))
+        .route("/error-page", get(handlers::front::error_handler::show))
         .nest(
             "/api",
             Router::new()
