@@ -1,5 +1,11 @@
 {
+  "name": "heiwa",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "tailwindcss": "^3.3.3"
+  },
+  "scripts": {
+    "build" : "npx tailwindcss -i ./templates/statics/styles.css -o ./templates/statics/dist/styles.css",
+    "watch" : "npx tailwindcss -i ./templates/statics/styles.css -o ./templates/statics/dist/styles.css --watch"
   }
 }
