@@ -10,23 +10,23 @@
     <link href="/statics/dist/styles.css" rel="stylesheet">
 </head>
 <body>
-<nav class="container-fluid">
-    <ul>
-        <li><a href="/" class="contrast"><strong>Heiwa</strong></a></li>
-    </ul>
-    <ul>
-        <li><a href="/register">S'inscrire</a></li>
-        <li><a href="/login">Se connecter</a></li>
-    </ul>
+<nav class="flex flex-row items-center px-4 md:px-6 py-2 h-12 bg-slate-200">
+    <div class="flex-none">
+        <a href="/"><strong>Heiwa</strong></a>
+    </div>
+    <div class="grow text-right">
+        <a href="/register">S'inscrire</a>
+        <a href="/login">Se connecter</a>
+    </div>
 </nav>
-<main class="container">
+<main class="px-4 md:px-6 py-6">
     <section>
-        {% block content %}<p>Placeholder content</p>{% endblock %}
+        {% block content %}{% endblock %}
     </section>
 </main>
-<footer class="container-fluid">
-    <div class="grid">
-        <div><small>Made with &hearts; by Hidrile</small></div>
+<footer class="flex items-center px-4 pb-2 md:px-6 h-12 bg-slate-200">
+    <div class="grow text-center">
+        <small>Made with &hearts; by Hidrile</small>
     </div>
 </footer>
 </body>

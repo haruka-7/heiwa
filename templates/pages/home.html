@@ -2,16 +2,13 @@
 
 {% block title %}Index{% endblock %}
 
-{% block head %}
-<style>
-</style>
-{% endblock %}
-
 {% block content %}
-<h1 class="text-3xl font-bold underline">
+<h1 class="text-3xl font-bold">
     {{ title }}
 </h1>
-<input type="search" id="search" name="search" placeholder="Search">
+<div class="mx-auto py-6">
+    <input type="search" id="search" name="search" placeholder="Search" class="px-4 py-2 min-w-full md:min-w-md border-2 rounded-lg">
+</div>
 <div class="grid">
     {% for article in articles %}
     <div>
