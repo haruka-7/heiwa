@@ -115,7 +115,11 @@ fn routes() -> Router {
                 )
                 // Authors - TODO SECURITY this return a full Author with hashed password
                 .route(
-                    "/authors/get/:name",
+                    "/authors/find/:name",
+                    get(handlers::api::authors_api_handler::find),
+                )
+                .route(
+                    "/authors/get/:id",
                     get(handlers::api::authors_api_handler::get),
                 )
                 .route(

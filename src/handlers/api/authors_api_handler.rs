@@ -1,6 +1,6 @@
 use crate::entities::authors_entity::{Author, NewAuthor, UpdateAuthor};
 use crate::services::authors_service::{
-    auth_author, create_author, find_author_by_name, update_author,
+    auth_author, create_author, find_author_by_id, find_author_by_name, update_author,
 };
 use crate::services::errors_service::{handle_service_error, handler_error};
 use crate::services::jwt_service::verify;
@@ -34,8 +34,16 @@ impl AuthAuthor {
 }
 
 // TODO SECURITY this endpoint return the author hashed password
-pub async fn get(State(state): State<Arc<AppState>>, Path(name): Path<String>) -> Response {
+pub async fn find(State(state): State<Arc<AppState>>, Path(name): Path<String>) -> Response {
     match find_author_by_name(&state, name) {
+        Ok(author) => Json(json!(author)).into_response(),
+        Err(_) => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+// TODO SECURITY this endpoint return the author hashed password
+pub async fn get(State(state): State<Arc<AppState>>, Path(id): Path<i32>) -> Response {
+    match find_author_by_id(&state, id) {
         Ok(author) => Json(json!(author)).into_response(),
         Err(_) => StatusCode::NOT_FOUND.into_response(),
     }

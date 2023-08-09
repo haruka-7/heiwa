@@ -64,7 +64,7 @@ pub fn find_article_by_permalink(
 }
 
 pub fn create_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), Option<String>> {
-    match validate_unique_permalink(&state, &article.permalink) {
+    match validate_unique_permalink(state, &article.permalink) {
         Ok(_) => {
             let article_result: QueryResult<Article> =
                 Article::create(state.db_connection.get().unwrap(), article);

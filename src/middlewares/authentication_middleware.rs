@@ -11,7 +11,7 @@ pub async fn auth_session_required<B>(
     request: Request<B>,
     next: Next<B>,
 ) -> Response {
-    if session.get::<String>("author_name").is_some() {
+    if session.get::<i32>("author_id").is_some() {
         tracing::error!("session author FOUND");
         // 6 months expiration
         let expire_from_secs: Duration = Duration::from_secs(15778800);
@@ -19,6 +19,8 @@ pub async fn auth_session_required<B>(
         session.expire_in(expire_from_secs);
         let mut cookie = cookie_jar.get("sid").unwrap().to_owned();
         cookie.set_expires(expire);
+        cookie.secure();
+        cookie.http_only();
         next.run(request).await
     } else {
         tracing::error!("session author NOT FOUND");

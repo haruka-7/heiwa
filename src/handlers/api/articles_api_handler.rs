@@ -1,7 +1,8 @@
 use crate::entities::articles_entity::{Article, NewArticle};
 use crate::entities::tags_entity::Tag;
 use crate::services::articles_service::{
-    find_article_by_permalink, find_articles, find_articles_by_author, update_article,
+    create_article, find_article_by_permalink, find_articles, find_articles_by_author,
+    update_article,
 };
 use crate::services::errors_service::handler_error;
 use crate::services::jwt_service::verify;
@@ -70,17 +71,13 @@ pub async fn author(State(state): State<Arc<AppState>>, Path(author_id): Path<i3
 pub async fn create(
     State(state): State<Arc<AppState>>,
     token: AuthBearer,
-    Json(payload): Json<NewArticle>,
+    Json(new_article): Json<NewArticle>,
 ) -> Response {
-    match verify(token.0.as_str(), payload.author_id) {
-        Ok(_) => {
-            let article: QueryResult<Article> =
-                Article::create(state.db_connection.get().unwrap(), payload);
-            match article {
-                Ok(_) => StatusCode::CREATED.into_response(),
-                Err(e) => handler_error(e),
-            }
-        }
+    match verify(token.0.as_str(), new_article.author_id) {
+        Ok(_) => match create_article(&state, new_article) {
+            Ok(_) => StatusCode::CREATED.into_response(),
+            Err(error_code) => (StatusCode::BAD_REQUEST, error_code.unwrap_or("TECHNICAL ERROR".to_string())).into_response(),
+        },
         Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
 }

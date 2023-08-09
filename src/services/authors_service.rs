@@ -24,17 +24,11 @@ pub fn find_author_by_name(state: &Arc<AppState>, name: String) -> Result<Author
     match_author_result(author_result)
 }
 
-fn find_by_name_or_email(state: &Arc<AppState>, name: String, email: String) -> Result<Author, ()> {
-    let author_result =
-        Author::find_by_name_or_email(state.db_connection.get().unwrap(), name, email);
-    match_author_result(author_result)
-}
-
 pub fn auth_author(
     state: &Arc<AppState>,
     form_login_author: FormLoginAuthor,
 ) -> Result<AuthAuthor, ()> {
-    match find_author_by_name(&state, form_login_author.name) {
+    match find_author_by_name(state, form_login_author.name) {
         Ok(author) => match verify_password(&form_login_author.password, &author.password) {
             Ok(_) => {
                 let jwt_token = jwt_service::sign(
@@ -56,7 +50,7 @@ pub fn auth_author(
 
 pub fn create_author(state: &Arc<AppState>, author: NewAuthor) -> Result<(), Option<String>> {
     match author.validate() {
-        Ok(_) => match validate_unique_name_and_email(&state, &author.name, &author.email) {
+        Ok(_) => match validate_unique_name_and_email(state, &author.name, &author.email) {
             Ok(_) => {
                 let author_result: QueryResult<Author> =
                     Author::create(state.db_connection.get().unwrap(), author);
@@ -77,7 +71,7 @@ pub fn create_author(state: &Arc<AppState>, author: NewAuthor) -> Result<(), Opt
 pub fn update_author(state: &Arc<AppState>, author: UpdateAuthor) -> Result<(), Option<String>> {
     match author.validate() {
         Ok(_) => match validate_unique_name_and_email(
-            &state,
+            state,
             &author.name.clone().unwrap_or("".to_string()),
             &author.email.clone().unwrap_or("".to_string()),
         ) {
@@ -135,10 +129,16 @@ pub fn validate_unique_name_and_email(
     name: &str,
     email: &str,
 ) -> Result<(), ValidationError> {
-    match find_by_name_or_email(&state, name.to_string(), email.to_string()) {
+    match find_by_name_or_email(state, name.to_string(), email.to_string()) {
         Ok(_) => Err(ValidationError::new("NAME_OR_EMAIL_EXIST")),
         Err(_) => Ok(()),
     }
+}
+
+fn find_by_name_or_email(state: &Arc<AppState>, name: String, email: String) -> Result<Author, ()> {
+    let author_result =
+        Author::find_by_name_or_email(state.db_connection.get().unwrap(), name, email);
+    match_author_result(author_result)
 }
 
 fn match_author_result(author_result: QueryResult<Vec<Author>>) -> Result<Author, ()> {
