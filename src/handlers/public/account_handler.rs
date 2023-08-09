@@ -79,7 +79,6 @@ fn do_login(
         Ok(auth_author) => {
             session.insert("author_id", auth_author.id).unwrap_or(());
             session.insert("token", &auth_author.token).unwrap_or(());
-            session.insert("role", &auth_author.role).unwrap_or(());
             Redirect::to("/dashboard").into_response()
         }
         Err(_) => {

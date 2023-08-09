@@ -98,7 +98,7 @@ pub fn is_author_logged(session: &WritableSession) -> Result<(), ()> {
         session.get::<i32>("author_id").unwrap_or(0),
     );
     if !token.is_empty() {
-        match verify(token.as_str(), id) {
+        match verify(token.as_str(), id.to_string()) {
             Ok(_) => Ok(()),
             Err(_) => Err(()),
         }

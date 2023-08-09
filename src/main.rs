@@ -22,7 +22,6 @@ use tower_http::services::ServeDir;
 
 mod entities;
 mod handlers;
-mod middlewares;
 mod schema;
 mod services;
 mod templates;

@@ -74,7 +74,7 @@ pub async fn update(
     token: AuthBearer,
     Json(payload): Json<UpdateAuthor>,
 ) -> Response {
-    match verify(token.0.as_str(), payload.id) {
+    match verify(token.0.as_str(), payload.id.to_string()) {
         Ok(_) => match update_author(&state, payload) {
             Ok(_) => StatusCode::OK.into_response(),
             Err(error_code) => handle_service_error(error_code),
@@ -89,7 +89,7 @@ pub async fn delete(
     token: AuthBearer,
     Path(id): Path<i32>,
 ) -> Response {
-    match verify(token.0.as_str(), id) {
+    match verify(token.0.as_str(), id.to_string()) {
         Ok(_) => {
             let delete_result: QueryResult<usize> =
                 Author::delete(state.db_connection.get().unwrap(), id);

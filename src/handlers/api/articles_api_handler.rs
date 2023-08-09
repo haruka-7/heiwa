@@ -73,7 +73,7 @@ pub async fn create(
     token: AuthBearer,
     Json(new_article): Json<NewArticle>,
 ) -> Response {
-    match verify(token.0.as_str(), new_article.author_id) {
+    match verify(token.0.as_str(), new_article.author_id.to_string()) {
         Ok(_) => match create_article(&state, new_article) {
             Ok(_) => StatusCode::CREATED.into_response(),
             Err(error_code) => (StatusCode::BAD_REQUEST, error_code.unwrap_or("TECHNICAL ERROR".to_string())).into_response(),
@@ -90,7 +90,7 @@ pub async fn update(
     let article_result: Result<Article, Option<String>> =
         find_article_by_permalink(&state, payload.permalink.clone());
     match article_result {
-        Ok(article) => match verify(token.0.as_str(), article.author_id) {
+        Ok(article) => match verify(token.0.as_str(), article.author_id.to_string()) {
             Ok(_) => match update_article(&state, payload) {
                 Ok(_) => StatusCode::CREATED.into_response(),
                 Err(error) => match error {
