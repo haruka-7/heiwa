@@ -3,10 +3,10 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-<h1>Se connecter</h1>
-<article class="grid">
-    <div>
-        <form action="/login" method="post">
+<h1 class="text-3xl font-bold">Se connecter</h1>
+<div class="mx-auto py-4 md:max-w-md border-2 rounded-lg">
+    <form action="/login" method="post">
+        <div class="flex flex-col space-y-4">
             <input
                     type="text"
                     name="name"
@@ -14,6 +14,7 @@
                     aria-label="Name"
                     autocomplete="username"
                     required
+                    class="px-4 py-2 min-w-full md:min-w-md border-2 rounded-lg"
             />
             <input
                     type="password"
@@ -22,12 +23,13 @@
                     aria-label="Password"
                     autocomplete="current-password"
                     required
+                    class="px-4 py-2 min-w-full md:min-w-md border-2 rounded-lg"
             />
-            <input type="submit">
-        </form>
-        {% if alert.len() != 0 %}
-        <p>{{ alert }}</p>
-        {% endif %}
-    </div>
-</article>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Sign In</button>
+        </div>
+    </form>
+</div>
+{% if alert.len() != 0 %}
+<p>{{ alert }}</p>
+{% endif %}
 {% endblock %}
