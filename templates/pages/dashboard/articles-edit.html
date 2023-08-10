@@ -3,52 +3,47 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold underline">
-  Dashboard - New
-</h1>
 <div>
-  {% if alert.len() != 0 %}
-  <p>{{ alert }}</p>
-  {% endif %}
-  <form action="{{ action }}" method="post">
-    <input
-            type="hidden"
-            name="author_id"
-            value="{{ author_id }}"
-            required
-    />
-    <input
-            type="text"
-            name="title"
-            placeholder="Titre"
-            aria-label="Title"
-            value="{{ title }}"
-            required
-    />
-    <input
-            type="text"
-            name="content"
-            placeholder="Contenu"
-            aria-label="content"
-            value="{{ content }}"
-            required
-    />
-    <input
-            type="text"
-            name="permalink"
-            placeholder="URL"
-            aria-label="url"
-            value="{{ permalink }}"
-            required
-    />
-    <input
-            type="text"
-            name="meta_description"
-            placeholder="Meta-description"
-            aria-label="meta-description"
-            value="{{ meta_description }}"
-    />
-    <input type="submit">
-  </form>
+    {% if alert.len() != 0 %}
+    <p>{{ alert }}</p>
+    {% endif %}
+    <form action="{{ action }}" method="post" class="flex flex-row">
+        <div class="grow flex flex-col ">
+            <input
+                    type="hidden"
+                    id="author_id"
+                    name="author_id"
+                    value="{{ author_id }}"
+                    required
+            />
+            <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    placeholder="Title"
+                    aria-label="Title"
+                    value="{{ title }}"
+                    autocomplete="off"
+                    class="px-0 bg-inherit border-0 focus:ring-0 focus:border-l-1 focus:border-black text-3xl font-bold"
+                    required
+            />
+            <textarea
+                    content="content"
+                    name="content"
+                    placeholder="Article content"
+                    aria-label="content"
+                    rows="20"
+                    class="px-0 bg-inherit border-0 focus:ring-0 focus:border-l-1 focus:border-black"
+                    autocomplete="off"
+                    oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'
+                    required
+            >{{ content }}</textarea>
+        </div>
+        <div class="flex-none">
+            <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
+                Publish
+            </button>
+        </div>
+    </form>
 </div>
 {% endblock %}

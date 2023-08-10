@@ -10,18 +10,22 @@
         </h1>
     </div>
     <div>
-        <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
-            <a href="/dashboard/article">Write</a>
-        </button>
-        <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
-            <a href="#">Import</a>
-        </button>
+        <a href="/dashboard/article">
+            <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
+                Write
+            </button>
+        </a>
+        <a href="#">
+            <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
+                Import
+            </button>
+        </a>
     </div>
 </div>
 <div class="mt-6 flex flex-col space-y-4">
     <p>{{ alert }}</p>
     {% for article in articles %}
-        {% include "tags/dashboard-article-list.html" %}
+    {% include "tags/dashboard-article-list.html" %}
     {% endfor %}
     {% endblock %}
 </div>
