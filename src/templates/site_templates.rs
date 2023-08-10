@@ -29,6 +29,7 @@ pub struct ArticleData {
     pub title: String,
     pub content: String,
     pub author: String,
+    pub permalink: String,
 }
 
 impl ArticleData {
@@ -37,6 +38,7 @@ impl ArticleData {
             title: article.title,
             content: article.content.unwrap_or("".to_string()),
             author: author_name,
+            permalink: article.permalink,
         }
     }
 }

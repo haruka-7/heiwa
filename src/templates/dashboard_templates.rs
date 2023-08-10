@@ -1,17 +1,11 @@
-use crate::entities::articles_entity::Article;
 use askama::Template;
-
-#[derive(Template)]
-#[template(path = "pages/dashboard/dashboard.html")]
-pub struct DashboardHomeTemplate {
-    pub name: String,
-}
+use crate::templates::site_templates::ArticleData;
 
 #[derive(Template)]
 #[template(path = "pages/dashboard/articles-list.html")]
 pub struct DashboardArticlesListTemplate {
     pub alert: String,
-    pub articles: Vec<Article>,
+    pub articles: Vec<ArticleData>,
 }
 
 #[derive(Template)]

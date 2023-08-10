@@ -201,7 +201,6 @@ fn routes() -> Router {
         .nest(
             "/dashboard",
             Router::new()
-                .route("/", get(handlers::dashboard::dashboard_handler::show))
                 .route(
                     "/articles",
                     get(handlers::dashboard::articles_handler::list),

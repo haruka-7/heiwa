@@ -7,36 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/statics/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/statics/favicon.ico" type="image/x-icon">
-    <link href="/statics/pico.min.css" rel="stylesheet">
-    <link href="/statics/styles.css" rel="stylesheet">
+    <link href="/statics/dist/styles.css" rel="stylesheet">
 </head>
-<body>
-<nav class="container-fluid">
-    <ul>
-        <li><a href="/" class="contrast"><strong>Brand</strong></a></li>
-    </ul>
-    <ul>
-        <li><a href="/register">S'inscrire</a></li>
-        <li><a href="/login">Se connecter</a></li>
-    </ul>
-</nav>
-<main class="container">
-    <section>
-        <ul>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/dashboard/articles">Articles</a></li>
-            <li><a href="/dashboard/article">Nouvel article</a></li>
-            <li><a href="/dashboard/profile">Profile</a></li>
-            <li><a href="/logout">Se déconnecter</a></li>
-        </ul>
-    </section>
-    <section>
-        {% block content %}{% endblock %}
-    </section>
+<body class="bg-slate-100 dark:bg-slate-800 dark:text-slate-50">
+{% include "tags/nav.html" %}
+<main class="px-4 py-6 mx-auto md:max-w-5xl font-serif">
+    {% include "tags/dashboard-menu.html" %}
+    {% block content %}{% endblock %}
 </main>
-<footer class="container-fluid">
-    <div class="grid">
-        <div><small>Made with &hearts; by Hidrile</small></div>
-    </div>
-</footer>
+{% include "tags/footer.html" %}
 </body>

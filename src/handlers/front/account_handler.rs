@@ -17,7 +17,7 @@ const REGISTER_ALERT: &str = "Erreur lors de la création du compte";
 
 pub async fn login(mut session: WritableSession) -> Response {
     if session.get::<String>("token").is_some() {
-        return Redirect::to("/dashboard").into_response();
+        return Redirect::to("/dashboard/articles").into_response();
     }
     let alert_message: String = session.get("alert").unwrap_or("".to_string());
     session_remove_alert(&mut session);
@@ -79,7 +79,7 @@ fn do_login(
         Ok(auth_author) => {
             session.insert("author_id", auth_author.id).unwrap_or(());
             session.insert("token", &auth_author.token).unwrap_or(());
-            Redirect::to("/dashboard").into_response()
+            Redirect::to("/dashboard/articles").into_response()
         }
         Err(_) => {
             session_insert_alert(&mut session, LOGIN_ALERT);

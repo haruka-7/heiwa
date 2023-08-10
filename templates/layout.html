@@ -10,21 +10,9 @@
     <link href="/statics/dist/styles.css" rel="stylesheet">
 </head>
 <body class="bg-slate-100 dark:bg-slate-800 dark:text-slate-50">
-<nav class="flex flex-row items-center px-4 md:px-6 py-2 h-18 bg-slate-300 border-b-2 border-dotted border-b-black font-serif dark:bg-slate-900 dark:border-b-white">
-    <div class="flex-none">
-        <strong class="text-lg"><a href="/">Heiwa</a></strong>
-    </div>
-    <div class="grow text-right space-x-4">
-        <a href="/login" class="ml-4 text-sm font-bold">Log in</a>
-        <a href="/register" class="ml-4 text-sm font-bold">Sign up</a>
-    </div>
-</nav>
+{% include "tags/nav.html" %}
 <main class="px-4 py-6 mx-auto md:max-w-5xl font-serif">
     {% block content %}{% endblock %}
 </main>
-<footer class="flex items-center px-4 md:px-6 h-12 font-serif">
-    <div class="grow text-center">
-        <small>Made with &hearts; by Hidrile</small>
-    </div>
-</footer>
+{% include "tags/footer.html" %}
 </body>

@@ -2,7 +2,7 @@ use crate::entities::articles_entity::NewArticle;
 use crate::services::articles_service::{
     create_article, find_article_by_permalink, find_articles_by_author, update_article,
 };
-use crate::services::authors_service::is_author_logged;
+use crate::services::authors_service::{find_author_by_id, is_author_logged};
 use crate::services::session_service::{session_insert_alert, session_remove_alert};
 use crate::templates::dashboard_templates::{
     DashboardArticleNewTemplate, DashboardArticlesListTemplate,
@@ -13,6 +13,7 @@ use axum::response::{IntoResponse, Redirect, Response};
 use axum::Form;
 use axum_sessions::extractors::WritableSession;
 use std::sync::Arc;
+use crate::templates::site_templates::ArticleData;
 
 /// TODO to move to a lang toml file
 const NEW_ARTICLE_ALERT: &str = "Erreur lors de la création de l'article";
@@ -28,9 +29,15 @@ pub async fn list(State(state): State<Arc<AppState>>, mut session: WritableSessi
                     let alert_message: String =
                         session.get::<String>("alert").unwrap_or("".to_string());
                     session_remove_alert(&mut session);
+                    let mut articles_data: Vec<ArticleData> = Vec::new();
+                    for article in articles {
+                        let author_name: String =
+                            find_author_by_id(&state, article.author_id).unwrap().name;
+                        articles_data.push(ArticleData::new(article, author_name));
+                    }
                     DashboardArticlesListTemplate {
                         alert: alert_message,
-                        articles,
+                        articles: articles_data,
                     }
                     .into_response()
                 }
