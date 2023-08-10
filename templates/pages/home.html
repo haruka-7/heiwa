@@ -3,20 +3,33 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold">
-    {{ title }}
-</h1>
-<div class="mx-auto py-6">
-    <input type="search" id="search" name="search" placeholder="Search" class="px-4 py-2 min-w-full md:min-w-md border-2 rounded-lg">
+<div class="text-center">
+    <h1 class="text-3xl font-bold">
+        {{ title }}
+    </h1>
 </div>
-<div class="grid">
+<div class="mx-auto py-6">
+    <input type="search" id="search" name="search" placeholder="Search"
+           class="min-w-full px-4 py-2 rounded-lg border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500 dark:placeholder-slate-50"/>
+</div>
+<div class="grid grid-cols-1 gap-4">
     {% for article in articles %}
-    <div>
-        <article>
-            <header>{{ article.title }}</header>
-            {{ article.content }}
-            <footer>By {{ article.author }}</footer>
-        </article>
+    <div class="flex">
+        <div class="grow">
+            <div>
+                <div class="text-sm">{{ article.author }}</div>
+                <div class="font-bold">{{ article.title }}</div>
+                <div>A real and in-depth look at the Mattel experience from a former employee, and how it relates to the Barbie movie.</div>
+            </div>
+            <div>
+                <span>#photography</span>
+                <span>#travel</span>
+                <span>#winter</span>
+            </div>
+        </div>
+        <div class="flex-none w-32">
+            <img src="https://picsum.photos/seed/picsum/800/480" alt="article vignette" class="rounded-lg"/>
+        </div>
     </div>
     {% endfor %}
 </div>
