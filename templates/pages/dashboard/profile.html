@@ -3,37 +3,48 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold underline">
-  Dashboard - Profile
-</h1>
-<div>
-  {% if alert.len() != 0 %}
-  <p>{{ alert }}</p>
-  {% endif %}
-  <form action="/dashboard/profile" method="post">
-    <input
-            type="hidden"
-            name="id"
-            value="{{ author_id }}"
-            required
-    />
-    <input
-            type="text"
-            name="display_name"
-            placeholder="Display Name"
-            aria-label="Display Name"
-            value="{{ display_name }}"
-            required
-    />
-    <input
-            type="text"
-            name="biography"
-            placeholder="Biography"
-            aria-label="Biography"
-            value="{{ biography }}"
-            required
-    />
-    <input type="submit">
-  </form>
+<div class="mt-4">
+    <h1 class="text-3xl font-bold">
+        My Profile
+    </h1>
+</div>
+<div class="mt-6">
+    {% if alert.len() != 0 %}
+    <p>{{ alert }}</p>
+    {% endif %}
+    <form action="/dashboard/profile" method="post">
+        <div class="flex flex-col">
+            <input
+                    type="hidden"
+                    name="id"
+                    value="{{ author_id }}"
+                    required
+            />
+            <label for="display_name">Display Name</label>
+            <input
+                    type="text"
+                    id="display_name"
+                    name="display_name"
+                    aria-label="Display Name"
+                    value="{{ display_name }}"
+                    required
+                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500"
+            />
+            <label for="biography" class="mt-4">Biography</label>
+            <textarea
+                    type="text"
+                    id="biography"
+                    name="biography"
+                    aria-label="Biography"
+                    value="{{ biography }}"
+                    required
+                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500">
+            </textarea>
+            <button type="submit"
+                    class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline">
+                Update
+            </button>
+        </div>
+    </form>
 </div>
 {% endblock %}

@@ -3,12 +3,25 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold underline">
-    My Articles
-</h1>
-<p>{{ alert }}</p>
-{% for article in articles %}
-    {% include "tags/article-list.html" %}
-    <a href="/dashboard/article/{{ article.permalink }}">edit</a>
-{% endfor %}
-{% endblock %}
+<div class="mt-4 flex flex-row space-x-4">
+    <div>
+        <h1 class="text-3xl font-bold">
+            My Articles
+        </h1>
+    </div>
+    <div>
+        <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
+            <a href="/dashboard/article">Write</a>
+        </button>
+        <button class="py-2 px-4 bg-blue-500 hover:bg-blue-700 text-sm text-white font-bold rounded-md focus:outline-none focus:shadow-outline">
+            <a href="#">Import</a>
+        </button>
+    </div>
+</div>
+<div class="mt-6 flex flex-col space-y-4">
+    <p>{{ alert }}</p>
+    {% for article in articles %}
+        {% include "tags/dashboard-article-list.html" %}
+    {% endfor %}
+    {% endblock %}
+</div>
