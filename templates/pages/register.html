@@ -4,9 +4,9 @@
 
 {% block content %}
 <div class="text-center">
-    <h1 class="text-3xl font-bold">Register</h1>
+    <h1 class="text-3xl">Sign up</h1>
 </div>
-<div class="mx-auto mt-6 py-4 px-4 md:max-w-md border-2 rounded-lg bg-white dark:bg-slate-700 dark:border-slate-200 font-sans">
+<div class="mx-auto mt-6 py-4 px-4 md:max-w-md border rounded-lg bg-white dark:bg-heiwa-400 dark:border-heiwa-300 font-sans">
     <form action="/register" method="post">
         <div class="flex flex-col">
             <label for="name">Username</label>
@@ -14,48 +14,44 @@
                     type="text"
                     id="name"
                     name="name"
-                    placeholder="Login"
                     aria-label="Login"
                     autocomplete="username"
+                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-heiwa-500 dark:border-heiwa-400"
                     required
-                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500"
             />
             <label for="email" class="mt-4">Email</label>
             <input
                     type="text"
                     id="email"
                     name="email"
-                    placeholder="E-mail"
                     aria-label="email"
                     autocomplete="email"
+                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-heiwa-500 dark:border-heiwa-400"
                     required
-                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500"
             />
             <label for="display_name" class="mt-4">Display Name</label>
             <input
                     type="text"
                     id="display_name"
                     name="display_name"
-                    placeholder="Display Name"
                     aria-label="dislay name"
                     autocomplete="given-name"
+                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-heiwa-500 dark:border-heiwa-400"
                     required
-                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500"
             />
             <label for="password" class="mt-4">Password</label>
             <input
                     type="password"
                     id="password"
                     name="password"
-                    placeholder="Password"
                     aria-label="Password"
                     autocomplete="new-password"
+                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-heiwa-500 dark:border-heiwa-400"
                     required
-                    class="mt-1 rounded-md border-slate-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-slate-500"
             />
             <button type="submit"
-                    class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline">
-                Sign In
+                    class="mt-4 bg-heiwa-600 hover:bg-heiwa-700 text-heiwa-50 py-2 px-4 rounded-md focus:outline-none focus:shadow-outline">
+                Sign up
             </button>
         </div>
     </form>
