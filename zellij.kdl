@@ -9,7 +9,9 @@ layout {
             }
             pane
         }
-        pane size="70%"
+        pane size="70%" command="ranger" {
+	    focus true
+	}
     }
     pane size=2 borderless=true {
         plugin location="zellij:status-bar"
