@@ -119,6 +119,7 @@ impl NewArticle {
         Self {
             title: form_article.title.clone(),
             content: Some(form_article.content.clone()),
+            //TODO add a unique ID at the permalink end
             permalink: form_article.title,
             meta_description: Some(form_article.content),
             author_id: form_article.author_id,

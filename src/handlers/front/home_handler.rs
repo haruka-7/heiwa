@@ -15,13 +15,13 @@ pub async fn show(State(state): State<Arc<AppState>>) -> HomeTemplate {
                 articles_data.push(ArticleData::new(article, author_name));
             }
             HomeTemplate {
-                title: "Welcome".to_string(),
+                meta_title: "Heiwa".to_string(),
                 alert: "".to_string(),
                 articles: articles_data,
             }
         }
         Err(error) => HomeTemplate {
-            title: "Welcome".to_string(),
+            meta_title: "Heiwa".to_string(),
             alert: error.unwrap_or("".to_string()),
             articles: vec![],
         },

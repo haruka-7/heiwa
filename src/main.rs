@@ -224,6 +224,7 @@ fn routes() -> Router {
                         .post(handlers::dashboard::profile_handler::edit_action),
                 ),
         )
+        .route("/:permalink", get(handlers::front::article_handler::show))
         .with_state(state)
 }
 

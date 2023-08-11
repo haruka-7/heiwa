@@ -4,9 +4,18 @@ use askama::Template;
 #[derive(Template)]
 #[template(path = "pages/home.html")]
 pub struct HomeTemplate {
-    pub title: String,
+    pub meta_title: String,
     pub alert: String,
     pub articles: Vec<ArticleData>,
+}
+
+#[derive(Template)]
+#[template(path = "pages/article.html")]
+pub struct ArticleTemplate {
+    pub meta_title: String,
+    pub title: String,
+    pub content: String,
+    pub author: String
 }
 
 #[derive(Template)]

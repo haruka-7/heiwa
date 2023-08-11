@@ -2,7 +2,9 @@
     <div class="grow">
         <div>
             <div class="text-sm">{{ article.author }}</div>
-            <div class="font-bold">{{ article.title }}</div>
+            <div class="font-bold">
+                <a href="{{ article.permalink }}">{{ article.title }}</a>
+            </div>
 	    <div>{{ article.meta_description }}...</div>
         </div>
         <div>
