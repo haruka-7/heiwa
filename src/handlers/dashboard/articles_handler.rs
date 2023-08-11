@@ -1,4 +1,4 @@
-use crate::entities::articles_entity::NewArticle;
+use crate::entities::articles_entity::{FormNewArticle};
 use crate::services::articles_service::{
     create_article, find_article_by_permalink, find_articles_by_author, update_article,
 };
@@ -109,10 +109,10 @@ pub async fn edit(
 pub async fn new_action(
     State(state): State<Arc<AppState>>,
     mut session: WritableSession,
-    Form(new_article): Form<NewArticle>,
+    Form(form_article): Form<FormNewArticle>,
 ) -> Response {
     match is_author_logged(&session) {
-        Ok(_) => match create_article(&state, new_article) {
+        Ok(_) => match create_article(&state, form_article) {
             Ok(_) => {
                 session_insert_alert(&mut session, ARTICLE_CREATED);
                 Redirect::to("/dashboard/articles").into_response()
@@ -135,10 +135,10 @@ pub async fn new_action(
 pub async fn edit_action(
     State(state): State<Arc<AppState>>,
     mut session: WritableSession,
-    Form(new_article): Form<NewArticle>,
+    Form(form_article): Form<FormNewArticle>,
 ) -> Response {
     match is_author_logged(&session) {
-        Ok(_) => match update_article(&state, new_article) {
+        Ok(_) => match update_article(&state, form_article) {
             Ok(_) => {
                 session_insert_alert(&mut session, ARTICLE_UPDATED);
                 Redirect::to("/dashboard/articles").into_response()

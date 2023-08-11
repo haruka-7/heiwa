@@ -1,7 +1,7 @@
-use crate::entities::articles_entity::{Article, NewArticle};
+use crate::entities::articles_entity::{Article, FormNewArticle};
 use crate::entities::tags_entity::Tag;
 use crate::services::articles_service::{
-    create_article, find_article_by_permalink, find_articles, find_articles_by_author,
+    create_article, find_articles, find_articles_by_author,
     update_article,
 };
 use crate::services::errors_service::handler_error;
@@ -71,12 +71,16 @@ pub async fn author(State(state): State<Arc<AppState>>, Path(author_id): Path<i3
 pub async fn create(
     State(state): State<Arc<AppState>>,
     token: AuthBearer,
-    Json(new_article): Json<NewArticle>,
+    Json(form_article): Json<FormNewArticle>,
 ) -> Response {
-    match verify(token.0.as_str(), new_article.author_id.to_string()) {
-        Ok(_) => match create_article(&state, new_article) {
+    match verify(token.0.as_str(), form_article.author_id.to_string()) {
+        Ok(_) => match create_article(&state, form_article) {
             Ok(_) => StatusCode::CREATED.into_response(),
-            Err(error_code) => (StatusCode::BAD_REQUEST, error_code.unwrap_or("TECHNICAL ERROR".to_string())).into_response(),
+            Err(error_code) => (
+                StatusCode::BAD_REQUEST,
+                error_code.unwrap_or("TECHNICAL ERROR".to_string()),
+            )
+                .into_response(),
         },
         Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
@@ -85,25 +89,17 @@ pub async fn create(
 pub async fn update(
     State(state): State<Arc<AppState>>,
     token: AuthBearer,
-    Json(payload): Json<NewArticle>,
+    Json(form_article): Json<FormNewArticle>,
 ) -> Response {
-    let article_result: Result<Article, Option<String>> =
-        find_article_by_permalink(&state, payload.permalink.clone());
-    match article_result {
-        Ok(article) => match verify(token.0.as_str(), article.author_id.to_string()) {
-            Ok(_) => match update_article(&state, payload) {
-                Ok(_) => StatusCode::CREATED.into_response(),
-                Err(error) => match error {
-                    None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-                    Some(_) => StatusCode::NOT_FOUND.into_response(),
-                },
+    match verify(token.0.as_str(), form_article.author_id.to_string()) {
+        Ok(_) => match update_article(&state, form_article) {
+            Ok(_) => StatusCode::CREATED.into_response(),
+            Err(error) => match error {
+                None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+                Some(_) => StatusCode::NOT_FOUND.into_response(),
             },
-            Err(_) => StatusCode::FORBIDDEN.into_response(),
         },
-        Err(error) => match error {
-            None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-            Some(_) => StatusCode::NOT_FOUND.into_response(),
-        },
+        Err(_) => StatusCode::FORBIDDEN.into_response(),
     }
 }
 

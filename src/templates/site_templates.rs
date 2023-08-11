@@ -28,6 +28,7 @@ pub struct ErrorPageTemplate {}
 pub struct ArticleData {
     pub title: String,
     pub content: String,
+    pub meta_description: String,
     pub author: String,
     pub permalink: String,
 }
@@ -37,6 +38,7 @@ impl ArticleData {
         Self {
             title: article.title,
             content: article.content.unwrap_or("".to_string()),
+            meta_description: article.meta_description.unwrap_or("".to_string()),
             author: author_name,
             permalink: article.permalink,
         }

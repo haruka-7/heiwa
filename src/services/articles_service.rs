@@ -1,7 +1,8 @@
-use crate::entities::articles_entity::{Article, NewArticle};
+use crate::entities::articles_entity::{Article, FormNewArticle, NewArticle};
 use crate::AppState;
 use diesel::QueryResult;
 use std::sync::Arc;
+use sanitizer::Sanitize;
 use validator::ValidationError;
 
 //TODO add a limit or pagination
@@ -63,7 +64,9 @@ pub fn find_article_by_permalink(
     }
 }
 
-pub fn create_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), Option<String>> {
+pub fn create_article(state: &Arc<AppState>, form_article: FormNewArticle) -> Result<(), Option<String>> {
+    let mut article: NewArticle = NewArticle::from_form(form_article);
+    article.sanitize();
     match validate_unique_permalink(state, &article.permalink) {
         Ok(_) => {
             let article_result: QueryResult<Article> =
@@ -80,7 +83,9 @@ pub fn create_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), 
     }
 }
 
-pub fn update_article(state: &Arc<AppState>, article: NewArticle) -> Result<(), Option<String>> {
+pub fn update_article(state: &Arc<AppState>, form_article: FormNewArticle) -> Result<(), Option<String>> {
+    let mut article: NewArticle = NewArticle::from_form(form_article);
+    article.sanitize();
     let article_result: QueryResult<usize> =
         Article::update(state.db_connection.get().unwrap(), article);
     match article_result {

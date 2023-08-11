@@ -7,6 +7,8 @@ use diesel::r2d2::{ConnectionManager, PooledConnection};
 use diesel::{delete, insert_into, update};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
+use sanitizer::prelude::Sanitize;
+use sanitizer::StringSanitizer;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, PartialEq, Serialize, Deserialize)]
 #[diesel(table_name = articles)]
@@ -24,13 +26,24 @@ pub struct Article {
     pub author_id: i32,
 }
 
-#[derive(Debug, Insertable, AsChangeset, Serialize, Deserialize)]
+#[derive(Debug, Insertable, AsChangeset, Serialize, Deserialize, Sanitize)]
 #[diesel(table_name = articles)]
 pub struct NewArticle {
+    #[sanitize(trim, kebab_case)]
     pub permalink: String,
+    #[sanitize(trim)]
     pub title: String,
+    #[sanitize(trim)]
     pub content: Option<String>,
+    #[sanitize(trim, clamp(100))]
     pub meta_description: Option<String>,
+    pub author_id: i32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FormNewArticle {
+    pub title: String,
+    pub content: String,
     pub author_id: i32,
 }
 
@@ -98,5 +111,17 @@ impl Article {
         id: i32,
     ) -> QueryResult<usize> {
         delete(Article::table().find(id)).execute(&mut connection)
+    }
+}
+
+impl NewArticle {
+    pub fn from_form(form_article: FormNewArticle) -> Self {
+        Self {
+            title: form_article.title.clone(),
+            content: Some(form_article.content.clone()),
+            permalink: form_article.title,
+            meta_description: Some(form_article.content),
+            author_id: form_article.author_id,
+        }
     }
 }
