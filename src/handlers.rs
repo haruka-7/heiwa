@@ -1,3 +1,2 @@
-pub mod api;
-pub mod dashboard;
-pub mod front;
+pub mod error;
+pub mod home;
