@@ -3,8 +3,8 @@ use init::init;
 use serve::serve;
 
 mod handlers;
-mod serve;
 mod init;
+mod serve;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
