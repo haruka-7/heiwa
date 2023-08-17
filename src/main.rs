@@ -11,6 +11,23 @@ use tower_http::services::ServeDir;
 
 mod handlers;
 
+use clap::{Parser, Subcommand};
+
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Create an heiwa website project
+    Init,
+    /// Launch the webserver on localhost to access the website
+    Serve,
+}
+
 #[derive(Clone)]
 pub struct AppState {
     pub config: String,
@@ -18,35 +35,37 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    let routes: Router = Router::new()
-        .merge(routes())
-        .fallback_service(routes_statics());
+    tracing_subscriber::fmt::init();
 
-    let (app, addr) = init_server(routes);
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Some(Commands::Init) => {
+            println!("init")
+        }
+        Some(Commands::Serve) => serve().await,
+        None => {}
+    }
+}
+
+async fn serve() {
+    let middleware_stack = ServiceBuilder::new()
+        .layer(CatchPanicLayer::custom(handlers::error::panic))
+        .layer(HandleErrorLayer::new(handlers::error::error))
+        .layer(CompressionLayer::new())
+        .timeout(Duration::from_secs(5));
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let app = Router::new()
+        .merge(routes())
+        .layer(middleware_stack)
+        .fallback_service(routes_statics());
 
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-fn init_server(routes: Router) -> (Router, SocketAddr) {
-    tracing_subscriber::fmt::init();
-
-    let middleware_stack = ServiceBuilder::new()
-        .layer(CatchPanicLayer::custom(
-            handlers::error::panic,
-        ))
-        .layer(HandleErrorLayer::new(
-            handlers::error::error,
-        ))
-        .layer(CompressionLayer::new())
-        .timeout(Duration::from_secs(5));
-
-    let app = Router::new().merge(routes).layer(middleware_stack);
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    (app, addr)
 }
 
 fn routes() -> Router {
@@ -59,8 +78,10 @@ fn routes() -> Router {
 }
 
 fn routes_statics() -> Router {
-    Router::new().nest_service(
-        "/statics/",
-        get_service(ServeDir::new("./templates/statics")),
-    )
+    Router::new()
+        .nest_service(
+            "/statics/",
+            get_service(ServeDir::new("./themes/default/statics")),
+        )
+        .nest_service("/medias/", get_service(ServeDir::new("./medias")))
 }
