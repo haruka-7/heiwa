@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
+use init::init;
 use serve::serve;
 
 mod handlers;
 mod serve;
+mod init;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -27,8 +29,8 @@ async fn main() {
 
     let cli = Cli::parse();
 
-    if let Some(init) = cli.init.as_deref() {
-        println!("Value for init: {init}");
+    if let Some(project_name) = cli.init.as_deref() {
+        init(project_name.to_string());
     } else {
         match &cli.command {
             Some(Commands::Serve) => serve().await,
