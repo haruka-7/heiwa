@@ -16,14 +16,16 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
+    /// Create an heiwa website project
+    #[arg(short, long, value_name = "PROJECT_NAME")]
+    init: Option<String>,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create an heiwa website project
-    Init,
     /// Launch the webserver on localhost to access the website
     Serve,
 }
@@ -39,12 +41,13 @@ async fn main() {
 
     let cli = Cli::parse();
 
-    match &cli.command {
-        Some(Commands::Init) => {
-            println!("init")
+    if let Some(init) = cli.init.as_deref() {
+        println!("Value for init: {init}");
+    } else {
+        match &cli.command {
+            Some(Commands::Serve) => serve().await,
+            None => {}
         }
-        Some(Commands::Serve) => serve().await,
-        None => {}
     }
 }
 
