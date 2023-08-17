@@ -8,16 +8,8 @@ build:cargo:
     - cargo clippy -- -D warnings
 
 test:junit-report:
-   services:
-    - postgres:latest
-   variables:
-     POSTGRES_PASSWORD: postgres
-     DATABASE_URL: postgres://postgres:postgres@postgres:5432/heiwa
    script:
-     - sudo apt-get update && sudo apt-get -y install libpq-dev
-     - rustup install nightly && rustup default nightly
-     - cargo install diesel_cli --no-default-features --features postgres
-     - diesel setup
+     #- rustup install nightly && rustup default nightly
      - cargo install junitify
      - cargo test -- --format=json -Z unstable-options --report-time | junitify --out $CI_PROJECT_DIR/tests/
    artifacts:
