@@ -1,11 +1,10 @@
-use crate::templates::site_templates::ErrorPageTemplate;
 use axum::http::{header, StatusCode};
-use axum::response::Response;
+use axum::response::{Response, IntoResponse};
 use axum::BoxError;
 use std::any::Any;
 
-pub async fn show() -> ErrorPageTemplate {
-    ErrorPageTemplate {}
+pub async fn show() -> Response {
+    "error page".to_string().into_response()
 }
 
 pub async fn error(err: BoxError) -> Response {

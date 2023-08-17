@@ -1,6 +1,4 @@
 use axum::error_handling::HandleErrorLayer;
-use axum::http::header::{AUTHORIZATION, CONTENT_TYPE};
-use axum::http::{HeaderValue, Method};
 use axum::routing::{get, get_service};
 use axum::Router;
 use std::net::SocketAddr;
@@ -15,7 +13,7 @@ mod handlers;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db_connection: Pool<ConnectionManager<PgConnection>>,
+    pub config: String,
 }
 
 #[tokio::main]
@@ -38,25 +36,26 @@ fn init_server(routes: Router) -> (Router, SocketAddr) {
 
     let middleware_stack = ServiceBuilder::new()
         .layer(CatchPanicLayer::custom(
-            handlers::front::error_handler::panic,
+            handlers::error::panic,
         ))
         .layer(HandleErrorLayer::new(
-            handlers::front::error_handler::error,
+            handlers::error::error,
         ))
         .layer(CompressionLayer::new())
-        .timeout(Duration::from_secs(CONFIG.server_timeout));
+        .timeout(Duration::from_secs(5));
 
     let app = Router::new().merge(routes).layer(middleware_stack);
-    let addr = SocketAddr::from(([127, 0, 0, 1], CONFIG.server_port));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     (app, addr)
 }
 
 fn routes() -> Router {
     let state: Arc<AppState> = Arc::new(AppState {
-        db_connection: connection_pool(),
+        config: "config".to_string(),
     });
     Router::new()
-        .route("/", get(handlers::front::home_handler::show));
+        .route("/", get(handlers::home::show))
+        .with_state(state)
 }
 
 fn routes_statics() -> Router {
