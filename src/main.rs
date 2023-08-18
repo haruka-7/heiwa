@@ -16,9 +16,7 @@ async fn main() {
     match cli.command {
         Commands::Init { name } => {
             init(name);
-        },
-        Commands::Serve => {
-            serve().await
-        },
+        }
+        Commands::Serve => serve().await,
     }
 }

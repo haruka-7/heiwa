@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -27,7 +27,7 @@ impl Config {
             site: Site {
                 title: "My Website".to_string(),
                 comments: true,
-            }
+            },
         }
     }
 }
