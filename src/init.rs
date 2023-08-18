@@ -3,14 +3,8 @@ use std::io::Result;
 
 pub fn init(project_name: String) {
     println!("project name is : {project_name}");
-    match create_config(&project_name) {
-        Ok(_) => {}
-        Err(_) => {}
-    }
-    match create_dir(&project_name) {
-        Ok(_) => {}
-        Err(_) => {}
-    }
+    create_config(&project_name).unwrap();
+    create_dir(&project_name).unwrap();
 }
 
 fn create_config(project_name: &String) -> Result<()> {

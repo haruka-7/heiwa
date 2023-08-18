@@ -1,27 +1,12 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
+use cli::{Cli, Commands};
 use init::init;
 use serve::serve;
 
+mod cli;
 mod handlers;
 mod init;
 mod serve;
-
-#[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
-struct Cli {
-    /// Create an heiwa website project
-    #[arg(short, long, value_name = "PROJECT_NAME")]
-    init: Option<String>,
-
-    #[command(subcommand)]
-    command: Option<Commands>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Launch the webserver on localhost to access the website
-    Serve,
-}
 
 #[tokio::main]
 async fn main() {
@@ -29,12 +14,12 @@ async fn main() {
 
     let cli = Cli::parse();
 
-    if let Some(project_name) = cli.init.as_deref() {
-        init(project_name.to_string());
-    } else {
-        match &cli.command {
-            Some(Commands::Serve) => serve().await,
-            None => {}
-        }
+    match cli.command {
+        Commands::Init { name } => {
+            init(name);
+        },
+        Commands::Serve => {
+            serve().await
+        },
     }
 }
