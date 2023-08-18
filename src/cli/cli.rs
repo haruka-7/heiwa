@@ -15,5 +15,12 @@ pub enum Commands {
         name: String,
     },
     /// Launch the webserver on localhost to access the website
-    Serve,
+    Serve {
+        /// Define port number to use whith the builtin server
+        #[arg(short, long)]
+        port: Option<u16>,
+        /// Define request timeout in seconds
+        #[arg(short, long)]
+        timeout: Option<u64>,
+    },
 }

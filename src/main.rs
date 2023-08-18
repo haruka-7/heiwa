@@ -17,6 +17,6 @@ async fn main() {
         Commands::Init { name } => {
             init(name);
         }
-        Commands::Serve => serve().await,
+        Commands::Serve { port, timeout } => serve(port, timeout).await,
     }
 }
