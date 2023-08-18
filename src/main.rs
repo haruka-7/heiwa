@@ -1,12 +1,10 @@
 use clap::Parser;
-use cli::{Cli, Commands};
-use init::init;
-use serve::serve;
+use cli::cli::{Cli, Commands};
+use cli::init::init;
+use cli::serve::serve;
 
 mod cli;
 mod handlers;
-mod init;
-mod serve;
 
 #[tokio::main]
 async fn main() {

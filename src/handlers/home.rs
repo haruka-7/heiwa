@@ -1,4 +1,4 @@
-use crate::serve::AppState;
+use crate::cli::serve::AppState;
 use axum::extract::State;
 use axum::response::{IntoResponse, Response};
 use std::sync::Arc;
