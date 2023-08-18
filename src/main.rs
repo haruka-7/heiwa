@@ -4,6 +4,7 @@ use cli::init::init;
 use cli::serve::serve;
 
 mod cli;
+mod configuration;
 mod handlers;
 
 #[tokio::main]

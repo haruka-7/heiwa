@@ -2,6 +2,8 @@ use std::fs::{create_dir_all, File};
 use std::io::Write;
 use std::io::Result;
 
+use crate::configuration::Config;
+
 pub fn init(project_name: String) {
     println!("project name is : {project_name}");
     create_config(&project_name).unwrap();
@@ -10,7 +12,10 @@ pub fn init(project_name: String) {
 
 fn create_config(project_name: &String) -> Result<()> {
     let mut f = File::create(format!("{}/config.tml", project_name))?;
-    f.write_all(&1234_u32.to_be_bytes())?;
+    let config: Config = Config::default();
+    let string: String = toml::to_string(&config).unwrap();
+    println!("{string}");
+    f.write_all(toml::to_string(&config).unwrap().as_bytes())?;
     Ok(())
 }
 
