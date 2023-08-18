@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub log_level: String,
+    pub theme: String,
     pub site: Site,
 }
 
@@ -20,6 +21,7 @@ impl Config {
     pub fn default() -> Self {
         Config {
             log_level: "info".to_string(),
+            theme: "shizen".to_string(),
             site: Site {
                 title: "My Website".to_string(),
                 comments: true,

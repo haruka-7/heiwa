@@ -19,7 +19,7 @@ pub async fn error(err: BoxError) -> Response {
         tracing::error!(err);
         Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)
-            .header(header::LOCATION, "/error-page")
+            .header(header::LOCATION, "/error")
             .body(Default::default())
             .unwrap()
     }
@@ -36,7 +36,7 @@ pub fn panic(err: Box<dyn Any + Send + 'static>) -> Response {
     tracing::error!(details);
     Response::builder()
         .status(StatusCode::FOUND)
-        .header(header::LOCATION, "/error-page")
+        .header(header::LOCATION, "/error")
         .body(Default::default())
         .unwrap()
 }

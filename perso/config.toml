@@ -1,7 +1,0 @@
-log_level = "info"
-server_port = 3000
-server_timeout = 5
-
-[site]
-title = "My Website"
-comments = true

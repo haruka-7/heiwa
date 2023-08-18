@@ -5,6 +5,7 @@ use std::fs;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
+use tera::Tera;
 use tower::ServiceBuilder;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::CompressionLayer;
@@ -16,6 +17,7 @@ use crate::handlers;
 #[derive(Clone)]
 pub struct AppState {
     pub config: Config,
+    pub tera: Tera,
 }
 
 pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
@@ -27,8 +29,13 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
 
     let config_file_content: String =
         fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
+    let config: Config = Config::new(config_file_content.as_str());
+    let templates: String = format!("./themes/{}/**/*.html", config.theme.clone());
+    tracing::info!("./themes/{}/**/*.html", config.theme.clone());
+
     let state: Arc<AppState> = Arc::new(AppState {
-        config: Config::new(config_file_content.as_str()),
+        config,
+        tera: Tera::new(templates.as_str()).unwrap(),
     });
 
     let routes: Router = Router::new()
