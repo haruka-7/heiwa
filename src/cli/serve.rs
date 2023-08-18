@@ -25,36 +25,33 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(timeout.unwrap_or(5)));
 
+    let config_file_content: String =
+        fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
+    let state: Arc<AppState> = Arc::new(AppState {
+        config: Config::new(config_file_content.as_str()),
+    });
+
+    let routes: Router = Router::new()
+        .route("/", get(handlers::home::show))
+        .route("/error", get(handlers::error::show))
+        .with_state(state);
+
+    let services: Router = Router::new()
+        .nest_service(
+            "/statics/",
+            get_service(ServeDir::new("./themes/default/statics")),
+        )
+        .nest_service("/medias/", get_service(ServeDir::new("./medias")));
+
     let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(3000)));
     let app = Router::new()
-        .merge(routes())
+        .merge(routes)
         .layer(middleware_stack)
-        .fallback_service(routes_statics());
+        .fallback_service(services);
 
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-fn routes() -> Router {
-    let config_file_content: String =
-        fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
-    let state: Arc<AppState> = Arc::new(AppState {
-        config: Config::new(config_file_content.as_str()),
-    });
-    Router::new()
-        .route("/", get(handlers::home::show))
-        .route("/error", get(handlers::error::show))
-        .with_state(state)
-}
-
-fn routes_statics() -> Router {
-    Router::new()
-        .nest_service(
-            "/statics/",
-            get_service(ServeDir::new("./themes/default/statics")),
-        )
-        .nest_service("/medias/", get_service(ServeDir::new("./medias")))
 }
