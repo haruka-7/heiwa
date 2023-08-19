@@ -30,11 +30,10 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
     let config_file_content: String =
         fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
     let config: Config = Config::new(config_file_content.as_str());
-    let templates: String = format!("./themes/{}/**/*.html", config.theme.clone());
-    tracing::info!("./themes/{}/**/*.html", config.theme.clone());
+    let templates: String = format!("./themes/{}/src/**/*.html", config.theme.clone());
 
     let state: Arc<AppState> = Arc::new(AppState {
-        config,
+        config: config.clone(),
         tera: Tera::new(templates.as_str()).unwrap(),
     });
 
@@ -45,8 +44,8 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
 
     let services: Router = Router::new()
         .nest_service(
-            "/statics/",
-            get_service(ServeDir::new("./themes/default/statics")),
+            "/assets/",
+            get_service(ServeDir::new(format!("./themes/{}/assets", config.theme))),
         )
         .nest_service("/medias/", get_service(ServeDir::new("./medias")));
 
