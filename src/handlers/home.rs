@@ -7,11 +7,5 @@ use tera::Context;
 pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     let mut context = Context::new();
     context.insert("name", "Hidrile");
-    Html(
-        state
-            .tera
-            .render("home.html", &context)
-            //.render(format!("{}/home.html", state.config.theme).as_str(), &context)
-            .unwrap(),
-    )
+    Html(state.tera.render("home.html", &context).unwrap())
 }
