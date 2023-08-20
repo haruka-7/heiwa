@@ -1,13 +1,15 @@
 use crate::cli::serve::AppState;
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::response::Html;
 use std::sync::Arc;
 use tera::Context;
 use pulldown_cmark::{Parser, Options, html};
 use minify_html::{Cfg, minify};
+use std::fs::read_to_string;
 
-pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
-    let markdown_input = "Hello world, this is a ~~complicated~~ *very simple* example.";
+pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) -> Html<String> {
+
+    let markdown_input = read_to_string(format!("./pages/{}.md", path.clone())).expect(format!("Should have been able to read the file : {}", path).as_str());
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
@@ -15,7 +17,7 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     options.insert(Options::ENABLE_STRIKETHROUGH);
     options.insert(Options::ENABLE_TASKLISTS);
     options.insert(Options::ENABLE_SMART_PUNCTUATION);
-    let parser = Parser::new_ext(markdown_input, options);
+    let parser = Parser::new_ext(markdown_input.as_str(), options);
 
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
