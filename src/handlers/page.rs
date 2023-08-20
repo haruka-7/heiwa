@@ -28,6 +28,8 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     let code: &[u8] = html.as_bytes();
     let mut cfg = Cfg::new();
     cfg.do_not_minify_doctype = true;
+    cfg.keep_closing_tags = true;
+    cfg.keep_html_and_head_opening_tags = true;
     cfg.keep_spaces_between_attributes=true;
     cfg.ensure_spec_compliant_unquoted_attribute_values = true;
     let minified_html = minify(&code, &cfg);
