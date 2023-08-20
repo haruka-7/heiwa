@@ -52,9 +52,9 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(3000)));
     let app = Router::new()
+        .merge(services)
         .merge(routes)
-        .layer(middleware_stack)
-        .fallback_service(services);
+        .layer(middleware_stack);
 
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
