@@ -10,7 +10,11 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     let markdown_input = "Hello world, this is a ~~complicated~~ *very simple* example.";
 
     let mut options = Options::empty();
+    options.insert(Options::ENABLE_TABLES);
+    options.insert(Options::ENABLE_FOOTNOTES);
     options.insert(Options::ENABLE_STRIKETHROUGH);
+    options.insert(Options::ENABLE_TASKLISTS);
+    options.insert(Options::ENABLE_SMART_PUNCTUATION);
     let parser = Parser::new_ext(markdown_input, options);
 
     let mut html_output = String::new();
