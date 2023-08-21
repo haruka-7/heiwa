@@ -5,7 +5,6 @@ pub struct Config {
     pub title: String,
     pub comments: bool,
     pub theme: String,
-    pub log_level: String,
 }
 
 impl Config {
@@ -18,7 +17,6 @@ impl Config {
             title: "Website title".to_string(),
             comments: true,
             theme: "shizen".to_string(),
-            log_level: "info".to_string(),
         }
     }
 }

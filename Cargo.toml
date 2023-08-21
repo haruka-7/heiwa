@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.7", features = ["http2"] }
 clap = { version = "4.3.21", features = ["derive"] }
+gray_matter = "0.2.6"
 hyper = "0.14.27"
 minify-html = "0.11.1"
 pulldown-cmark = { version = "0.9.3", default-features = false, features = ["simd"] }
