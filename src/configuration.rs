@@ -9,8 +9,9 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Site {
-    title: String,
-    comments: bool,
+    pub title: String,
+    pub description: String,
+    pub comments: bool,
 }
 
 impl Config {
@@ -23,7 +24,8 @@ impl Config {
             log_level: "info".to_string(),
             theme: "shizen".to_string(),
             site: Site {
-                title: "My Website".to_string(),
+                title: "Website title".to_string(),
+                description: "Website description".to_string(),
                 comments: true,
             },
         }

@@ -1,6 +1,7 @@
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{get, get_service};
 use axum::Router;
+use pulldown_cmark::Options;
 use std::fs;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -18,6 +19,7 @@ use crate::handlers;
 pub struct AppState {
     pub config: Config,
     pub tera: Tera,
+    pub mk_parser_options: Options,
 }
 
 pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
@@ -35,6 +37,7 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
     let state: Arc<AppState> = Arc::new(AppState {
         config: config.clone(),
         tera: Tera::new(templates.as_str()).unwrap(),
+        mk_parser_options: get_markdown_parser_options(),
     });
 
     let routes: Router = Router::new()
@@ -61,4 +64,14 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+fn get_markdown_parser_options() -> Options {
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_TABLES);
+    options.insert(Options::ENABLE_FOOTNOTES);
+    options.insert(Options::ENABLE_STRIKETHROUGH);
+    options.insert(Options::ENABLE_TASKLISTS);
+    options.insert(Options::ENABLE_SMART_PUNCTUATION);
+    options
 }
