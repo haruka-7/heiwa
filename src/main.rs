@@ -1,5 +1,5 @@
 use clap::Parser;
-use cli::cli::{Cli, Commands};
+use cli::commands::{Cli, Commands};
 use cli::init::init;
 use cli::serve::serve;
 
