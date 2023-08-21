@@ -1,12 +1,12 @@
-use tera::Context;
-use crate::configuration::Config;
+use minify_html::{minify, Cfg};
 
-pub fn get_common_context(configuration: Config, title: Option<String>, description: Option<String>) -> Context {
-    let mut context = Context::new();
-    context.insert("meta_title", title.unwrap_or(configuration.site.title.clone()).as_str());
-    context.insert("meta_description", description.unwrap_or(configuration.site.description).as_str());
-    context.insert("site_title", configuration.site.title.as_str());
-    context
+pub fn minify_html(html_content: String) -> String {
+    let code: &[u8] = html_content.as_bytes();
+    let mut cfg = Cfg::new();
+    cfg.do_not_minify_doctype = true;
+    cfg.keep_closing_tags = true;
+    cfg.keep_html_and_head_opening_tags = true;
+    cfg.keep_spaces_between_attributes = true;
+    cfg.ensure_spec_compliant_unquoted_attribute_values = true;
+    String::from_utf8(minify(code, &cfg)).unwrap()
 }
-
-pub fn minify_html(html_content: String) {}

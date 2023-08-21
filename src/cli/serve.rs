@@ -15,7 +15,7 @@ use tower_http::services::ServeDir;
 use crate::configuration::Config;
 use crate::handlers;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct AppState {
     pub config: Config,
     pub tera: Tera,
