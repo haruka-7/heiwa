@@ -9,7 +9,7 @@ build:cargo:
 
 test:junit-report:
    script:
-     #- rustup install nightly && rustup default nightly
+     - rustup install nightly && rustup default nightly
      - cargo install junitify
      - cargo test -- --format=json -Z unstable-options --report-time | junitify --out $CI_PROJECT_DIR/tests/
    artifacts:
