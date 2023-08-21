@@ -23,8 +23,10 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
     html::push_html(&mut html_output, parser);
 
     let mut context = Context::new();
-    context.insert("meta_title", "Meta Title");
+    context.insert("meta_title", "Title");
     context.insert("meta_description", "description");
+    context.insert("site_title", "Site title");
+    context.insert("title", "Article title");
     context.insert("content", html_output.as_str());
 
     let html = state.tera.render("page.html", &context).unwrap();
