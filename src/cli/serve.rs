@@ -40,18 +40,17 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         mk_parser_options: get_markdown_parser_options(),
     });
 
+    let services: Router = Router::new().nest_service(
+        "/assets/",
+        get_service(ServeDir::new(format!("./themes/{}/assets", config.theme))),
+    );
+    //        .nest_service("/medias/", get_service(ServeDir::new("./medias")));
+
     let routes: Router = Router::new()
         .route("/", get(handlers::home::show))
         .route("/error", get(handlers::error::show))
         .route("/*path", get(handlers::page::show))
         .with_state(state);
-
-    let services: Router = Router::new()
-        .nest_service(
-            "/assets/",
-            get_service(ServeDir::new(format!("./themes/{}/assets", config.theme))),
-        )
-        .nest_service("/medias/", get_service(ServeDir::new("./medias")));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port.unwrap_or(3000)));
     let app = Router::new()

@@ -6,7 +6,6 @@ use crate::configuration::Config;
 pub fn init(project_name: String) {
     create_dir_all(format!("{}/pages", project_name)).unwrap();
     create_dir_all(format!("{}/themes", project_name)).unwrap();
-    create_dir_all(format!("{}/medias", project_name)).unwrap();
 
     let mut f = File::create(format!("{}/config.toml", project_name)).unwrap();
     let config: Config = Config::default();
@@ -14,6 +13,6 @@ pub fn init(project_name: String) {
     f.write_all(config_string.as_bytes()).unwrap();
 
     println!(
-        "Project successfully created!\nDownload a theme in the \"themes\" directory, update the config.toml file, add some pages and run the builtin webserver with the command : \"heiwa serve\""
+        "Project successfully created!\nNext steps : \n- download a theme in the \"themes\" directory\n- update the config.toml file\n- inside your project, launch the command : \"heiwa serve\"\nEnjoy!"
     );
 }

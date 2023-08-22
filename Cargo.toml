@@ -6,10 +6,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.6.7", features = ["http2"] }
+axum = { version = "0.6.7", features = ["headers", "http2"] }
 clap = { version = "4.3.21", features = ["derive"] }
 gray_matter = "0.2.6"
 hyper = "0.14.27"
+mime_guess = "2.0.4"
 minify-html = "0.11.1"
 pulldown-cmark = { version = "0.9.3", default-features = false, features = ["simd"] }
 reqwest = { version = "0.11.18", features = ["blocking"] }
@@ -17,6 +18,7 @@ serde = { version = "1.0.152", features = ["derive"] }
 tera = "1.19.0"
 toml = "0.7.6"
 tokio = { version = "1.25.0", features = ["full"] }
+tokio-util = "0.7.8"
 tower = { version = "0.4.13", features = ["full"] }
 tower-http = { version = "0.4.0", features = ["full", "cors"] }
 tracing = "0.1.37"
