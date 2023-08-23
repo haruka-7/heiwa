@@ -7,6 +7,7 @@ mod cli;
 mod configuration;
 mod handlers;
 mod utils;
+mod entities;
 
 #[tokio::main]
 async fn main() {

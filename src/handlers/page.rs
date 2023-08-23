@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tera::Context;
 use tokio_util::io::ReaderStream;
+use crate::entities::page::Page;
 
 pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) -> Response {
     if path.contains("medias/") {
@@ -33,13 +34,15 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         let result: ParsedEntity =
             markdown_to_html(&mut html_output, path, state.mk_parser_options);
 
+        let page: Page = Page::new(result);
+
         let mut context = Context::new();
         context.insert("meta_title", "Meta title");
         context.insert("meta_description", "Meta description");
         context.insert("site_title", state.config.title.as_str());
         context.insert(
             "title",
-            result.data.unwrap()["title"].as_string().unwrap().as_str(),
+            page.title.as_str(),
         );
         context.insert("content", html_output.as_str());
         let html = state.tera.render("page.html", &context).unwrap();
