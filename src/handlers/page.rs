@@ -32,9 +32,9 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
     } else {
         let mut html_output: String = String::new();
         let result: ParsedEntity =
-            markdown_to_html(&mut html_output, path, state.mk_parser_options);
+            markdown_to_html(&mut html_output, format!("./pages/{}.md", path), state.mk_parser_options);
 
-        let page: Page = Page::new(result);
+        let page: Page = Page::new(path, result);
 
         let mut context = Context::new();
         context.insert("meta_title", "Meta title");

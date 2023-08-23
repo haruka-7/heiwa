@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.7", features = ["headers", "http2"] }
 clap = { version = "4.3.21", features = ["derive"] }
+glob = "0.3.1"
 gray_matter = "0.2.6"
 hyper = "0.14.27"
 mime_guess = "2.0.4"

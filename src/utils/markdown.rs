@@ -9,8 +9,8 @@ pub fn markdown_to_html(
     parser_options: Options,
 ) -> ParsedEntity {
     tracing::debug!("Read fil with path {}", file_path);
-    let markdown_input: String = read_to_string(format!("./pages/{}.md", file_path))
-        .expect("Should have been able to read the file");
+    let markdown_input: String = read_to_string(file_path.clone())
+        .expect(format!("Should have been able to read the file : {}", file_path).as_str());
     let matter = Matter::<YAML>::new();
     let result = matter.parse(markdown_input.as_str());
 
