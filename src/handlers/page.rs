@@ -28,7 +28,11 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         ];
         (headers, body).into_response()
     } else {
-        let page: Page = Page::new(path.clone(), format!("./pages/{}.md", path), state.mk_parser_options);
+        let page: Page = Page::new(
+            path.clone(),
+            format!("./pages/{}.md", path),
+            state.mk_parser_options,
+        );
 
         let mut context = Context::new();
         context.insert("meta_title", "Meta title");
