@@ -6,8 +6,6 @@ use glob::glob;
 use std::sync::Arc;
 use tera::Context;
 use crate::entities::page::Page;
-use gray_matter::ParsedEntity;
-use crate::utils::markdown::markdown_to_html;
 
 pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     let mut context = Context::new();
@@ -20,12 +18,9 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
         match entry {
             Ok(path) => { 
-                let mut html_output: String = String::new();
                 let file_path: String = path.into_os_string().into_string().unwrap();
-                let result: ParsedEntity = markdown_to_html(&mut html_output, file_path.clone(), state.mk_parser_options);
-                let file_path:String = file_path.replace("pages/", "");
-                let file_path:String = file_path.replace(".md", "");
-                let page: Page = Page::new(file_path, result);
+                let url:String = file_path.replace("pages/", "").replace(".md", "");
+                let page: Page = Page::new(url, file_path, state.mk_parser_options);
                 pages.push(page);
             },
             Err(e) => {
