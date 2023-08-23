@@ -1,4 +1,5 @@
 use crate::cli::serve::AppState;
+use crate::entities::page::Page;
 use crate::utils::markdown::markdown_to_html;
 use crate::utils::template::minify_html;
 use axum::body::StreamBody;
@@ -10,7 +11,6 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tera::Context;
 use tokio_util::io::ReaderStream;
-use crate::entities::page::Page;
 
 pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) -> Response {
     if path.contains("medias/") {
@@ -40,10 +40,7 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         context.insert("meta_title", "Meta title");
         context.insert("meta_description", "Meta description");
         context.insert("site_title", state.config.title.as_str());
-        context.insert(
-            "title",
-            page.title.as_str(),
-        );
+        context.insert("title", page.title.as_str());
         context.insert("content", html_output.as_str());
         let html = state.tera.render("page.html", &context).unwrap();
         Html(minify_html(html)).into_response()

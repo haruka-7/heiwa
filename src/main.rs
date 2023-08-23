@@ -5,9 +5,9 @@ use cli::serve::serve;
 
 mod cli;
 mod configuration;
+mod entities;
 mod handlers;
 mod utils;
-mod entities;
 
 #[tokio::main]
 async fn main() {

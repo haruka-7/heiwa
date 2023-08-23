@@ -5,7 +5,7 @@ pub struct Page {
     pub author: Option<String>,
     pub date: Option<String>,
     pub published: Option<bool>,
-    pub tags: Vec<String>
+    pub tags: Vec<String>,
 }
 
 impl Page {
