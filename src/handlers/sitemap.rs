@@ -1,6 +1,6 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
-use axum::extract::State;
+use axum::extract::{Host, State};
 use axum::http::header::HeaderMap;
 use axum::http::header::{self};
 use axum::response::{IntoResponse, Response};
@@ -9,7 +9,7 @@ use glob::glob;
 use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
 use std::sync::Arc;
 
-pub async fn show(State(state): State<Arc<AppState>>) -> Response {
+pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Response {
     let mut pages: Vec<Page> = Vec::new();
     for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
         match entry {
@@ -31,17 +31,21 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Response {
 
     urls.push(
         UrlEntryBuilder::default()
-            .loc("https://localhost".parse().unwrap())
+            .loc(format!("https://{}", host).parse().unwrap())
             .build()
             .unwrap(),
     );
 
     for page in pages {
+        println!("{}", page.date);
         urls.push(UrlEntry {
-            loc: format!("https://localhost/{}", page.url).parse().unwrap(),
+            loc: format!("https://{}/{}", host, page.url).parse().unwrap(),
             changefreq: Some(ChangeFreq::Weekly),
             priority: Some(1.0),
-            lastmod: Some(Utc::now()),
+            lastmod: Some(DateTime::<Utc>::from_utc(
+                NaiveDateTime::parse_from_str(page.date.as_str(), "%Y/%m/%d").unwrap(),
+                Utc,
+            )),
         });
     }
 
