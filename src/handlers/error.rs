@@ -1,11 +1,11 @@
-use axum::http::{header, StatusCode};
-use axum::response::Response;
-use axum::BoxError;
-use std::any::Any;
 use crate::cli::serve::AppState;
 use crate::utils::template::minify_html;
 use axum::extract::State;
+use axum::http::{header, StatusCode};
 use axum::response::Html;
+use axum::response::Response;
+use axum::BoxError;
+use std::any::Any;
 use std::sync::Arc;
 use tera::Context;
 
