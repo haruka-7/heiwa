@@ -44,11 +44,11 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         "/assets/",
         get_service(ServeDir::new(format!("./themes/{}/assets", config.theme))),
     );
-    //        .nest_service("/medias/", get_service(ServeDir::new("./medias")));
 
     let routes: Router = Router::new()
         .route("/", get(handlers::home::show))
         .route("/error", get(handlers::error::show))
+        .route("/tags/:tag", get(handlers::tag::show))
         .route("/*path", get(handlers::page::show))
         .with_state(state);
 
