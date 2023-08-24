@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.7", features = ["headers", "http2"] }
 clap = { version = "4.3.21", features = ["derive"] }
+chrono = "0.4.26"
 glob = "0.3.1"
 gray_matter = "0.2.6"
 hyper = "0.14.27"
@@ -16,6 +17,7 @@ minify-html = "0.11.1"
 pulldown-cmark = { version = "0.9.3", default-features = false, features = ["simd"] }
 reqwest = { version = "0.11.18", features = ["blocking"] }
 serde = { version = "1.0.152", features = ["derive"] }
+sitewriter = "1.0.2"
 tera = "1.19.0"
 toml = "0.7.6"
 tokio = { version = "1.25.0", features = ["full"] }
