@@ -11,6 +11,7 @@ pub struct Page {
     pub author: String,
     pub date: String,
     pub published: bool,
+    pub description: String,
     pub tags: Vec<String>,
     pub content: String,
 }
@@ -52,6 +53,9 @@ impl Page {
             published: parsed_content.data.as_ref().unwrap()["published"]
                 .as_bool()
                 .unwrap_or(true),
+            description: parsed_content.data.as_ref().unwrap()["description"]
+                .as_string()
+                .unwrap_or("".to_string()),
             tags,
             content: html_output,
         }
