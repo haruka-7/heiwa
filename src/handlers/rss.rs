@@ -30,7 +30,7 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
     for page in pages {
         let item: Item = ItemBuilder::default()
             .title(Some(page.title))
-            .link(Some(format!("https://{}/{}", host, page.url)))
+            .link(Some(format!("https://{}{}", host, page.url)))
             .author(Some(page.author))
             .description(Some(page.description))
             .pub_date(Some(page.date))

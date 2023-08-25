@@ -38,7 +38,7 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
 
     for page in pages {
         urls.push(UrlEntry {
-            loc: format!("https://{}/{}", host, page.url).parse().unwrap(),
+            loc: format!("https://{}{}", host, page.url).parse().unwrap(),
             changefreq: Some(ChangeFreq::Weekly),
             priority: Some(1.0),
             lastmod: Some(DateTime::<Utc>::from_utc(
