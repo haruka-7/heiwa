@@ -49,6 +49,7 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .route("/", get(handlers::home::show))
         .route("/error", get(handlers::error::show))
         .route("/sitemap.xml", get(handlers::sitemap::show))
+        .route("/rss", get(handlers::rss::show))
         .route("/tags/:tag", get(handlers::tag::show))
         .route("/*path", get(handlers::page::show))
         .with_state(state);
@@ -73,5 +74,6 @@ fn get_markdown_parser_options() -> Options {
     options.insert(Options::ENABLE_STRIKETHROUGH);
     options.insert(Options::ENABLE_TASKLISTS);
     options.insert(Options::ENABLE_SMART_PUNCTUATION);
+    options.insert(Options::ENABLE_HEADING_ATTRIBUTES);
     options
 }

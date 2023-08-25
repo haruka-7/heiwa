@@ -6,8 +6,8 @@ use axum::http::header::{self};
 use axum::response::{IntoResponse, Response};
 use chrono::prelude::*;
 use glob::glob;
-use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
 use std::sync::Arc;
+use rss::{ChannelBuilder, Item, ItemBuilder};
 
 pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Response {
     let mut pages: Vec<Page> = Vec::new();
@@ -27,29 +27,25 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
         }
     }
 
-    let mut urls = Vec::new();
-
-    urls.push(
-        UrlEntryBuilder::default()
-            .loc(format!("https://{}", host).parse().unwrap())
-            .build()
-            .unwrap(),
-    );
-
+    let mut items = Vec::new();
     for page in pages {
-        urls.push(UrlEntry {
-            loc: format!("https://{}/{}", host, page.url).parse().unwrap(),
-            changefreq: Some(ChangeFreq::Weekly),
-            priority: Some(1.0),
-            lastmod: Some(DateTime::<Utc>::from_utc(
-                NaiveDate::parse_from_str(page.date.as_str(), "%Y/%m/%d").unwrap().and_hms_opt(0, 0, 0).unwrap(),
-                Utc,
-            )),
-        });
+        let item: Item = ItemBuilder::default()
+            .title(Some(page.title))
+            .link(Some(format!("https://{}/{}", host, page.url)))
+            .author(Some(page.author))
+            .description(Some(page.description))
+            .pub_date(Some(page.date))
+            .content(Some(page.content))
+            .build();
+        items.push(item);
     }
+    let channel = ChannelBuilder::default()
+        .title(&state.config.title)
+        .link(format!("https://{}", host))
+        .items(items)
+        .build();
 
-    let body: String = sitewriter::generate_str(&urls);
     let mut headers = HeaderMap::new();
-    headers.insert(header::CONTENT_TYPE, "application/xml".parse().unwrap());
-    (headers, body).into_response()
+    headers.insert(header::CONTENT_TYPE, "application/rss+xml".parse().unwrap());
+    (headers, channel.to_string()).into_response()
 }
