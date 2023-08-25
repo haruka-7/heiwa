@@ -12,7 +12,16 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     context.insert("meta_title", "Meta title");
     context.insert("meta_description", "Meta description");
     context.insert("site_title", state.config.title.as_str());
-    context.insert("name", "Hidrile");
+
+    context.insert(
+        "home_content",
+        &Page::new(
+            "/".to_string(),
+            "./pages/home.md".to_string(),
+            state.mk_parser_options,
+        )
+        .content,
+    );
 
     let mut pages: Vec<Page> = Vec::new();
     for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
