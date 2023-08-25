@@ -45,6 +45,6 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
         .build();
 
     let mut headers = HeaderMap::new();
-    headers.insert(header::CONTENT_TYPE, "application/rss+xml".parse().unwrap());
+    headers.insert(header::CONTENT_TYPE, "text/xml".parse().unwrap());
     (headers, channel.to_string()).into_response()
 }
