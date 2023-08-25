@@ -40,7 +40,7 @@ impl Page {
         }
 
         Page {
-            url,
+            url: format!("/{}", url),
             title: parsed_content.data.as_ref().unwrap()["title"]
                 .as_string()
                 .unwrap_or("".to_string()),
