@@ -42,7 +42,10 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
             changefreq: Some(ChangeFreq::Weekly),
             priority: Some(1.0),
             lastmod: Some(DateTime::<Utc>::from_utc(
-                NaiveDate::parse_from_str(page.date.as_str(), "%Y/%m/%d").unwrap().and_hms_opt(0, 0, 0).unwrap(),
+                NaiveDate::parse_from_str(page.date.as_str(), "%Y/%m/%d")
+                    .unwrap()
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap(),
                 Utc,
             )),
         });
