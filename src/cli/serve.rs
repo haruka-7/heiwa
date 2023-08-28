@@ -1,5 +1,5 @@
 use axum::error_handling::HandleErrorLayer;
-use axum::routing::{get, get_service};
+use axum::routing::{get, get_service, post};
 use axum::Router;
 use pulldown_cmark::Options;
 use std::fs;
@@ -50,6 +50,7 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .route("/error", get(handlers::error::show))
         .route("/sitemap.xml", get(handlers::sitemap::show))
         .route("/rss", get(handlers::rss::show))
+        .route("/search", post(handlers::search::show))
         .route("/tags/:tag", get(handlers::tag::show))
         .route("/*path", get(handlers::page::show))
         .with_state(state);
