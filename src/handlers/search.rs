@@ -28,7 +28,7 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();
                 let file_content: String = read_file(&file_path);
-                if file_content.contains(&search.keywords) {
+                if file_content.to_lowercase().contains(&search.keywords.to_lowercase()) {
                     let url: String = file_path.replace("pages/", "").replace(".md", "");
                     let page: Page = Page::new(url, file_content, state.mk_parser_options);
                     if page.published {
