@@ -1,5 +1,6 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
+use crate::utils::file::read_file;
 use crate::utils::template::minify_html;
 use axum::body::StreamBody;
 use axum::extract::{Path, State};
@@ -28,11 +29,8 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         ];
         (headers, body).into_response()
     } else {
-        let page: Page = Page::new(
-            path.clone(),
-            format!("./pages/{}.md", path),
-            state.mk_parser_options,
-        );
+        let content_file: String = read_file(&format!("./pages/{}.md", path));
+        let page: Page = Page::new(path.clone(), content_file, state.mk_parser_options);
 
         let mut context = Context::new();
         context.insert("meta_title", "Meta title");

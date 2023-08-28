@@ -1,5 +1,6 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
+use crate::utils::file::read_file;
 use crate::utils::template::minify_html;
 use axum::extract::State;
 use axum::response::Html;
@@ -26,10 +27,13 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();
-                let url: String = file_path.replace("pages/", "").replace(".md", "");
-                let page: Page = Page::new(url, file_path, state.mk_parser_options);
-                if page.published {
-                    pages.push(page);
+                let file_content: String = read_file(&file_path);
+                if file_content.contains(&search.keywords) {
+                    let url: String = file_path.replace("pages/", "").replace(".md", "");
+                    let page: Page = Page::new(url, file_content, state.mk_parser_options);
+                    if page.published {
+                        pages.push(page);
+                    }
                 }
             }
             Err(e) => {

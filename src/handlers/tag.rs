@@ -1,5 +1,6 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
+use crate::utils::file::read_file;
 use crate::utils::template::minify_html;
 use axum::extract::{Path, State};
 use axum::response::Html;
@@ -19,8 +20,9 @@ pub async fn show(Path(tag): Path<String>, State(state): State<Arc<AppState>>) -
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();
+                let file_content: String = read_file(&file_path);
                 let url: String = file_path.replace("pages/", "").replace(".md", "");
-                let page: Page = Page::new(url, file_path, state.mk_parser_options);
+                let page: Page = Page::new(url, file_content, state.mk_parser_options);
                 if page.published && page.tags.contains(&tag) {
                     pages.push(page);
                 }

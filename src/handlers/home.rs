@@ -1,5 +1,6 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
+use crate::utils::file::read_file;
 use crate::utils::template::minify_html;
 use axum::extract::State;
 use axum::response::Html;
@@ -13,14 +14,10 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     context.insert("meta_description", "Meta description");
     context.insert("site_title", state.config.title.as_str());
 
+    let file_content: String = read_file(&"pages/home.md".to_string());
     context.insert(
         "home_content",
-        &Page::new(
-            "/".to_string(),
-            "./pages/home.md".to_string(),
-            state.mk_parser_options,
-        )
-        .content,
+        &Page::new("/".to_string(), file_content, state.mk_parser_options).content,
     );
 
     let mut pages: Vec<Page> = Vec::new();
@@ -28,8 +25,9 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();
+                let file_content: String = read_file(&file_path);
                 let url: String = file_path.replace("pages/", "").replace(".md", "");
-                let page: Page = Page::new(url, file_path, state.mk_parser_options);
+                let page: Page = Page::new(url, file_content, state.mk_parser_options);
                 if page.published {
                     pages.push(page);
                 }
