@@ -28,7 +28,7 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
                 let file_content: String = read_file(&file_path);
                 let url: String = file_path.replace("pages/", "").replace(".md", "");
                 let page: Page = Page::new(url, file_content, state.mk_parser_options);
-                if page.published {
+                if page.published && !page.title.is_empty() {
                     pages.push(page);
                 }
             }
