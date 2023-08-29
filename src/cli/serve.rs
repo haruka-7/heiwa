@@ -22,6 +22,9 @@ pub struct AppState {
     pub mk_parser_options: Options,
 }
 
+// TODO add impl for AppState and move all related code in a "new" fn
+// TODO add to AppState the tags list and display it on the homepage
+
 pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
     let middleware_stack = ServiceBuilder::new()
         .layer(CatchPanicLayer::custom(handlers::error::panic))
