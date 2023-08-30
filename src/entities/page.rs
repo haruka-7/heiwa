@@ -11,6 +11,7 @@ pub struct Page {
     pub date: String,
     pub published: bool,
     pub description: String,
+    pub thumbnail: String,
     pub tags: Vec<String>,
     pub content: String,
 }
@@ -34,6 +35,13 @@ impl Page {
             }
         }
 
+        let mut thumbnail: String = parsed_content.data.as_ref().unwrap()["thumbnail"]
+            .as_string()
+            .unwrap_or("".to_string());
+        if !thumbnail.is_empty() {
+            thumbnail = format!("{}/{}", url, thumbnail)
+        }
+
         Page {
             url: format!("/{}", url),
             title: parsed_content.data.as_ref().unwrap()["title"]
@@ -51,6 +59,7 @@ impl Page {
             description: parsed_content.data.as_ref().unwrap()["description"]
                 .as_string()
                 .unwrap_or("".to_string()),
+            thumbnail,
             tags,
             content: html_output,
         }
