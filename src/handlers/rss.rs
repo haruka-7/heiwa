@@ -1,5 +1,6 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
+use crate::utils::file::read_file;
 use axum::extract::{Host, State};
 use axum::http::header::HeaderMap;
 use axum::http::header::{self};
@@ -14,10 +15,12 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();
-                let url: String = file_path.replace("pages/", "").replace(".md", "");
-                let page: Page = Page::new(url, file_path, state.mk_parser_options);
-                if page.published {
-                    pages.push(page);
+                if file_path != "pages/home.md" {
+                    let url: String = file_path.replace("pages/", "").replace(".md", "");
+                    let page: Page = Page::new(url, read_file(&file_path), state.mk_parser_options);
+                    if page.published {
+                        pages.push(page);
+                    }
                 }
             }
             Err(e) => {
