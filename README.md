@@ -1,13 +1,9 @@
 # Heiwa
 By Pedro CADETE aka Hidrile
 
-https://getheiwa.org
-
-![pipeline badge](https://framagit.org/heiwa/heiwa/badges/main/pipeline.svg)
-
 ## Description
 
-TODO
+Heiwa is a minimalist flat-file CMS using Markdown to generate pages.
 
 ## Licence
 
@@ -27,9 +23,4 @@ TODO
 
 ## Development
 
-sudo apt install libpq-dev
-cargo install diesel_cli --no-default-features --features postgres
-diesel setup
-cargo build
-
-
+TODO
