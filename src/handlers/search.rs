@@ -17,8 +17,8 @@ pub struct Search {
 
 pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>) -> Html<String> {
     let mut context = Context::new();
-    context.insert("meta_title", "Meta title");
-    context.insert("meta_description", "Meta description");
+    context.insert("meta_title", "Search");
+    context.insert("meta_description", "Search page");
     context.insert("site_title", &state.config.title);
     context.insert("search", &search.keywords);
 

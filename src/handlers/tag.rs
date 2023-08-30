@@ -10,8 +10,11 @@ use tera::Context;
 
 pub async fn show(Path(tag): Path<String>, State(state): State<Arc<AppState>>) -> Html<String> {
     let mut context = Context::new();
-    context.insert("meta_title", "Meta title");
-    context.insert("meta_description", "Meta description");
+    context.insert("meta_title", &tag);
+    context.insert(
+        "meta_description",
+        &format!("Articles with the tag {}", tag.clone()),
+    );
     context.insert("site_title", state.config.title.as_str());
     context.insert("tag", &tag);
 

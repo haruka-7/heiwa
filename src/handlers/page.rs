@@ -19,6 +19,7 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         let file = tokio::fs::File::open(&file_path).await.unwrap();
         let content_type = mime_guess::from_path(&file_path).first_raw().unwrap();
         let stream = ReaderStream::new(file);
+
         let body = StreamBody::new(stream);
         let headers = [
             (header::CONTENT_TYPE, content_type),
@@ -33,10 +34,11 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         let page: Page = Page::new(path.clone(), content_file, state.mk_parser_options);
 
         let mut context = Context::new();
-        context.insert("meta_title", "Meta title");
-        context.insert("meta_description", "Meta description");
+        context.insert("meta_title", &page.title);
+        context.insert("meta_description", &page.description);
         context.insert("site_title", state.config.title.as_str());
         context.insert("page", &page);
+
         let html = state.tera.render("page.html", &context).unwrap();
         Html(minify_html(html)).into_response()
     }

@@ -11,8 +11,8 @@ use tera::Context;
 
 pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     let mut context = Context::new();
-    context.insert("meta_title", "Meta title");
-    context.insert("meta_description", "Meta description");
+    context.insert("meta_title", "Error");
+    context.insert("meta_description", "Error page");
     context.insert("site_title", state.config.title.as_str());
     let html = state.tera.render("error.html", &context).unwrap();
     Html(minify_html(html))
