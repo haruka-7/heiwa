@@ -1,6 +1,9 @@
+use crate::entities::page::Page;
+use crate::utils::file::read_file;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{get, get_service, post};
 use axum::Router;
+use glob::glob;
 use pulldown_cmark::Options;
 use std::fs;
 use std::net::SocketAddr;
@@ -19,7 +22,25 @@ use crate::handlers;
 pub struct AppState {
     pub config: Config,
     pub tera: Tera,
+    pub tags: Vec<String>,
     pub mk_parser_options: Options,
+}
+
+impl AppState {
+    fn new() -> Self {
+        let config_file_content: String =
+            fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
+        let config: Config = Config::new(config_file_content.as_str());
+
+        let templates: String = format!("./themes/{}/src/**/*.html", config.theme.clone());
+
+        AppState {
+            config: config.clone(),
+            tera: Tera::new(templates.as_str()).unwrap(),
+            tags: get_tags(),
+            mk_parser_options: get_markdown_parser_options(),
+        }
+    }
 }
 
 // TODO add impl for AppState and move all related code in a "new" fn
@@ -32,20 +53,14 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(timeout.unwrap_or(5)));
 
-    let config_file_content: String =
-        fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
-    let config: Config = Config::new(config_file_content.as_str());
-    let templates: String = format!("./themes/{}/src/**/*.html", config.theme.clone());
-
-    let state: Arc<AppState> = Arc::new(AppState {
-        config: config.clone(),
-        tera: Tera::new(templates.as_str()).unwrap(),
-        mk_parser_options: get_markdown_parser_options(),
-    });
+    let state: Arc<AppState> = Arc::new(AppState::new());
 
     let services: Router = Router::new().nest_service(
         "/assets/",
-        get_service(ServeDir::new(format!("./themes/{}/assets", config.theme))),
+        get_service(ServeDir::new(format!(
+            "./themes/{}/assets",
+            state.config.theme
+        ))),
     );
 
     let routes: Router = Router::new()
@@ -69,6 +84,31 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+fn get_tags() -> Vec<String> {
+    let mut tags: Vec<String> = Vec::new();
+    for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
+        match entry {
+            Ok(path) => {
+                let file_path: String = path.into_os_string().into_string().unwrap();
+                let file_content: String = read_file(&file_path);
+                let url: String = file_path.replace("pages/", "").replace(".md", "");
+                let page: Page = Page::new(url, file_content, get_markdown_parser_options());
+                if page.published && !page.tags.is_empty() {
+                    for tag in page.tags {
+                        if !tags.contains(&tag) {
+                            tags.push(tag)
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::error!("{}", e);
+            }
+        }
+    }
+    tags
 }
 
 fn get_markdown_parser_options() -> Options {

@@ -12,7 +12,8 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     let mut context = Context::new();
     context.insert("meta_title", "Meta title");
     context.insert("meta_description", "Meta description");
-    context.insert("site_title", state.config.title.as_str());
+    context.insert("site_title", &state.config.title);
+    context.insert("tags", &state.tags);
 
     let file_content: String = read_file(&"pages/home.md".to_string());
     context.insert(
