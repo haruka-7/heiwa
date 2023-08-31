@@ -1,14 +1,19 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
+use crate::entities::pagination::Pagination;
 use crate::utils::file::read_file;
 use crate::utils::template::minify_html;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::response::Html;
 use glob::glob;
 use std::sync::Arc;
 use tera::Context;
 
-pub async fn show(Path(tag): Path<String>, State(state): State<Arc<AppState>>) -> Html<String> {
+pub async fn show(
+    Path(tag): Path<String>,
+    pagination: Option<Query<Pagination>>,
+    State(state): State<Arc<AppState>>,
+) -> Html<String> {
     let mut context = Context::new();
     context.insert("meta_title", &tag);
     context.insert(
@@ -34,6 +39,24 @@ pub async fn show(Path(tag): Path<String>, State(state): State<Arc<AppState>>) -
                 tracing::error!("{}", e);
                 context.insert("alert", "No articles");
             }
+        }
+    }
+    pages.sort_by(|a, b| b.date.cmp(&a.date));
+    match pagination {
+        Some(params) => {
+            let index: usize = params.page * state.config.articles_per_page;
+            pages = pages.drain(index..).collect();
+            if pages.len() > state.config.articles_per_page {
+                context.insert("previous", &true);
+            }
+            pages.truncate(state.config.articles_per_page);
+            let page_nb: usize = params.page + 1;
+            context.insert("page_nb", &page_nb.to_string());
+        }
+        None => {
+            pages.truncate(state.config.articles_per_page);
+            context.insert("previous", &true);
+            context.insert("page_nb", "1");
         }
     }
     context.insert("pages", &pages);

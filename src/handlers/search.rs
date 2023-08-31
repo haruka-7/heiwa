@@ -45,6 +45,7 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
             }
         }
     }
+    pages.sort_by(|a, b| b.date.cmp(&a.date));
     context.insert("pages", &pages);
 
     let html = state.tera.render("search.html", &context).unwrap();
