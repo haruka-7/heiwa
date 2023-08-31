@@ -29,7 +29,7 @@ pub async fn error(err: BoxError) -> Response {
     } else {
         tracing::error!(err);
         Response::builder()
-            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .status(StatusCode::FOUND)
             .header(header::LOCATION, "/error")
             .body(Default::default())
             .unwrap()
