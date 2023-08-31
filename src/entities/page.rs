@@ -31,7 +31,7 @@ impl Page {
             .unwrap_or(vec![]);
         if !parsed_tags.is_empty() {
             for tag in parsed_tags {
-                tags.push(tag.as_string().unwrap());
+                tags.push(tag.as_string().unwrap().to_lowercase());
             }
         }
 
