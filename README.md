@@ -9,6 +9,7 @@ By Pedro CADETE aka Hidrile
 > Bugs may occurs and there is still a lot of work to do on optimizing the code.
 
 
+[![builds.sr.ht status](https://builds.sr.ht/~hidrile/heiwa.svg)](https://builds.sr.ht/~hidrile/heiwa?)
 
 ## Description
 
