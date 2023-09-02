@@ -33,7 +33,7 @@ cargo install heiwa
 Initialize a new Heiwa website project : 
 
 ```shell
-cargo init project_name
+heiwa init project_name
 ```
 
 Add a theme in the `project_name/themes/theme_name` directory. The Heiwa default theme can be found here : [Shizen](https://git.sr.ht/~hidrile/shizen)
@@ -44,7 +44,7 @@ Launch the builtin web server :
 
 ```shell
 cd project_name
-cargo serve
+heiwa serve
 ```
 
 Access your website at `localhost:3000`.
