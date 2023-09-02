@@ -22,6 +22,8 @@ The Heiwa project is under GPLv3 licence : https://www.gnu.org/licenses/gpl-3.0.
 
 ## Installation
 
+Using Rust package manager :
+
 ```shell
 cargo install heiwa
 ```
@@ -34,7 +36,7 @@ Initialize a new Heiwa website project :
 cargo init project_name
 ```
 
-Add a theme in the `project_name/themes` directory. The Heiwa default theme can be found here : [Shizen](https://git.sr.ht/~hidrile/shizen)
+Add a theme in the `project_name/themes/theme_name` directory. The Heiwa default theme can be found here : [Shizen](https://git.sr.ht/~hidrile/shizen)
 
 Edit the `project_name/config.toml` file accordingly.
 
