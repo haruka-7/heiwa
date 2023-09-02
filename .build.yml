@@ -1,0 +1,30 @@
+image: archlinux
+packages:
+  - rustup
+sources:
+  - https://git.sr.ht/~hidrile/heiwa
+tasks:
+  - setup: |
+      rustup toolchain install nightly stable
+      rustup component add rustfmt clippy
+      cd heiwa
+      rustup run stable cargo fetch
+  - lint: |
+      rustup default stable
+      cd heiwa
+      cargo fmt -- --check
+      cargo clippy -- -D warnings
+  - stable: |
+      rustup default stable
+      cd heiwa
+      cargo build
+      cargo test
+  - nightly: |
+      rustup default nightly
+      cd heiwa
+      cargo build ||:
+      cargo test ||:
+  - docs: |
+      cd heiwa
+      rustup run stable cargo doc --no-deps
+      rustup run nightly cargo doc --no-deps ||:
