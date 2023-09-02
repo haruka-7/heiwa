@@ -38,7 +38,7 @@ impl Page {
         let mut thumbnail: String = parsed_content.data.as_ref().unwrap()["thumbnail"]
             .as_string()
             .unwrap_or("".to_string());
-        let thumbnail_url: Option<(&str, &str)> = url.rsplit_once("/");
+        let thumbnail_url: Option<(&str, &str)> = url.rsplit_once('/');
         if !thumbnail.is_empty() && thumbnail_url.is_some() {
             thumbnail = format!("/{}/{}", thumbnail_url.unwrap().0, thumbnail);
         }
