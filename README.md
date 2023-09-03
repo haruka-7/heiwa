@@ -1,7 +1,5 @@
 # Heiwa
-
-By Pedro CADETE aka Hidrile
-
+A minimalist flat-file CMS, by Pedro CADETE aka Hidrile
 
 
 > Heiwa is currently in **BETA** state.
@@ -10,6 +8,7 @@ By Pedro CADETE aka Hidrile
 
 
 [![builds.sr.ht status](https://builds.sr.ht/~hidrile/heiwa.svg)](https://builds.sr.ht/~hidrile/heiwa?)
+[![licence GPL](https://img.shields.io/badge/license-GPL_3.0-blue.svg?style=flat)](https://git.sr.ht/~hidrile/heiwa/tree/main/item/LICENCE)
 
 ## Description
 
