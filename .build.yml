@@ -37,6 +37,6 @@ tasks:
       # cargo install oranda
       # installation error workaround
       curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/oranda/releases/download/v0.3.1/oranda-installer.sh | sh
-      oranda build
+      /home/build/.cargo/bin/oranda build
       tar -C public -cvz . > site.tar.gz
       hut pages publish -d $site site.tar.gz
