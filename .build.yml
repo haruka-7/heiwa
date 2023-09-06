@@ -34,7 +34,9 @@ tasks:
       rustup run nightly cargo doc --no-deps ||:
   - deploy: |
       cd heiwa
-      cargo install oranda
+      # cargo install oranda
+      # installation error workaround
+      curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/oranda/releases/download/v0.3.1/oranda-installer.sh | sh
       oranda build
       tar -C public -cvz . > site.tar.gz
       hut pages publish -d $site site.tar.gz
