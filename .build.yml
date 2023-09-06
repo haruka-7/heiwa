@@ -1,6 +1,10 @@
 image: archlinux
+oauth: pages.sr.ht/PAGES:RW
+environment:
+  site: getheiwa.org
 packages:
   - rustup
+  - hut
 sources:
   - https://git.sr.ht/~hidrile/heiwa
 tasks:
@@ -28,3 +32,9 @@ tasks:
       cd heiwa
       rustup run stable cargo doc --no-deps
       rustup run nightly cargo doc --no-deps ||:
+  - deploy: |
+      cd heiwa
+      cargo install oranda
+      oranda build
+      tar -C public -cvz . > site.tar.gz
+      hut pages publish -d $site site.tar.gz
