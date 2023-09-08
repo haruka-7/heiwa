@@ -46,8 +46,13 @@ impl AppState {
 pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
     let state: Arc<AppState> = Arc::new(AppState::new());
 
-    if state.config.theme.is_empty() || !Path::new(&state.config.theme).is_dir() {
-        panic!("No theme found, please download a theme and verify config.toml");
+    if state.config.theme.is_empty()
+        || !Path::new(&("./themes/".to_owned() + state.config.theme.as_str())).is_dir()
+    {
+        panic!(
+            "No theme found {} please download a theme and verify config.toml",
+            state.config.theme
+        );
     }
 
     let middleware_stack = ServiceBuilder::new()
