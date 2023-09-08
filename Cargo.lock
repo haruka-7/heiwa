@@ -905,6 +905,7 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "words-count",
  "zip 0.6.6",
  "zip-extensions",
 ]
@@ -2313,6 +2314,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92888ba5573ff080736b3648696b70cafad7d250551175acbaa4e0385b3e1460"
 
 [[package]]
+name = "unicode-blocks"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c84398c527c802fbf222e5145f220382d60f1878e0e6cb4d22a3080949a8ddcd"
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2563,6 +2570,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d09770118a7eb1ccaf4a594a221334119a44a814fcb0d31c5b85e83e97227a97"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "words-count"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c569acc49de9affbc9ace57633381bad6d3e9c648605206d082deb7aa62e8cf5"
+dependencies = [
+ "unicode-blocks",
 ]
 
 [[package]]

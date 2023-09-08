@@ -12,6 +12,7 @@ pub struct Page {
     pub published: bool,
     pub description: String,
     pub thumbnail: String,
+    pub duration: usize,
     pub tags: Vec<String>,
     pub content: String,
 }
@@ -43,6 +44,8 @@ impl Page {
             thumbnail = format!("/{}/{}", thumbnail_url.unwrap().0, thumbnail);
         }
 
+        let duration: usize = words_count::count(parsed_content.content).words * 150;
+
         Page {
             url: format!("/{}", url),
             title: parsed_content.data.as_ref().unwrap()["title"]
@@ -61,6 +64,7 @@ impl Page {
                 .as_string()
                 .unwrap_or("".to_string()),
             thumbnail,
+            duration,
             tags,
             content: html_output,
         }
