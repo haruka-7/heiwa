@@ -32,10 +32,10 @@ impl AppState {
             fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
         let config: Config = Config::new(config_file_content.as_str());
 
-        let templates: String = format!("./themes/{}/src/**/*.html", config.theme.clone());
+        let templates: String = format!("./themes/{}/src/**/*.html", config.theme);
 
         AppState {
-            config: config.clone(),
+            config,
             tera: Tera::new(templates.as_str()).unwrap(),
             tags: get_tags(),
             mk_parser_options: get_markdown_parser_options(),
