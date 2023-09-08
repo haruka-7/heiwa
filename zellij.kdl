@@ -11,7 +11,7 @@ layout {
     tab name="heiwa" focus=true {
         pane split_direction="vertical" {
             pane size="60%" command="nvim" {
-                args "."
+                args "src"
             }
             pane split_direction="horizontal" {
                 pane

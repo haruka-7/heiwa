@@ -1,4 +1,5 @@
 use crate::cli::serve::AppState;
+use crate::utils::handler::redirect_error_page;
 use crate::utils::template::minify_html;
 use axum::extract::State;
 use axum::http::{header, StatusCode};
@@ -28,11 +29,7 @@ pub async fn error(err: BoxError) -> Response {
             .unwrap()
     } else {
         tracing::error!(err);
-        Response::builder()
-            .status(StatusCode::FOUND)
-            .header(header::LOCATION, "/error")
-            .body(Default::default())
-            .unwrap()
+        redirect_error_page()
     }
 }
 
@@ -45,9 +42,5 @@ pub fn panic(err: Box<dyn Any + Send + 'static>) -> Response {
         "Unknown panic message".to_string()
     };
     tracing::error!(details);
-    Response::builder()
-        .status(StatusCode::FOUND)
-        .header(header::LOCATION, "/error")
-        .body(Default::default())
-        .unwrap()
+    redirect_error_page()
 }

@@ -1,4 +1,6 @@
+use crate::configuration::Config;
 use crate::entities::page::Page;
+use crate::handlers;
 use crate::utils::file::read_file;
 use axum::error_handling::HandleErrorLayer;
 use axum::routing::{get, get_service, post};
@@ -7,6 +9,7 @@ use glob::glob;
 use pulldown_cmark::Options;
 use std::fs;
 use std::net::SocketAddr;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 use tera::Tera;
@@ -14,9 +17,6 @@ use tower::ServiceBuilder;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeDir;
-
-use crate::configuration::Config;
-use crate::handlers;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
@@ -43,17 +43,18 @@ impl AppState {
     }
 }
 
-// TODO add impl for AppState and move all related code in a "new" fn
-// TODO add to AppState the tags list and display it on the homepage
-
 pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
+    let state: Arc<AppState> = Arc::new(AppState::new());
+
+    if state.config.theme.is_empty() || !Path::new(&state.config.theme).is_dir() {
+        panic!("No theme found, please download a theme and verify config.toml");
+    }
+
     let middleware_stack = ServiceBuilder::new()
         .layer(CatchPanicLayer::custom(handlers::error::panic))
         .layer(HandleErrorLayer::new(handlers::error::error))
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(timeout.unwrap_or(5)));
-
-    let state: Arc<AppState> = Arc::new(AppState::new());
 
     let services: Router = Router::new().nest_service(
         "/assets/",
