@@ -1,6 +1,7 @@
 use clap::Parser;
 use cli::commands::{Cli, Commands};
 use cli::init::init;
+use cli::page::page;
 use cli::serve::serve;
 
 mod cli;
@@ -20,5 +21,8 @@ async fn main() {
             init(name);
         }
         Commands::Serve { port, timeout } => serve(port, timeout).await,
+        Commands::Page { name } => {
+            page(name);
+        }
     }
 }

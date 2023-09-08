@@ -23,4 +23,10 @@ pub enum Commands {
         #[arg(short, long)]
         timeout: Option<u64>,
     },
+    /// Create a markdown file with empty metadatas
+    Page {
+        /// Markdown extension (.md) is automatically added
+        #[clap(default_value = "newpage", value_name = "PAGE_NAME")]
+        name: String,
+    },
 }
