@@ -8,3 +8,11 @@ pub fn redirect_error_page() -> Response {
         .body(Default::default())
         .unwrap()
 }
+
+pub fn redirect_error_timeout() -> Response {
+    Response::builder()
+        .status(StatusCode::REQUEST_TIMEOUT)
+        .header(header::LOCATION, "/error-page")
+        .body(Default::default())
+        .unwrap()
+}

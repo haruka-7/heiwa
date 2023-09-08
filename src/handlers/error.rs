@@ -1,8 +1,7 @@
 use crate::cli::serve::AppState;
-use crate::utils::handler::redirect_error_page;
+use crate::utils::handler::{redirect_error_page, redirect_error_timeout};
 use crate::utils::template::minify_html;
 use axum::extract::State;
-use axum::http::{header, StatusCode};
 use axum::response::Html;
 use axum::response::Response;
 use axum::BoxError;
@@ -22,11 +21,7 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
 pub async fn error(err: BoxError) -> Response {
     if err.is::<tower::timeout::error::Elapsed>() {
         tracing::error!(err);
-        Response::builder()
-            .status(StatusCode::REQUEST_TIMEOUT)
-            .header(header::LOCATION, "/error-page")
-            .body(Default::default())
-            .unwrap()
+        redirect_error_timeout()
     } else {
         tracing::error!(err);
         redirect_error_page()
