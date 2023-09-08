@@ -44,7 +44,6 @@ impl Page {
             thumbnail = format!("/{}/{}", thumbnail_url.unwrap().0, thumbnail);
         }
 
-        let duration: usize = words_count::count(parsed_content.content).words * 150;
 
         Page {
             url: format!("/{}", url),
@@ -64,7 +63,7 @@ impl Page {
                 .as_string()
                 .unwrap_or("".to_string()),
             thumbnail,
-            duration,
+            duration: words_count::count(parsed_content.content).words / 130,
             tags,
             content: html_output,
         }
