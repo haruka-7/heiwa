@@ -44,7 +44,6 @@ impl Page {
             thumbnail = format!("/{}/{}", thumbnail_url.unwrap().0, thumbnail);
         }
 
-
         Page {
             url: format!("/{}", url),
             title: parsed_content.data.as_ref().unwrap()["title"]
