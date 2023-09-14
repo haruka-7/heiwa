@@ -11,7 +11,6 @@ pub struct Page {
     pub date: String,
     pub published: bool,
     pub description: String,
-    pub thumbnail: String,
     pub duration: usize,
     pub tags: Vec<String>,
     pub content: String,
@@ -36,14 +35,6 @@ impl Page {
             }
         }
 
-        let mut thumbnail: String = parsed_content.data.as_ref().unwrap()["thumbnail"]
-            .as_string()
-            .unwrap_or("".to_string());
-        let thumbnail_url: Option<(&str, &str)> = url.rsplit_once('/');
-        if !thumbnail.is_empty() && thumbnail_url.is_some() {
-            thumbnail = format!("/{}/{}", thumbnail_url.unwrap().0, thumbnail);
-        }
-
         Page {
             url: format!("/{}", url),
             title: parsed_content.data.as_ref().unwrap()["title"]
@@ -61,7 +52,6 @@ impl Page {
             description: parsed_content.data.as_ref().unwrap()["description"]
                 .as_string()
                 .unwrap_or("".to_string()),
-            thumbnail,
             duration: words_count::count(parsed_content.content).words / 130,
             tags,
             content: html_output,
