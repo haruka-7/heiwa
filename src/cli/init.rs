@@ -13,7 +13,7 @@ pub fn init(project_name: String) {
     config_file.write_all(config_string.as_bytes()).unwrap();
 
     let mut home_file: File = File::create(format!("{}/pages/home.md", project_name)).unwrap();
-    let content = b"---\ntitle: Home\nauthor:\ndate:\npublished:\ndescription: Personal blog\ntags:\n---\n# Welcome { .text-3xl }\nYou can edit this header by modifiyng the file `home.md`";
+    let content = b"---\ntitle: Home\nauthor:\ndate:\npublished: false\ndescription: Personal blog\ntags:\n---\n# Welcome\nYou can edit this header by modifiyng the file `home.md`";
     home_file.write_all(content).unwrap();
 
     println!(
