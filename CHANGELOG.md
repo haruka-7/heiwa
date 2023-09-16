@@ -3,6 +3,8 @@
 ## 0.1.2 - DEV
 
 - Remove pages thumbnails
+- Fix sitemap.xml generation
+- Crates update
 
 ## 0.1.1 - 2023-09-08
 
