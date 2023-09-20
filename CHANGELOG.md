@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.2 - DEV
+## 0.1.2 - 2023-09-16
 
 - Remove pages thumbnails
 - Fix sitemap.xml generation
