@@ -56,9 +56,11 @@ pub async fn show(
             context.insert("page_nb", &page_nb.to_string());
         }
         None => {
-            pages.truncate(state.config.articles_per_page);
-            context.insert("previous", &true);
-            context.insert("page_nb", "1");
+            if pages.len() > state.config.articles_per_page {
+                pages.truncate(state.config.articles_per_page);
+                context.insert("previous", &true);
+                context.insert("page_nb", "1");
+            }
         }
     }
     context.insert("pages", &pages);
