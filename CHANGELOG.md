@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 - yyyy-mm-dd
+
+- Fix heiwa init and heiwa page with special characters in title and description metadatas
+
 ## 0.1.2 - 2023-09-16
 
 - Remove pages thumbnails
