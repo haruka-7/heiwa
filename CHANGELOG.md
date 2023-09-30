@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4 - yyyy-mm-dd
+
+- Dependencies update
+
 ## 0.1.3 - 2023-09-29
 
 - Fix pagination "previous" link is displayed even when there is no more pages #9
