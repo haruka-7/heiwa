@@ -16,6 +16,9 @@ pub enum Commands {
     },
     /// Launch the webserver on localhost to access the website
     Serve {
+        /// Path to the Heiwa website root directory
+        #[clap(default_value = ".")]
+        path: String,
         /// Define port number to use whith the builtin server
         #[arg(short, long)]
         port: Option<u16>,

@@ -17,14 +17,14 @@ pub async fn show(
     context.insert("site_title", &state.config.title);
     context.insert("tags", &state.tags);
 
-    let file_content: String = read_file(&"pages/home.md".to_string());
+    let file_content: String = read_file(&format!("{}/pages/home.md", state.path));
     let home_page: Page = Page::new("/".to_string(), file_content, state.mk_parser_options);
     context.insert("meta_title", &home_page.title);
     context.insert("meta_description", &home_page.description);
     context.insert("home_content", &home_page.content);
 
     let mut pages: Vec<Page> = Vec::new();
-    for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
+    for entry in glob(&format!("{}/pages/**/*.md", state.path)).expect("Failed to read glob pattern") {
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();

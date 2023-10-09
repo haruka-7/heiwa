@@ -11,10 +11,10 @@ use std::sync::Arc;
 use tera::Context;
 use tokio_util::io::ReaderStream;
 
-pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) -> Response {
-    if path.contains("medias/") {
-        let file_path: String = format!("./pages/{}", path);
-        let pathbuf = PathBuf::from(&path);
+pub async fn show(Path(file_path): Path<String>, State(state): State<Arc<AppState>>) -> Response {
+    if file_path.contains("medias/") {
+        let file_path: String = format!("{}/pages/{}", state.path, file_path);
+        let pathbuf = PathBuf::from(&file_path);
         let filename = pathbuf.file_name().unwrap();
         let file = tokio::fs::File::open(&file_path).await.unwrap();
         let content_type = mime_guess::from_path(&file_path).first_raw().unwrap();
@@ -30,8 +30,8 @@ pub async fn show(Path(path): Path<String>, State(state): State<Arc<AppState>>) 
         ];
         (headers, body).into_response()
     } else {
-        let content_file: String = read_file(&format!("./pages/{}.md", path));
-        let page: Page = Page::new(path.clone(), content_file, state.mk_parser_options);
+        let content_file: String = read_file(&format!("{}/pages/{}.md", state.path, file_path));
+        let page: Page = Page::new(file_path.clone(), content_file, state.mk_parser_options);
 
         let mut context = Context::new();
         context.insert("meta_title", &page.title);

@@ -20,6 +20,7 @@ use tower_http::services::ServeDir;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
+    pub path: String,
     pub config: Config,
     pub tera: Tera,
     pub tags: Vec<String>,
@@ -27,27 +28,29 @@ pub struct AppState {
 }
 
 impl AppState {
-    fn new() -> Self {
+    fn new(path: String) -> Self {
         let config_file_content: String =
-            fs::read_to_string("./config.toml").expect("Should read file ./config.toml");
+            fs::read_to_string(&format!("{}/config.toml", path)).expect(&format!("Should read file {}/config.toml", path));
         let config: Config = Config::new(config_file_content.as_str());
-
-        let templates: String = format!("./themes/{}/src/**/*.html", config.theme);
+        let templates: String = format!("{}/themes/{}/src/**/*.html", path, config.theme);
+        let tags = get_tags(&path);
 
         AppState {
+            path,
             config,
             tera: Tera::new(templates.as_str()).unwrap(),
-            tags: get_tags(),
+            tags,
             mk_parser_options: get_markdown_parser_options(),
         }
     }
 }
 
-pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
-    let state: Arc<AppState> = Arc::new(AppState::new());
+pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
+    let state: Arc<AppState> = Arc::new(AppState::new(path));
+    let theme_path: String = format!("{}/themes/{}", state.path, state.config.theme);
 
     if state.config.theme.is_empty()
-        || !Path::new(&("./themes/".to_owned() + state.config.theme.as_str())).is_dir()
+        || !Path::new(&theme_path).is_dir()
     {
         panic!(
             "No theme found {} please download a theme and verify config.toml",
@@ -64,8 +67,8 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
     let services: Router = Router::new().nest_service(
         "/assets/",
         get_service(ServeDir::new(format!(
-            "./themes/{}/assets",
-            state.config.theme
+            "{}/assets",
+            theme_path
         ))),
     );
 
@@ -92,9 +95,9 @@ pub async fn serve(port: Option<u16>, timeout: Option<u64>) {
         .unwrap();
 }
 
-fn get_tags() -> Vec<String> {
+fn get_tags(project_path: &str) -> Vec<String> {
     let mut tags: Vec<String> = Vec::new();
-    for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
+    for entry in glob(&format!("{}/pages/**/*.md", project_path)).expect("Failed to read glob pattern") {
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();

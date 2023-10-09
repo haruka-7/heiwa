@@ -20,7 +20,7 @@ async fn main() {
         Commands::Init { name } => {
             init(name);
         }
-        Commands::Serve { port, timeout } => serve(port, timeout).await,
+        Commands::Serve { path, port, timeout } => serve(path, port, timeout).await,
         Commands::Page { name } => {
             page(name);
         }
