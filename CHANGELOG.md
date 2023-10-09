@@ -3,6 +3,7 @@
 ## 0.1.4 - yyyy-mm-dd
 
 - Dependencies update
+- Add a systemd service example file
 
 ## 0.1.3 - 2023-09-29
 

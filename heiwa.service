@@ -1,0 +1,11 @@
+[Unit]
+Description=Heiwa service
+
+[Service]
+ExecStart=cd /var/www && /usr/local/bin/heiwa serve
+Restart=always
+KillMode=process
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target
