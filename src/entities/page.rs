@@ -28,7 +28,7 @@ impl Page {
         let mut tags: Vec<String> = Vec::new();
         let parsed_tags = parsed_content.data.as_ref().unwrap()["tags"]
             .as_vec()
-            .unwrap_or(vec![]);
+            .unwrap_or_default();
         if !parsed_tags.is_empty() {
             for tag in parsed_tags {
                 tags.push(tag.as_string().unwrap().to_lowercase());

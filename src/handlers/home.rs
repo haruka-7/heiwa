@@ -24,13 +24,21 @@ pub async fn show(
     context.insert("home_content", &home_page.content);
 
     let mut pages: Vec<Page> = Vec::new();
-    for entry in glob(&format!("{}/pages/**/*.md", state.path)).expect("Failed to read glob pattern") {
+    for entry in
+        glob(&format!("{}/pages/**/*.md", state.path)).expect("Failed to read glob pattern")
+    {
         match entry {
             Ok(path) => {
-                let file_path: String = path.into_os_string().into_string().unwrap();
-                if file_path != "pages/home.md" {
-                    let file_content: String = read_file(&file_path);
-                    let url: String = file_path.replace("pages/", "").replace(".md", "");
+                let file_name: String = path
+                    .file_name()
+                    .unwrap()
+                    .to_os_string()
+                    .into_string()
+                    .unwrap();
+                if file_name != "home.md" {
+                    let file_content: String =
+                        read_file(&path.into_os_string().into_string().unwrap());
+                    let url: String = file_name.replace(".md", "");
                     let page: Page = Page::new(url, file_content, state.mk_parser_options);
                     if page.published && !page.title.is_empty() {
                         pages.push(page);

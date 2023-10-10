@@ -12,12 +12,19 @@ use std::sync::Arc;
 
 pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Response {
     let mut pages: Vec<Page> = Vec::new();
-    for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
+    for entry in
+        glob(&format!("{}/pages/**/*.md", state.path)).expect("Failed to read glob pattern")
+    {
         match entry {
             Ok(path) => {
-                let file_path: String = path.into_os_string().into_string().unwrap();
-                let content_file: String = read_file(&file_path);
-                let url: String = file_path.replace("pages/", "").replace(".md", "");
+                let file_name: String = path
+                    .file_name()
+                    .unwrap()
+                    .to_os_string()
+                    .into_string()
+                    .unwrap();
+                let content_file: String = read_file(&path.into_os_string().into_string().unwrap());
+                let url: String = file_name.replace(".md", "");
                 let page: Page = Page::new(url, content_file, state.mk_parser_options);
                 if page.published {
                     pages.push(page);
@@ -43,14 +50,18 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
             loc: format!("https://{}{}", host, page.url).parse().unwrap(),
             changefreq: Some(ChangeFreq::Weekly),
             priority: Some(1.0),
-            lastmod: Some(
-                Utc.from_utc_datetime(
-                    &NaiveDate::parse_from_str(page.date.as_str(), "%Y/%m/%d")
-                        .unwrap()
-                        .and_hms_opt(0, 0, 0)
-                        .unwrap(),
-                ),
-            ),
+            lastmod: if !page.date.is_empty() {
+                Some(
+                    Utc.from_utc_datetime(
+                        &NaiveDate::parse_from_str(page.date.as_str(), "%Y/%m/%d")
+                            .unwrap()
+                            .and_hms_opt(0, 0, 0)
+                            .unwrap(),
+                    ),
+                )
+            } else {
+                None
+            },
         });
     }
 

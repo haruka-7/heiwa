@@ -1,7 +1,9 @@
 # Changelog
 
-## 0.1.4 - yyyy-mm-dd
+## 0.1.4 - 2023-10-06
 
+- Add a path param to the serve command
+- Fix sitemap generation for pages whithout date
 - Dependencies update
 - Add a systemd service example file
 

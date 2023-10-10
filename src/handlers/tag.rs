@@ -24,12 +24,19 @@ pub async fn show(
     context.insert("tag", &tag);
 
     let mut pages: Vec<Page> = Vec::new();
-    for entry in glob("./pages/**/*.md").expect("Failed to read glob pattern") {
+    for entry in
+        glob(&format!("{}/pages/**/*.md", state.path)).expect("Failed to read glob pattern")
+    {
         match entry {
             Ok(path) => {
-                let file_path: String = path.into_os_string().into_string().unwrap();
-                let file_content: String = read_file(&file_path);
-                let url: String = file_path.replace("pages/", "").replace(".md", "");
+                let file_name: String = path
+                    .file_name()
+                    .unwrap()
+                    .to_os_string()
+                    .into_string()
+                    .unwrap();
+                let file_content: String = read_file(&path.into_os_string().into_string().unwrap());
+                let url: String = file_name.replace(".md", "");
                 let page: Page = Page::new(url, file_content, state.mk_parser_options);
                 if page.published && page.tags.contains(&tag) {
                     pages.push(page);

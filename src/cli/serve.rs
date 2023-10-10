@@ -29,8 +29,8 @@ pub struct AppState {
 
 impl AppState {
     fn new(path: String) -> Self {
-        let config_file_content: String =
-            fs::read_to_string(&format!("{}/config.toml", path)).expect(&format!("Should read file {}/config.toml", path));
+        let config_file_content: String = fs::read_to_string(format!("{}/config.toml", path))
+            .unwrap_or_else(|_| panic!("Should read file {}/config.toml", path));
         let config: Config = Config::new(config_file_content.as_str());
         let templates: String = format!("{}/themes/{}/src/**/*.html", path, config.theme);
         let tags = get_tags(&path);
@@ -49,9 +49,7 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
     let state: Arc<AppState> = Arc::new(AppState::new(path));
     let theme_path: String = format!("{}/themes/{}", state.path, state.config.theme);
 
-    if state.config.theme.is_empty()
-        || !Path::new(&theme_path).is_dir()
-    {
+    if state.config.theme.is_empty() || !Path::new(&theme_path).is_dir() {
         panic!(
             "No theme found {} please download a theme and verify config.toml",
             state.config.theme
@@ -66,10 +64,7 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
 
     let services: Router = Router::new().nest_service(
         "/assets/",
-        get_service(ServeDir::new(format!(
-            "{}/assets",
-            theme_path
-        ))),
+        get_service(ServeDir::new(format!("{}/assets", theme_path))),
     );
 
     let routes: Router = Router::new()
@@ -97,7 +92,9 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
 
 fn get_tags(project_path: &str) -> Vec<String> {
     let mut tags: Vec<String> = Vec::new();
-    for entry in glob(&format!("{}/pages/**/*.md", project_path)).expect("Failed to read glob pattern") {
+    for entry in
+        glob(&format!("{}/pages/**/*.md", project_path)).expect("Failed to read glob pattern")
+    {
         match entry {
             Ok(path) => {
                 let file_path: String = path.into_os_string().into_string().unwrap();
