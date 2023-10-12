@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.1.5 - 2023-10-dd
+## 0.1.5 - 2023-10-12
 
+- Fix pages url with subdirectories
 - Fix systemd template
 
 ## 0.1.4 - 2023-10-06
