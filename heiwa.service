@@ -2,7 +2,7 @@
 Description=Heiwa service
 
 [Service]
-ExecStart=cd /var/www && /usr/local/bin/heiwa serve
+ExecStart=/usr/local/bin/heiwa serve /var/www/my_website
 Restart=always
 KillMode=process
 RestartSec=2s

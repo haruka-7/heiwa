@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5 - 2023-10-dd
+
+- Fix systemd template
+
 ## 0.1.4 - 2023-10-06
 
 - Add a path param to the serve command
