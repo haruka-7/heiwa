@@ -3,7 +3,7 @@ name = "heiwa"
 description = "A minimalist flat file CMS"
 license = "GPL-3.0-or-later"
 repository = "https://git.sr.ht/~hidrile/heiwa"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 
 [dependencies]

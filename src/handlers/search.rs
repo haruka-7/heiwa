@@ -34,7 +34,11 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
                     .to_lowercase()
                     .contains(&search.keywords.to_lowercase())
                 {
-                    let url: String = file_path.rsplit("/pages/").nth(0).unwrap().replace(".md", "");
+                    let url: String = file_path
+                        .rsplit("/pages/")
+                        .next()
+                        .unwrap()
+                        .replace(".md", "");
                     let page: Page = Page::new(url, file_content, state.mk_parser_options);
                     if page.published {
                         pages.push(page);

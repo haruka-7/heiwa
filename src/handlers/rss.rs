@@ -25,7 +25,11 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
                 if file_name != "home.md" {
                     let file_path: String = path.into_os_string().into_string().unwrap();
                     let file_content: String = read_file(&file_path);
-                    let url: String = file_path.rsplit("/pages/").nth(0).unwrap().replace(".md", "");
+                    let url: String = file_path
+                        .rsplit("/pages/")
+                        .next()
+                        .unwrap()
+                        .replace(".md", "");
                     let page: Page = Page::new(url, file_content, state.mk_parser_options);
                     if page.published {
                         pages.push(page);
