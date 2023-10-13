@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.6 - 2023-10-13
+
+- Fix sitemap missing attributes to the root url
+- Fix sitemap exclude home.md
+
 ## 0.1.5 - 2023-10-12
 
 - Fix pages url with subdirectories

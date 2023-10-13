@@ -7,7 +7,7 @@ use axum::http::header::{self};
 use axum::response::{IntoResponse, Response};
 use chrono::prelude::*;
 use glob::glob;
-use sitewriter::{ChangeFreq, UrlEntry, UrlEntryBuilder};
+use sitewriter::{ChangeFreq, UrlEntry};
 use std::sync::Arc;
 
 pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Response {
@@ -17,16 +17,25 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
     {
         match entry {
             Ok(path) => {
-                let file_path: String = path.into_os_string().into_string().unwrap();
-                let file_content: String = read_file(&file_path);
-                let url: String = file_path
-                    .rsplit("/pages/")
-                    .next()
+                if path
+                    .file_name()
                     .unwrap()
-                    .replace(".md", "");
-                let page: Page = Page::new(url, file_content, state.mk_parser_options);
-                if page.published {
-                    pages.push(page);
+                    .to_os_string()
+                    .into_string()
+                    .unwrap()
+                    != "home.md"
+                {
+                    let file_path: String = path.into_os_string().into_string().unwrap();
+                    let file_content: String = read_file(&file_path);
+                    let url: String = file_path
+                        .rsplit("/pages/")
+                        .next()
+                        .unwrap()
+                        .replace(".md", "");
+                    let page: Page = Page::new(url, file_content, state.mk_parser_options);
+                    if page.published {
+                        pages.push(page);
+                    }
                 }
             }
             Err(e) => {
@@ -37,12 +46,12 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
 
     let mut urls = Vec::new();
 
-    urls.push(
-        UrlEntryBuilder::default()
-            .loc(format!("https://{}", host).parse().unwrap())
-            .build()
-            .unwrap(),
-    );
+    urls.push(UrlEntry {
+        loc: format!("https://{}", host).parse().unwrap(),
+        changefreq: Some(ChangeFreq::Weekly),
+        priority: Some(1.0),
+        lastmod: None,
+    });
 
     for page in pages {
         urls.push(UrlEntry {
