@@ -5,9 +5,7 @@ use axum::extract::{Host, State};
 use axum::http::header::HeaderMap;
 use axum::http::header::{self};
 use axum::response::{IntoResponse, Response};
-use chrono::prelude::*;
 use glob::glob;
-use sitewriter::{ChangeFreq, UrlEntry};
 use std::sync::Arc;
 
 pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Response {
@@ -44,37 +42,12 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
         }
     }
 
-    let mut urls = Vec::new();
-
-    urls.push(UrlEntry {
-        loc: format!("https://{}", host).parse().unwrap(),
-        changefreq: Some(ChangeFreq::Weekly),
-        priority: Some(1.0),
-        lastmod: None,
-    });
-
+    let mut body = String::new();
     for page in pages {
-        urls.push(UrlEntry {
-            loc: format!("https://{}{}", host, page.url).parse().unwrap(),
-            changefreq: Some(ChangeFreq::Weekly),
-            priority: Some(1.0),
-            lastmod: if !page.date.is_empty() {
-                Some(
-                    Utc.from_utc_datetime(
-                        &NaiveDate::parse_from_str(page.date.as_str(), "%Y/%m/%d")
-                            .unwrap()
-                            .and_hms_opt(0, 0, 0)
-                            .unwrap(),
-                    ),
-                )
-            } else {
-                None
-            },
-        });
+        body += &format!("https://{}{}\n", host, page.url);
     }
 
-    let body: String = sitewriter::generate_str(&urls);
     let mut headers = HeaderMap::new();
-    headers.insert(header::CONTENT_TYPE, "application/xml".parse().unwrap());
+    headers.insert(header::CONTENT_TYPE, "text/plain".parse().unwrap());
     (headers, body).into_response()
 }

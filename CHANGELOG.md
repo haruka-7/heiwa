@@ -2,6 +2,7 @@
 
 ## 0.1.7 - yyyy-mm-dd
 
+- Change sitemap format from xml to txt
 - Fix favicon.ico 404 error
 - Dependencies update
 

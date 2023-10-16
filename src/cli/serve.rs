@@ -78,7 +78,7 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
     let routes: Router = Router::new()
         .route("/", get(handlers::home::show))
         .route("/error", get(handlers::error::show))
-        .route("/sitemap.xml", get(handlers::sitemap::show))
+        .route("/sitemap.txt", get(handlers::sitemap::show))
         .route("/rss", get(handlers::rss::show))
         .route("/search", post(handlers::search::show))
         .route("/tags/:tag", get(handlers::tag::show))
