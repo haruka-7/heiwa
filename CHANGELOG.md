@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.7 - yyyy-mm-dd
+## 0.1.7 - 2023-10-16
 
 - Change sitemap format from xml to txt
 - Fix favicon.ico 404 error
