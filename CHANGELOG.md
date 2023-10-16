@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8 - yyyy-mm-dd
+
+- Remove unused dependency sitewriter (sitemap)
+
 ## 0.1.7 - 2023-10-16
 
 - Change sitemap format from xml to txt
