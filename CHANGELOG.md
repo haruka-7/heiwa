@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7 - yyyy-mm-dd
+
+- Fix favicon.ico 404 error
+- Dependencies update
+
 ## 0.1.6 - 2023-10-13
 
 - Fix sitemap missing attributes to the root url

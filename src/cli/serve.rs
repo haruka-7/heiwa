@@ -62,10 +62,18 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
         .layer(CompressionLayer::new())
         .timeout(Duration::from_secs(timeout.unwrap_or(5)));
 
-    let services: Router = Router::new().nest_service(
-        "/assets/",
-        get_service(ServeDir::new(format!("{}/assets", theme_path))),
-    );
+    let services: Router = Router::new()
+        .nest_service(
+            "/assets/",
+            get_service(ServeDir::new(format!("{}/assets", theme_path))),
+        )
+        .nest_service(
+            "/favicon.ico",
+            get_service(ServeDir::new(format!(
+                "{}/assets/favicon/favicon.ico",
+                theme_path
+            ))),
+        );
 
     let routes: Router = Router::new()
         .route("/", get(handlers::home::show))
