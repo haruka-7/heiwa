@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.1.8 - yyyy-mm-dd
+## 0.1.8 - 2023-10-17
 
+- Add robots.txt route
 - Remove unused dependency sitewriter (sitemap)
 
 ## 0.1.7 - 2023-10-16

@@ -73,6 +73,10 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
                 "{}/assets/favicon/favicon.ico",
                 theme_path
             ))),
+        )
+        .nest_service(
+            "/robots.txt",
+            get_service(ServeDir::new(format!("{}/robots.txt", state.path))),
         );
 
     let routes: Router = Router::new()
