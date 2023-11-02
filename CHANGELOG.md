@@ -4,6 +4,7 @@
 
 - Add mastodon_verification_link option to config.toml #34
 - Display Heiwa version at startup #30
+- Remove the markdown h1 in home.md #23
 
 ## 0.1.8 - 2023-10-17
 
