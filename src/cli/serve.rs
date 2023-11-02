@@ -95,6 +95,7 @@ pub async fn serve(path: String, port: Option<u16>, timeout: Option<u64>) {
         .merge(routes)
         .layer(middleware_stack);
 
+    tracing::info!("Starting Heiwa {}", env!("CARGO_PKG_VERSION"));
     tracing::info!("Listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

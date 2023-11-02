@@ -2,7 +2,8 @@
 
 ## 0.1.9 - 2023-11-02
 
-- Add mastodon_verification_link option to config.toml
+- Add mastodon_verification_link option to config.toml #34
+- Display Heiwa version at startup #30
 
 ## 0.1.8 - 2023-10-17
 
