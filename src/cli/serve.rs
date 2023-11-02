@@ -33,14 +33,12 @@ impl AppState {
             .unwrap_or_else(|_| panic!("Should read file {}/config.toml", path));
         let config: Config = Config::new(config_file_content.as_str());
         let templates: String = format!("{}/themes/{}/src/**/*.html", path, config.theme);
-        let mut tera: Tera = Tera::new(templates.as_str()).unwrap();
-        tera.autoescape_on(vec![]);
         let tags = get_tags(&path);
 
         AppState {
             path,
             config,
-            tera,
+            tera: Tera::new(templates.as_str()).unwrap(),
             tags,
             mk_parser_options: get_markdown_parser_options(),
         }

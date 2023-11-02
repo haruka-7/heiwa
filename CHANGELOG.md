@@ -1,9 +1,5 @@
 # Changelog
 
-## 0.1.12 - 2023-11-02
-
-- Disable Tera auto-escaping
-
 ## 0.1.11 - 2023-11-02
 
 - Remove HTML minification
