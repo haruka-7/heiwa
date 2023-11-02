@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11 - 2023-11-02
+
+- Remove HTML minification
+
 ## 0.1.10 - 2023-11-02
 
 - Fix error with mastodon verif link missing on other pages than homepage

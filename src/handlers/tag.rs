@@ -5,7 +5,6 @@ use crate::utils::file::read_file;
 use axum::extract::{Path, Query, State};
 use axum::response::Html;
 use glob::glob;
-use minify::html::minify;
 use std::sync::Arc;
 use tera::Context;
 
@@ -71,6 +70,5 @@ pub async fn show(
     }
     context.insert("pages", &pages);
 
-    let html = state.tera.render("tag.html", &context).unwrap();
-    Html(minify(&html))
+    Html(state.tera.render("tag.html", &context).unwrap())
 }

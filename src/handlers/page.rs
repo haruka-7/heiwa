@@ -5,7 +5,6 @@ use axum::body::StreamBody;
 use axum::extract::{Path, State};
 use axum::http::header;
 use axum::response::{Html, IntoResponse, Response};
-use minify::html::minify;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tera::Context;
@@ -43,7 +42,6 @@ pub async fn show(Path(file_path): Path<String>, State(state): State<Arc<AppStat
         );
         context.insert("page", &page);
 
-        let html = state.tera.render("page.html", &context).unwrap();
-        Html(minify(&html)).into_response()
+        Html(state.tera.render("page.html", &context).unwrap()).into_response()
     }
 }

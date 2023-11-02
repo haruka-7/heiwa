@@ -4,7 +4,6 @@ use axum::extract::State;
 use axum::response::Html;
 use axum::response::Response;
 use axum::BoxError;
-use minify::html::minify;
 use std::any::Any;
 use std::sync::Arc;
 use tera::Context;
@@ -18,8 +17,7 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
         "mastodon_verification_link",
         &state.config.mastodon_verification_link,
     );
-    let html = state.tera.render("error.html", &context).unwrap();
-    Html(minify(&html))
+    Html(state.tera.render("error.html", &context).unwrap())
 }
 
 pub async fn error(err: BoxError) -> Response {

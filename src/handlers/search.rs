@@ -5,7 +5,6 @@ use axum::extract::State;
 use axum::response::Html;
 use axum::Form;
 use glob::glob;
-use minify::html::minify;
 use serde::Deserialize;
 use std::sync::Arc;
 use tera::Context;
@@ -58,7 +57,5 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
     pages.sort_by(|a, b| b.date.cmp(&a.date));
     context.insert("pages", &pages);
 
-    let html = state.tera.render("search.html", &context).unwrap();
-
-    Html(minify(&html))
+    Html(state.tera.render("search.html", &context).unwrap())
 }
