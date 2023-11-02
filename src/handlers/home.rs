@@ -15,6 +15,10 @@ pub async fn show(
 ) -> Html<String> {
     let mut context = Context::new();
     context.insert("site_title", &state.config.title);
+    context.insert(
+        "mastodon_verification_link",
+        &state.config.mastodon_verification_link,
+    );
     context.insert("tags", &state.tags);
 
     let file_content: String = read_file(&format!("{}/pages/home.md", state.path));

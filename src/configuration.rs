@@ -6,6 +6,7 @@ pub struct Config {
     pub theme: String,
     pub comments: bool,
     pub articles_per_page: usize,
+    pub mastodon_verification_link: String,
 }
 
 impl Config {
@@ -19,6 +20,7 @@ impl Config {
             theme: "shizen".to_string(),
             comments: true,
             articles_per_page: 10,
+            mastodon_verification_link: "".to_string(),
         }
     }
 }

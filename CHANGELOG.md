@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9 - 2023-11-02
+
+- Add mastodon_verification_link option to config.toml
+
 ## 0.1.8 - 2023-10-17
 
 - Add robots.txt route
