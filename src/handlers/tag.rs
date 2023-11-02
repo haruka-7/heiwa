@@ -2,10 +2,10 @@ use crate::cli::serve::AppState;
 use crate::entities::page::Page;
 use crate::entities::pagination::Pagination;
 use crate::utils::file::read_file;
-use crate::utils::template::minify_html;
 use axum::extract::{Path, Query, State};
 use axum::response::Html;
 use glob::glob;
+use minify::html::minify;
 use std::sync::Arc;
 use tera::Context;
 
@@ -21,6 +21,10 @@ pub async fn show(
         &format!("Articles with the tag {}", tag.clone()),
     );
     context.insert("site_title", state.config.title.as_str());
+    context.insert(
+        "mastodon_verification_link",
+        &state.config.mastodon_verification_link,
+    );
     context.insert("tag", &tag);
 
     let mut pages: Vec<Page> = Vec::new();
@@ -68,5 +72,5 @@ pub async fn show(
     context.insert("pages", &pages);
 
     let html = state.tera.render("tag.html", &context).unwrap();
-    Html(minify_html(html))
+    Html(minify(&html))
 }

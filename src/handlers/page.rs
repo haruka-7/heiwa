@@ -1,11 +1,11 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
 use crate::utils::file::read_file;
-use crate::utils::template::minify_html;
 use axum::body::StreamBody;
 use axum::extract::{Path, State};
 use axum::http::header;
 use axum::response::{Html, IntoResponse, Response};
+use minify::html::minify;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tera::Context;
@@ -37,9 +37,13 @@ pub async fn show(Path(file_path): Path<String>, State(state): State<Arc<AppStat
         context.insert("meta_title", &page.title);
         context.insert("meta_description", &page.description);
         context.insert("site_title", state.config.title.as_str());
+        context.insert(
+            "mastodon_verification_link",
+            &state.config.mastodon_verification_link,
+        );
         context.insert("page", &page);
 
         let html = state.tera.render("page.html", &context).unwrap();
-        Html(minify_html(html)).into_response()
+        Html(minify(&html)).into_response()
     }
 }

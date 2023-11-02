@@ -1,11 +1,11 @@
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
 use crate::utils::file::read_file;
-use crate::utils::template::minify_html;
 use axum::extract::State;
 use axum::response::Html;
 use axum::Form;
 use glob::glob;
+use minify::html::minify;
 use serde::Deserialize;
 use std::sync::Arc;
 use tera::Context;
@@ -20,6 +20,10 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
     context.insert("meta_title", "Search");
     context.insert("meta_description", "Search page");
     context.insert("site_title", &state.config.title);
+    context.insert(
+        "mastodon_verification_link",
+        &state.config.mastodon_verification_link,
+    );
     context.insert("search", &search.keywords);
 
     let mut pages: Vec<Page> = Vec::new();
@@ -56,5 +60,5 @@ pub async fn show(State(state): State<Arc<AppState>>, Form(search): Form<Search>
 
     let html = state.tera.render("search.html", &context).unwrap();
 
-    Html(minify_html(html))
+    Html(minify(&html))
 }

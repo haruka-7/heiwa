@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.10 - 2023-11-02
+
+- Fix error with mastodon verif link missing on other pages than homepage
+- Replace html minify librairie 
+
 ## 0.1.9 - 2023-11-02
 
 - Add mastodon_verification_link option to config.toml #34

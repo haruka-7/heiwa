@@ -1,10 +1,10 @@
 use crate::cli::serve::AppState;
 use crate::utils::handler::{redirect_error_page, redirect_error_timeout};
-use crate::utils::template::minify_html;
 use axum::extract::State;
 use axum::response::Html;
 use axum::response::Response;
 use axum::BoxError;
+use minify::html::minify;
 use std::any::Any;
 use std::sync::Arc;
 use tera::Context;
@@ -14,8 +14,12 @@ pub async fn show(State(state): State<Arc<AppState>>) -> Html<String> {
     context.insert("meta_title", "Error");
     context.insert("meta_description", "Error page");
     context.insert("site_title", state.config.title.as_str());
+    context.insert(
+        "mastodon_verification_link",
+        &state.config.mastodon_verification_link,
+    );
     let html = state.tera.render("error.html", &context).unwrap();
-    Html(minify_html(html))
+    Html(minify(&html))
 }
 
 pub async fn error(err: BoxError) -> Response {
