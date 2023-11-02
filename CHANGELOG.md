@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.13 - yyyy-mm-dd
+
+- Enable Tera auto-escaping
+
+## 0.1.12 - 2023-11-02
+
+- Remove Tera auto-escaping
+
 ## 0.1.11 - 2023-11-02
 
 - Remove HTML minification
