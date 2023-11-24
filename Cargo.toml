@@ -2,8 +2,8 @@
 name = "heiwa"
 description = "A minimalist flat file CMS"
 license = "GPL-3.0-or-later"
-repository = "https://git.sr.ht/~hidrile/heiwa"
-version = "0.1.13"
+repository = "https://codeberg.org/haruka/heiwa"
+version = "0.1.14"
 edition = "2021"
 
 [dependencies]
