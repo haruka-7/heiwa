@@ -2,7 +2,9 @@
 
 ## 0.1.13 - yyyy-mm-dd
 
-- Enable Tera auto-escaping
+- ADD RSS for tags
+- FIX Enable Tera auto-escaping
+- OTHER cargo update
 
 ## 0.1.12 - 2023-11-02
 

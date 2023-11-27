@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use crate::cli::serve::AppState;
 use crate::entities::page::Page;
 use crate::utils::file::read_file;
-use axum::extract::{Host, State};
+use axum::extract::{Host, Query, State};
 use axum::http::header::HeaderMap;
 use axum::http::header::{self};
 use axum::response::{IntoResponse, Response};
@@ -9,7 +10,7 @@ use glob::glob;
 use rss::{ChannelBuilder, Item, ItemBuilder};
 use std::sync::Arc;
 
-pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Response {
+pub async fn show(Host(host): Host, Query(params): Query<HashMap<String, String>>, State(state): State<Arc<AppState>>) -> Response {
     let mut pages: Vec<Page> = Vec::new();
     for entry in
         glob(&format!("{}/pages/**/*.md", state.path)).expect("Failed to read glob pattern")
@@ -32,7 +33,16 @@ pub async fn show(Host(host): Host, State(state): State<Arc<AppState>>) -> Respo
                         .replace(".md", "");
                     let page: Page = Page::new(url, file_content, state.mk_parser_options);
                     if page.published {
-                        pages.push(page);
+                        match params.get(&"tag".to_string()) {
+                            Some(tag) => {
+                                if page.tags.contains(tag) {
+                                    pages.push(page);
+                                }
+                            }
+                            None => {
+                                pages.push(page);
+                            }
+                        }
                     }
                 }
             }
