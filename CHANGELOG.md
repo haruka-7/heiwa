@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.13 - yyyy-mm-dd
+## 0.1.13 - 2023/11/02
 
 - ADD RSS for tags
 - FIX Enable Tera auto-escaping
