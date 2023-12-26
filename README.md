@@ -6,9 +6,8 @@ A minimalist flat-file CMS, by Pedro CADETE aka Hidrile
 > 
 > Bugs may occurs and there is still a lot of work to do on optimizing the code.
 
-
-[![builds.sr.ht status](https://builds.sr.ht/~hidrile/heiwa.svg)](https://builds.sr.ht/~hidrile/heiwa?)
-[![licence GPL](https://img.shields.io/badge/license-GPL_3.0-blue.svg?style=flat)](https://git.sr.ht/~hidrile/heiwa/tree/main/item/LICENCE)
+![Crates.io Version](https://img.shields.io/crates/v/heiwa?color=green&link=https%3A%2F%2Fcrates.io%2Fcrates%2Fheiwa)
+![Crates.io License](https://img.shields.io/crates/l/heiwa?color=purple&link=https%3A%2F%2Fcodeberg.org%2Fharuka%2Fheiwa%2Fsrc%2Fbranch%2Fmain%2FLICENCE)
 
 ## Description
 
@@ -36,7 +35,7 @@ Initialize a new Heiwa website project :
 heiwa init project_name
 ```
 
-Add a theme in the `project_name/themes/theme_name` directory. The Heiwa default theme can be found here : [Shizen](https://git.sr.ht/~hidrile/shizen)
+Add a theme in the `project_name/themes/theme_name` directory. The Heiwa default theme can be found here : [Shizen](https://codeberg.org/haruka/shizen)
 
 Edit the `project_name/config.toml` file accordingly.
 
