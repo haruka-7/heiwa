@@ -5,8 +5,8 @@ A minimalist dynamic flat-file CMS.
 > 
 > Bugs may occurs and there is still a lot of work to do on optimizing the code.
 
-![Crates.io Version](https://img.shields.io/crates/v/heiwa?style=for-the-badge&color=green&logo=rust&link=https%3A%2F%2Fcrates.io%2Fcrates%2Fheiwa)
-![Crates.io License](https://img.shields.io/crates/l/heiwa?style=for-the-badge&color=purple&link=https%3A%2F%2Fcodeberg.org%2Fharuka%2Fheiwa%2Fsrc%2Fbranch%2Fmain%2FLICENCE)
+[![Crates.io Version](https://img.shields.io/crates/v/heiwa?style=for-the-badge&color=green&logo=rust)](https://crates.io/crates/heiwa)
+[![Crates.io License](https://img.shields.io/crates/l/heiwa?style=for-the-badge&color=purple)](https://codeberg.org/haruka/heiwa/src/branch/main/LICENCE)
 
 ## Description
 
