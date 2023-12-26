@@ -1,6 +1,5 @@
 # Heiwa
-A minimalist flat-file CMS, by Pedro CADETE aka Hidrile
-
+A minimalist dynamic flat-file CMS.
 
 > Heiwa is currently in **BETA** state.
 > 
@@ -55,3 +54,5 @@ TODO
 ## Development
 
 TODO
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M3R2Z7O)
