@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.14 - yyy/mm/dd
+
+### Bugfix
+- Sort articles in RSS feed by date desc (#9)
+
 ## 0.1.13 - 2023/11/02
 
 - ADD RSS for tags
