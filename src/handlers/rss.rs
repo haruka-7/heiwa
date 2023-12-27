@@ -56,6 +56,8 @@ pub async fn show(
         }
     }
 
+    pages.sort_by(|a, b| b.date.cmp(&a.date));
+
     let mut items = Vec::new();
     for page in pages {
         let item: Item = ItemBuilder::default()
