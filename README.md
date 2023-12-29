@@ -7,6 +7,7 @@ A minimalist dynamic flat-file CMS.
 
 [![Crates.io Version](https://img.shields.io/crates/v/heiwa?style=for-the-badge&color=green&logo=rust)](https://crates.io/crates/heiwa)
 [![Crates.io License](https://img.shields.io/crates/l/heiwa?style=for-the-badge&color=purple)](https://codeberg.org/haruka/heiwa/src/branch/main/LICENCE)
+[![Mastodon](https://img.shields.io/badge/%40pluxml-6768f3?style=for-the-badge&logo=mastodon&logoColor=%23ffffff)](https://hachyderm.io/@pluxml)
 
 ## Description
 
