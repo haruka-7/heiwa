@@ -10,7 +10,7 @@ layout {
     }
     tab name="heiwa" focus=true {
         pane split_direction="vertical" {
-            pane size="60%" command="nvim" {
+            pane size="60%" command="hx" {
                 args "src"
             }
             pane split_direction="horizontal" {
@@ -21,7 +21,7 @@ layout {
     }
     tab name="shizen" cwd="./testsite/themes/shizen"{
         pane split_direction="vertical" {
-            pane size="70%" command="nvim" {
+            pane size="70%" command="hx" {
                 args "."
             }
             pane
