@@ -2,13 +2,18 @@ matrix:
   RUST: [stable, beta, nightly]
 
 steps:
-  test:
+  lint: 
     image: rust
     environment: [CARGO_TERM_COLOR=always]
     commands:
       - rustup default $RUST
       - rustup component add rustfmt clippy
       - cargo fmt -- --check
-      - cargo check
       - cargo clippy -- -D warnings 
+  test:
+    image: rust
+    environment: [CARGO_TERM_COLOR=always]
+    commands:
+      - rustup default $RUST
+      - cargo check
       - cargo test
