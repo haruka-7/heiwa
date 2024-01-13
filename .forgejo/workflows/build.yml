@@ -9,4 +9,3 @@ steps:
       - rustup default $RUST
       - cargo check
       - cargo test
-      - cargo build
